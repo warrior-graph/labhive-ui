@@ -1,0 +1,208 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>dashboard</mat-icon>
+      Dashboard
+      @if (userName()) {
+        <span class="user-greeting">— {{ userName() }}</span>
+      }
+    </h1>
+  </div>
+
+  @let s = summary();
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (s) {
+    <div class="dashboard">
+      @if (s.is_manager) {
+        <!-- ── Manager view ── -->
+        <div class="stat-grid">
+          @for (card of statCards(); track card.label) {
+            <a class="stat-card" [routerLink]="card.link">
+              <mat-icon>{{ card.icon }}</mat-icon>
+              <span class="stat-value">{{ card.value }}</span>
+              <span class="stat-label">{{ card.label }}</span>
+            </a>
+          }
+        </div>
+
+        <div class="panels-grid">
+          <mat-card class="panel" appearance="outlined">
+            <mat-card-content>
+              <h2 class="panel-title">
+                <mat-icon>pending_actions</mat-icon>
+                Aprovações pendentes
+              </h2>
+              @if (s.pending_members.length === 0) {
+                <p class="empty-state">Nada por aqui.</p>
+              } @else {
+                <ul class="list">
+                  @for (m of s.pending_members; track m.member_id) {
+                    <li class="list-item pending-item">
+                      <div class="item-main">
+                        <span class="item-title">{{ m.first_name }} {{ m.last_name }}</span>
+                        <span class="item-meta">{{ m.email }} · {{ m.lab_name }}</span>
+                      </div>
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="approveMember(m)"
+                        [disabled]="approving().has(m.member_id)"
+                      >
+                        @if (approving().has(m.member_id)) {
+                          <mat-progress-spinner diameter="16" mode="indeterminate" />
+                        } @else {
+                          Approve
+                        }
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="panel" appearance="outlined">
+            <mat-card-content>
+              <h2 class="panel-title">
+                <mat-icon>event</mat-icon>
+                Próximos prazos
+              </h2>
+              @if (s.upcoming_deadlines.length === 0) {
+                <p class="empty-state">Nada por aqui.</p>
+              } @else {
+                <ul class="list">
+                  @for (d of s.upcoming_deadlines; track d.type + ':' + d.id) {
+                    <li class="list-item deadline-item">
+                      <a class="item-link" [routerLink]="deadlineLink(d)">
+                        <span class="item-title">{{ d.title }}</span>
+                        <span class="item-meta">{{ d.lab_name }} · {{ d.due_on | date:'mediumDate' }}</span>
+                      </a>
+                      <span [class]="'status-chip status-' + d.status">{{ statusLabel(d.status) }}</span>
+                      <span [class]="'deadline-badge ' + deadlineClass(d)">{{ deadlineLabel(d) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="panel" appearance="outlined">
+            <mat-card-content>
+              <h2 class="panel-title">
+                <mat-icon>history</mat-icon>
+                Atividades recentes
+              </h2>
+              @if (s.recent_activities.length === 0) {
+                <p class="empty-state">Nada por aqui.</p>
+              } @else {
+                <ul class="list">
+                  @for (a of s.recent_activities; track a.id) {
+                    <li class="list-item">
+                      <a class="item-link" [routerLink]="activityLink(a)">
+                        <span class="item-title">{{ a.title }}</span>
+                        <span class="item-meta">{{ a.lab_name }} · {{ a.created_at | date:'mediumDate' }}</span>
+                      </a>
+                      <span [class]="'status-chip status-' + a.status">{{ statusLabel(a.status) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card-content>
+          </mat-card>
+        </div>
+      } @else {
+        <!-- ── Member view ── -->
+        <div class="panels-grid">
+          <mat-card class="panel" appearance="outlined">
+            <mat-card-content>
+              <h2 class="panel-title">
+                <mat-icon>event</mat-icon>
+                Meus próximos prazos
+              </h2>
+              @if (s.my_deadlines.length === 0) {
+                <p class="empty-state">Nada por aqui.</p>
+              } @else {
+                <ul class="list">
+                  @for (d of s.my_deadlines; track d.type + ':' + d.id) {
+                    <li class="list-item deadline-item">
+                      <a class="item-link" [routerLink]="deadlineLink(d)">
+                        <span class="item-title">{{ d.title }}</span>
+                        <span class="item-meta">{{ d.lab_name }} · {{ d.due_on | date:'mediumDate' }}</span>
+                      </a>
+                      <span [class]="'status-chip status-' + d.status">{{ statusLabel(d.status) }}</span>
+                      <span [class]="'deadline-badge ' + deadlineClass(d)">{{ deadlineLabel(d) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="panel" appearance="outlined">
+            <mat-card-content>
+              <h2 class="panel-title">
+                <mat-icon>assignment</mat-icon>
+                Minhas atividades
+              </h2>
+              @if (s.my_activities.length === 0) {
+                <p class="empty-state">Nada por aqui.</p>
+              } @else {
+                <ul class="list">
+                  @for (a of s.my_activities; track a.id) {
+                    <li class="list-item">
+                      <a class="item-link" [routerLink]="activityLink(a)">
+                        <span class="item-title">{{ a.title }}</span>
+                        <span class="item-meta">
+                          {{ a.lab_name }}
+                          @if (a.deadline) {
+                            · {{ a.deadline | date:'mediumDate' }}
+                          }
+                        </span>
+                      </a>
+                      <span [class]="'status-chip status-' + a.status">{{ statusLabel(a.status) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="panel" appearance="outlined">
+            <mat-card-content>
+              <h2 class="panel-title">
+                <mat-icon>workspaces</mat-icon>
+                Meus projetos
+              </h2>
+              @if (s.my_projects.length === 0) {
+                <p class="empty-state">Nada por aqui.</p>
+              } @else {
+                <ul class="list">
+                  @for (p of s.my_projects; track p.id) {
+                    <li class="list-item">
+                      <a class="item-link" [routerLink]="projectLink(p)">
+                        <span class="item-title">{{ p.name }}</span>
+                        <span class="item-meta">
+                          {{ p.lab_name }}
+                          @if (p.end_date) {
+                            · {{ p.end_date | date:'mediumDate' }}
+                          }
+                        </span>
+                      </a>
+                      <span [class]="'status-chip status-' + p.status">{{ statusLabel(p.status) }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </mat-card-content>
+          </mat-card>
+        </div>
+      }
+    </div>
+  } @else {
+    <p class="empty-state">Nada por aqui.</p>
+  }
+</div>

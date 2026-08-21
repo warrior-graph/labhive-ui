@@ -126,3 +126,125 @@ body.light-theme {
 mat-dialog-content {
   padding-top: 8px !important;
 }
+
+// ── Semantic tokens (market-standard palette) — dark theme ─────────────────
+:root {
+  --sem-success-bg:  #14532d;
+  --sem-success-fg:  #86efac;
+  --sem-warning-bg:  #451a03;
+  --sem-warning-fg:  #fcd34d;
+  --sem-error-bg:    #450a0a;
+  --sem-error-fg:    #fca5a5;
+  --sem-info-bg:     #1e3a5f;
+  --sem-info-fg:     #93c5fd;
+  --sem-review-bg:   #4c1d95;
+  --sem-review-fg:   #c4b5fd;
+  --sem-neutral-bg:  #1f2937;
+  --sem-neutral-fg:  #9ca3af;
+
+  // Dashboard status chip colours — dark theme (activity + project maps)
+  --status-planned-bg:      #1e3a5f; // planned  = azul
+  --status-planned-fg:      #93c5fd;
+  --status-in_progress-bg:  #164e63; // in_progress = ciano
+  --status-in_progress-fg:  #67e8f9;
+  --status-on_hold-bg:      #451a03; // on_hold  = âmbar
+  --status-on_hold-fg:      #fcd34d;
+  --status-under_review-bg: #4c1d95; // under_review = violeta
+  --status-under_review-fg: #c4b5fd;
+  --status-completed-bg:    #022c22; // completed = verde-escuro
+  --status-completed-fg:    #6ee7b7;
+  --status-cancelled-bg:    #1f2937; // cancelled = cinza
+  --status-cancelled-fg:    #9ca3af;
+  --status-active-bg:       #14532d; // active (projects) = verde
+  --status-active-fg:       #86efac;
+}
+
+// ── Semantic tokens — light theme override ──────────────────────────────────
+body.light-theme {
+  --sem-success-bg:  #dcfce7;
+  --sem-success-fg:  #15803d;
+  --sem-warning-bg:  #fef3c7;
+  --sem-warning-fg:  #92400e;
+  --sem-error-bg:    #fee2e2;
+  --sem-error-fg:    #b91c1c;
+  --sem-info-bg:     #dbeafe;
+  --sem-info-fg:     #1d4ed8;
+  --sem-review-bg:   #ede9fe;
+  --sem-review-fg:   #6d28d9;
+  --sem-neutral-bg:  #f3f4f6;
+  --sem-neutral-fg:  #4b5563;
+
+  --status-planned-bg:      #dbeafe;
+  --status-planned-fg:      #1d4ed8;
+  --status-in_progress-bg:  #cffafe;
+  --status-in_progress-fg:  #0e7490;
+  --status-on_hold-bg:      #fef3c7;
+  --status-on_hold-fg:      #92400e;
+  --status-under_review-bg: #ede9fe;
+  --status-under_review-fg: #6d28d9;
+  --status-completed-bg:    #d1fae5;
+  --status-completed-fg:    #047857;
+  --status-cancelled-bg:    #f3f4f6;
+  --status-cancelled-fg:    #4b5563;
+  --status-active-bg:       #dcfce7;
+  --status-active-fg:       #15803d;
+}
+
+// ── Dashboard activity/project status chips (global) ────────────────────────
+// accepted/rejected reuse the article chip colours above (verde/vermelho,
+// identical per the activity map). in_progress/under_review collide with the
+// article statuses, so their dashboard colours are scoped to .dashboard below
+// to keep the article pages untouched.
+.status-chip.status-planned {
+  background: var(--status-planned-bg);
+  color: var(--status-planned-fg);
+}
+.status-chip.status-on_hold {
+  background: var(--status-on_hold-bg);
+  color: var(--status-on_hold-fg);
+}
+.status-chip.status-completed {
+  background: var(--status-completed-bg);
+  color: var(--status-completed-fg);
+}
+.status-chip.status-cancelled {
+  background: var(--status-cancelled-bg);
+  color: var(--status-cancelled-fg);
+}
+.status-chip.status-active {
+  background: var(--status-active-bg);
+  color: var(--status-active-fg);
+}
+
+// Activity statuses sharing a name with article statuses — scoped to the
+// dashboard so the article pages keep their existing palette.
+.dashboard .status-chip.status-in_progress {
+  background: var(--status-in_progress-bg);
+  color: var(--status-in_progress-fg);
+}
+.dashboard .status-chip.status-under_review {
+  background: var(--status-under_review-bg);
+  color: var(--status-under_review-fg);
+}
+
+// ── Deadline badges (days left) ─────────────────────────────────────────────
+.deadline-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.deadline-overdue {
+  background: var(--sem-error-bg);
+  color: var(--sem-error-fg);
+}
+.deadline-soon {
+  background: var(--sem-warning-bg);
+  color: var(--sem-warning-fg);
+}
+.deadline-future {
+  background: var(--sem-info-bg);
+  color: var(--sem-info-fg);
+}

@@ -236,3 +236,79 @@ export interface RegisterRequest {
   is_professor?: boolean;
   desired_lab_id?: number;
 }
+
+// ─── Dashboard DTOs (GET /dashboard/summary) ─────────────────────────────────
+
+export type DashboardDeadlineType = 'activity' | 'project';
+
+export interface DashboardCounts {
+  active_members: number;
+  pending_members: number;
+  activities_in_progress: number;
+  activities_under_review: number;
+  activities_completed: number;
+  projects_active: number;
+  inventory_items: number;
+}
+
+export interface DashboardPendingMember {
+  member_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  desired_lab_id: number;
+  lab_name: string;
+  created_at: string;
+}
+
+export interface DashboardDeadline {
+  type: DashboardDeadlineType;
+  id: number;
+  title: string;
+  lab_id: number;
+  lab_name: string;
+  status: string;
+  due_on: string;
+  days_left: number | null;
+  overdue: boolean;
+}
+
+export interface DashboardRecentActivity {
+  id: number;
+  title: string;
+  status: string;
+  lab_id: number;
+  lab_name: string;
+  created_at: string;
+}
+
+export interface DashboardMyActivity {
+  id: number;
+  title: string;
+  status: string;
+  lab_id: number;
+  lab_name: string;
+  deadline: string | null;
+  days_left: number | null;
+}
+
+export interface DashboardMyProject {
+  id: number;
+  name: string;
+  status: string;
+  lab_id: number;
+  lab_name: string;
+  end_date: string | null;
+}
+
+export interface DashboardSummary {
+  is_manager: boolean;
+  counts: DashboardCounts;
+  pending_members: DashboardPendingMember[];
+  upcoming_deadlines: DashboardDeadline[];
+  recent_activities: DashboardRecentActivity[];
+  my_activities: DashboardMyActivity[];
+  my_projects: DashboardMyProject[];
+  my_deadlines: DashboardDeadline[];
+}
+
