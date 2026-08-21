@@ -12,6 +12,11 @@ export interface AddMemberPayload {
   compensation_value?: number;
 }
 
+export interface OrgChartResponse {
+  root_id: number | null;
+  memberships: LabMembership[];
+}
+
 export interface UpdateMembershipPayload {
   roles?: string[];
   specialization?: string | null;
@@ -31,6 +36,10 @@ export class MemberService {
 
   getLabMembers(labId: number): Observable<LabMembership[]> {
     return this.http.get<LabMembership[]>(`${this.api}/labs/${labId}/members`);
+  }
+
+  getOrg(labId: number): Observable<OrgChartResponse> {
+    return this.http.get<OrgChartResponse>(`${this.api}/labs/${labId}/org`);
   }
 
   addMember(labId: number, data: AddMemberPayload): Observable<LabMembership> {

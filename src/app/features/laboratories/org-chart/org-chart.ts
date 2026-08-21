@@ -157,21 +157,10 @@ export class OrgChart implements OnInit {
 
     for (const node of nodes.values()) {
       const m = node.membership;
-      const myLevel = this.primaryRoleLevel(m.roles as LabRole[]);
-      let parentNode: TreeNode | null = null;
+      const resolvedId = m.resolved_reports_to_id;
 
-      if (m.reports_to_id != null && nodes.has(m.reports_to_id)) {
-        parentNode = nodes.get(m.reports_to_id)!;
-      } else if (myLevel > 0) {
-        const parentsAbove = memberships.filter(
-          p => this.primaryRoleLevel(p.roles as LabRole[]) === myLevel - 1
-        );
-        if (parentsAbove.length === 1) {
-          parentNode = nodes.get(parentsAbove[0].member_id)!;
-        }
-      }
-
-      if (parentNode) {
+      if (resolvedId != null && nodes.has(resolvedId) && resolvedId !== m.member_id) {
+        const parentNode = nodes.get(resolvedId)!;
         parentNode.children.push(node);
         node.parent = parentNode;
       }
@@ -206,9 +195,9 @@ export class OrgChart implements OnInit {
   ngOnInit(): void {
     const labId = Number(this.route.snapshot.paramMap.get('labId'));
     this.labId.set(labId);
-    this.memberService.getLabMembers(labId).subscribe({
-      next: ms => {
-        this.memberships.set(ms);
+    this.memberService.getOrg(labId).subscribe({
+      next: res => {
+        this.memberships.set(res.memberships ?? []);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
