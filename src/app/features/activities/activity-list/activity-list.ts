@@ -71,8 +71,7 @@ export class ActivityList implements OnInit {
   }
 
   protected activityLink(a: DashboardActivityItem): (string | number)[] {
-    // No dedicated activity detail page — fall back to the lab page.
-    return ['/labs', a.lab_id];
+    return ['/labs', a.lab_id, 'activities', a.id];
   }
 
   protected daysLeft(deadline: string | null): number | null {

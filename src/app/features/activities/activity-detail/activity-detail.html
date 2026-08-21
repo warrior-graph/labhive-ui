@@ -1,0 +1,145 @@
+<div class="page-container">
+  <div class="back-links">
+    <a mat-button [routerLink]="['/calendar']" class="back-link">
+      <mat-icon>arrow_back</mat-icon>
+      Calendário
+    </a>
+    <a mat-button [routerLink]="['/labs', labId]" class="back-link">
+      <mat-icon>business</mat-icon>
+      Lab
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (activity()) {
+    @let a = activity()!;
+
+    <div class="activity-header">
+      <div>
+        <h1>{{ a.title }}</h1>
+        <div class="activity-tags">
+          <span [class]="'status-chip status-' + a.status">{{ statusLabel(a.status) }}</span>
+          @if (a.activity_type) {
+            <span class="activity-type">{{ a.activity_type }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="label">Lab</span>
+        <span><a [routerLink]="['/labs', a.lab_id]">Lab #{{ a.lab_id }}</a></span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Venue</span>
+        <span>{{ a.venue || '—' }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Reference Link</span>
+        <span>
+          @if (a.reference_link) {
+            <a [href]="a.reference_link" target="_blank" rel="noopener noreferrer">
+              {{ a.reference_link }}
+            </a>
+          } @else {
+            —
+          }
+        </span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Deadline</span>
+        <span class="deadline-cell">
+          @if (a.deadline) {
+            <span [class]="'deadline-badge ' + deadlineClass(a.deadline)">
+              {{ deadlineLabel(a.deadline) }}
+            </span>
+            <span class="deadline-date">{{ a.deadline | date:'mediumDate' }}</span>
+          } @else {
+            —
+          }
+        </span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Completed At</span>
+        <span>{{ a.completed_at ? (a.completed_at | date:'mediumDate') : '—' }}</span>
+      </div>
+      <div class="meta-item">
+        <span class="label">Created</span>
+        <span>{{ a.created_at | date:'mediumDate' }}</span>
+      </div>
+    </div>
+
+    @if (a.description) {
+      <section class="section">
+        <h2>Descrição</h2>
+        <p class="description-text">{{ a.description }}</p>
+      </section>
+    }
+
+    <div class="people-grid">
+      <section class="section">
+        <h2>Responsáveis</h2>
+        @if (a.in_charge.length > 0) {
+          <ul class="people-list">
+            @for (p of a.in_charge; track p.id) {
+              <li>{{ personName(p) }}</li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-state">Nada por aqui.</p>
+        }
+      </section>
+
+      <section class="section">
+        <h2>Participantes</h2>
+        @if (a.participants.length > 0) {
+          <ul class="people-list">
+            @for (p of a.participants; track p.id) {
+              <li>{{ personName(p) }}</li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-state">Nada por aqui.</p>
+        }
+      </section>
+    </div>
+
+    @if (canReview() && a.status === 'under_review') {
+      <mat-divider />
+      <section class="review-section">
+        <h2>Revisão</h2>
+        <p class="review-hint">Esta atividade aguarda sua revisão.</p>
+        <div class="review-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            [disabled]="reviewing() !== null"
+            (click)="review('accepted')"
+          >
+            @if (reviewing() === 'accepted') {
+              <mat-progress-spinner diameter="18" mode="indeterminate" />
+            } @else {
+              <span class="btn-label"><mat-icon>check</mat-icon> Aceitar</span>
+            }
+          </button>
+          <button
+            mat-raised-button
+            color="warn"
+            [disabled]="reviewing() !== null"
+            (click)="review('rejected')"
+          >
+            @if (reviewing() === 'rejected') {
+              <mat-progress-spinner diameter="18" mode="indeterminate" />
+            } @else {
+              <span class="btn-label"><mat-icon>close</mat-icon> Rejeitar</span>
+            }
+          </button>
+        </div>
+      </section>
+    }
+  }
+</div>

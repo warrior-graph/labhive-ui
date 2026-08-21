@@ -11,6 +11,9 @@
   </button>
 
   @if (authService.isAuthenticated()) {
+    <a mat-icon-button routerLink="/calendar" aria-label="Calendário">
+      <mat-icon>calendar_month</mat-icon>
+    </a>
     @if (authService.currentUser()?.is_professor || authService.currentUser()?.is_super_admin) {
       <a mat-icon-button routerLink="/admin/pending" aria-label="Pending approvals">
         <mat-icon>pending_actions</mat-icon>

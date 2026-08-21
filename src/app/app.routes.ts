@@ -21,6 +21,12 @@ export const routes: Routes = [
       import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard),
   },
   {
+    path: 'calendar',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/calendar/calendar/calendar').then(m => m.Calendar),
+  },
+  {
     path: 'activities',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -61,6 +67,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/projects/project-detail/project-detail').then(m => m.ProjectDetail),
+  },
+  {
+    path: 'labs/:labId/activities/:activityId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/activities/activity-detail/activity-detail').then(m => m.ActivityDetail),
   },
   {
     path: 'labs/:labId/research/:researchId',

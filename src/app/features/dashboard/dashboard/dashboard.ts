@@ -69,6 +69,19 @@ export class Dashboard implements OnInit {
     return cards;
   });
 
+  /**
+   * Prazos na janela de hoje (days_left === 0) ou esta semana (1..7).
+   * Gestor vê upcoming_deadlines; membro vê my_deadlines.
+   */
+  protected readonly deadlineStrip = computed<DashboardDeadline[]>(() => {
+    const s = this.summary();
+    if (!s) return [];
+    const list = s.is_manager ? s.upcoming_deadlines : s.my_deadlines;
+    return list.filter(
+      d => d.days_left !== null && d.days_left >= 0 && d.days_left <= 7,
+    );
+  });
+
   ngOnInit(): void {
     this.load();
   }
@@ -149,13 +162,11 @@ export class Dashboard implements OnInit {
     if (d.type === 'project') {
       return ['/labs', d.lab_id, 'projects', d.id];
     }
-    // Activities have no dedicated route yet — fall back to the lab page.
-    return ['/labs', d.lab_id];
+    return ['/labs', d.lab_id, 'activities', d.id];
   }
 
-  protected activityLink(a: { lab_id: number }): (string | number)[] {
-    // Activities have no dedicated route yet — fall back to the lab page.
-    return ['/labs', a.lab_id];
+  protected activityLink(a: { lab_id: number; id: number }): (string | number)[] {
+    return ['/labs', a.lab_id, 'activities', a.id];
   }
 
   protected projectLink(p: { lab_id: number; id: number }): (string | number)[] {

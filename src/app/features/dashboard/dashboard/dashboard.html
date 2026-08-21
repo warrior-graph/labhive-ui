@@ -16,6 +16,23 @@
       <mat-progress-spinner mode="indeterminate" />
     </div>
   } @else if (s) {
+    @let strip = deadlineStrip();
+    @if (strip.length > 0) {
+      <div class="deadline-strip">
+        <span class="strip-label">
+          <mat-icon>event</mat-icon>
+          Prazo hoje / esta semana
+        </span>
+        <div class="strip-items">
+          @for (d of strip; track d.type + ':' + d.id) {
+            <a class="strip-item" [routerLink]="deadlineLink(d)">
+              <span class="strip-title">{{ d.title }}</span>
+              <span [class]="'deadline-badge ' + deadlineClass(d)">{{ deadlineLabel(d) }}</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
     <div class="dashboard">
       @if (s.is_manager) {
         <!-- ── Manager view ── -->

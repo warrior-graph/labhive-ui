@@ -345,3 +345,42 @@ export interface DashboardInventoryItem {
   assigned_to_name: string | null;
 }
 
+// ─── Calendar DTOs (GET /calendar) ────────────────────────────────────────────
+
+export type CalendarEventType = 'activity' | 'project';
+
+export interface CalendarEvent {
+  type: CalendarEventType;
+  id: number;
+  title: string;
+  lab_id: number;
+  lab_name: string | null;
+  status: string;
+  date: string;
+}
+
+// ─── Activity DTOs (GET /labs/{labId}/activities/{activityId}) ───────────────
+
+export interface ActivityPerson {
+  id: number;
+  first_name: string;
+  last_name: string;
+}
+
+export interface ActivityDetail {
+  id: number;
+  title: string;
+  activity_type: string | null;
+  description: string | null;
+  venue: string | null;
+  reference_link: string | null;
+  status: string;
+  deadline: string | null;
+  completed_at: string | null;
+  is_active: boolean;
+  lab_id: number;
+  created_at: string;
+  participants: ActivityPerson[];
+  in_charge: ActivityPerson[];
+}
+

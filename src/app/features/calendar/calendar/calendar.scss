@@ -1,0 +1,271 @@
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--mat-sys-on-surface);
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-chip {
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: transparent;
+  color: var(--mat-sys-on-surface-variant);
+  border-radius: 16px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--mat-sys-primary);
+    color: var(--mat-sys-on-surface);
+  }
+
+  &.filter-chip-active {
+    background: var(--mat-sys-primary);
+    border-color: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+  }
+}
+
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 32px;
+}
+
+// ── Layout: grid + day panel ────────────────────────────────────────────────
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Month header ────────────────────────────────────────────────────────────
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cal-title {
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+// ── Weekday row + grid ──────────────────────────────────────────────────────
+.cal-weekdays,
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 6px 0;
+}
+
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  min-height: 96px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--mat-sys-primary);
+  }
+
+  &.cal-today {
+    border-color: var(--mat-sys-primary);
+
+    .cal-daynum {
+      color: var(--mat-sys-primary);
+    }
+  }
+
+  &.cal-selected {
+    background: var(--mat-sys-primary-container);
+    border-color: var(--mat-sys-primary);
+  }
+
+  &.cal-empty {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+  }
+}
+
+.cal-daynum {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+// ── Mini event badges inside cells ──────────────────────────────────────────
+.cal-event {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.cal-event-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-event-activity .cal-event-dot {
+  background: #42a5f5; // atividade = azul
+}
+
+.cal-event-project .cal-event-dot {
+  background: #66bb6a; // projeto = verde
+}
+
+.cal-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-more {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// ── Day panel (lateral) ─────────────────────────────────────────────────────
+.day-panel {
+  position: sticky;
+  top: 24px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+
+  @media (max-width: 960px) {
+    position: static;
+  }
+}
+
+.day-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.day-panel-date {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--mat-sys-surface-container-high);
+
+  .status-chip {
+    flex-shrink: 0;
+  }
+}
+
+.day-item-link {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .day-item-title {
+    color: var(--mat-sys-primary);
+  }
+}
+
+.day-item-title {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-item-meta {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}

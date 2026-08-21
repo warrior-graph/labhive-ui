@@ -1,0 +1,110 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>calendar_month</mat-icon>
+      Calendário
+    </h1>
+  </div>
+
+  <div class="filter-bar">
+    @for (f of filters; track f) {
+      <button
+        type="button"
+        class="filter-chip"
+        [class.filter-chip-active]="selectedFilter() === f"
+        (click)="selectFilter(f)"
+      >
+        {{ filterLabel(f) }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (filteredEvents().length === 0) {
+    <p class="empty-state">Nada por aqui.</p>
+  } @else {
+    <div class="calendar-layout">
+      <div class="calendar">
+        <div class="cal-header">
+          <span class="cal-title">{{ monthLabel() }}</span>
+          <div class="cal-nav">
+            <button mat-icon-button aria-label="Mês anterior" (click)="shiftMonth(-1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button mat-button (click)="goToday()">Hoje</button>
+            <button mat-icon-button aria-label="Próximo mês" (click)="shiftMonth(1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="cal-weekdays">
+          @for (w of weekdays; track w) {
+            <span class="cal-weekday">{{ w }}</span>
+          }
+        </div>
+
+        <div class="cal-grid">
+          @for (cell of days(); track cell ? dateKey(cell) : $index) {
+            @if (cell) {
+              <button
+                type="button"
+                class="cal-cell"
+                [class.cal-today]="isToday(cell)"
+                [class.cal-selected]="isSelected(cell)"
+                (click)="selectDay(cell)"
+              >
+                <span class="cal-daynum">{{ cell.getDate() }}</span>
+                @let dayEvents = eventsForDate(cell);
+                @for (ev of dayEvents.slice(0, 3); track ev.type + ':' + ev.id) {
+                  <span
+                    class="cal-event"
+                    [class.cal-event-activity]="ev.type === 'activity'"
+                    [class.cal-event-project]="ev.type === 'project'"
+                  >
+                    <span class="cal-event-dot"></span>
+                    <span class="cal-event-title">{{ ev.title }}</span>
+                  </span>
+                }
+                @if (dayEvents.length > 3) {
+                  <span class="cal-more">+{{ dayEvents.length - 3 }}</span>
+                }
+              </button>
+            } @else {
+              <div class="cal-cell cal-empty"></div>
+            }
+          }
+        </div>
+      </div>
+
+      @if (selectedDate()) {
+        <aside class="day-panel">
+          <div class="day-panel-header">
+            <span class="day-panel-date">{{ selectedDayLabel() }}</span>
+            <button mat-icon-button aria-label="Fechar" (click)="selectedDate.set(null)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          @if (selectedDayEvents().length === 0) {
+            <p class="empty-state">Nada por aqui.</p>
+          } @else {
+            <ul class="day-list">
+              @for (e of selectedDayEvents(); track e.type + ':' + e.id) {
+                <li class="day-item">
+                  <a class="day-item-link" [routerLink]="eventLink(e)">
+                    <span class="day-item-title">{{ e.title }}</span>
+                    <span class="day-item-meta">{{ e.lab_name ?? ('Lab #' + e.lab_id) }}</span>
+                  </a>
+                  <span [class]="'status-chip status-' + e.status">{{ statusLabel(e.status) }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </aside>
+      }
+    </div>
+  }
+</div>
