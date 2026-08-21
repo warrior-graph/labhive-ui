@@ -21,6 +21,11 @@
 }
 
 .activity-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 24px;
 
   h1 {
@@ -28,6 +33,18 @@
     font-size: 28px;
     word-break: break-word;
     overflow-wrap: break-word;
+  }
+}
+
+.activity-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 }
 

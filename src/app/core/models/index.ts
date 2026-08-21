@@ -417,3 +417,65 @@ export interface ActivityDetail {
   in_charge: ActivityPerson[];
 }
 
+// ─── Activity write DTOs (POST/PUT /labs/{labId}/activities) ─────────────────
+
+export type ActivityStatus =
+  | 'planned'
+  | 'in_progress'
+  | 'on_hold'
+  | 'under_review'
+  | 'accepted'
+  | 'rejected'
+  | 'completed'
+  | 'cancelled';
+
+export const ACTIVITY_STATUSES: string[] = [
+  'planned',
+  'in_progress',
+  'on_hold',
+  'under_review',
+  'accepted',
+  'rejected',
+  'completed',
+  'cancelled',
+];
+
+export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
+  planned: 'Planned',
+  in_progress: 'In Progress',
+  on_hold: 'On Hold',
+  under_review: 'Under Review',
+  accepted: 'Accepted',
+  rejected: 'Rejected',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+/** Papéis que podem criar/editar atividades. */
+export const ACTIVITY_EDIT_ROLES: LabRole[] = [
+  LabRole.LAB_COORDINATOR,
+  LabRole.CHIEF_SCIENTIST,
+  LabRole.RESEARCHER,
+  LabRole.RESEARCH_FELLOW,
+];
+
+/** Papéis que podem excluir atividades. */
+export const ACTIVITY_DELETE_ROLES: LabRole[] = [
+  LabRole.LAB_COORDINATOR,
+  LabRole.CHIEF_SCIENTIST,
+];
+
+export interface CreateActivityPayload {
+  title: string;
+  activity_type?: string | null;
+  description?: string | null;
+  venue?: string | null;
+  reference_link?: string | null;
+  status?: string;
+  deadline?: string | null;
+  in_charge?: number[];
+  participants?: number[];
+}
+
+export type UpdateActivityPayload = Partial<CreateActivityPayload>;
+

@@ -4,6 +4,17 @@
       <mat-icon>rocket_launch</mat-icon>
       Atividades
     </h1>
+    @if (canCreate()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openCreate()"
+        [disabled]="labsLoading() || createableLabs().length === 0"
+      >
+        <mat-icon>add</mat-icon>
+        Nova atividade
+      </button>
+    }
   </div>
 
   <div class="filter-bar">

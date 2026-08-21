@@ -6,10 +6,12 @@ import { environment } from '../../../environments/environment';
 import {
   ActivityDetail,
   CalendarEvent,
+  CreateActivityPayload,
   DashboardActivityItem,
   DashboardInventoryItem,
   DashboardProjectItem,
   DashboardSummary,
+  UpdateActivityPayload,
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -45,6 +47,33 @@ export class DashboardService {
 
   getActivity(labId: number, activityId: number): Observable<ActivityDetail> {
     return this.http.get<ActivityDetail>(
+      `${this.api}/labs/${labId}/activities/${activityId}`,
+    );
+  }
+
+  createActivity(
+    labId: number,
+    data: CreateActivityPayload,
+  ): Observable<ActivityDetail> {
+    return this.http.post<ActivityDetail>(
+      `${this.api}/labs/${labId}/activities`,
+      data,
+    );
+  }
+
+  updateActivity(
+    labId: number,
+    activityId: number,
+    data: UpdateActivityPayload,
+  ): Observable<ActivityDetail> {
+    return this.http.put<ActivityDetail>(
+      `${this.api}/labs/${labId}/activities/${activityId}`,
+      data,
+    );
+  }
+
+  deleteActivity(labId: number, activityId: number): Observable<void> {
+    return this.http.delete<void>(
       `${this.api}/labs/${labId}/activities/${activityId}`,
     );
   }

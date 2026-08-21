@@ -1,16 +1,25 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButton } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { ActivityDetail as ActivityDetailModel, LabRole, MANAGER_ROLES } from '../../../core/models';
+import {
+  ACTIVITY_DELETE_ROLES,
+  ACTIVITY_EDIT_ROLES,
+  ActivityDetail as ActivityDetailModel,
+  LabRole,
+  MANAGER_ROLES,
+} from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { extractApiError } from '../../../core/utils/api-error';
+import { ActivityFormDialog } from '../activity-form-dialog/activity-form-dialog';
 
 @Component({
   selector: 'app-activity-detail',
@@ -22,11 +31,13 @@ export class ActivityDetail implements OnInit {
   protected readonly activity = signal<ActivityDetailModel | null>(null);
   protected readonly loading = signal(true);
   protected readonly reviewing = signal<'accepted' | 'rejected' | null>(null);
+  protected readonly removing = signal(false);
 
   protected readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dashboardService = inject(DashboardService);
+  private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
   protected labId = 0;
@@ -42,6 +53,26 @@ export class ActivityDetail implements OnInit {
     if (user.is_super_admin || user.is_professor) return true;
     return (user.lab_memberships ?? []).some(m =>
       (m.roles ?? []).some(r => MANAGER_ROLES.includes(r as LabRole)),
+    );
+  });
+
+  /** Quem pode editar: mesmos papéis da criação (ACTIVITY_EDIT_ROLES). */
+  protected readonly canEdit = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    if (user.is_super_admin || user.is_professor) return true;
+    return (user.lab_memberships ?? []).some(m =>
+      (m.roles ?? []).some(r => ACTIVITY_EDIT_ROLES.includes(r as LabRole)),
+    );
+  });
+
+  /** Quem pode excluir: super admin, professor ou ACTIVITY_DELETE_ROLES. */
+  protected readonly canDelete = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user) return false;
+    if (user.is_super_admin || user.is_professor) return true;
+    return (user.lab_memberships ?? []).some(m =>
+      (m.roles ?? []).some(r => ACTIVITY_DELETE_ROLES.includes(r as LabRole)),
     );
   });
 
@@ -62,6 +93,41 @@ export class ActivityDetail implements OnInit {
         this.loading.set(false);
         this.snackBar.open('Activity not found', 'Dismiss', { duration: 3000 });
         this.router.navigate(['/labs', this.labId]);
+      },
+    });
+  }
+
+  protected openEdit(): void {
+    const current = this.activity();
+    if (!current) return;
+    const ref = this.dialog.open(ActivityFormDialog, {
+      width: '640px',
+      data: { labId: current.lab_id, activity: current, labs: [] },
+    });
+    ref.afterClosed().subscribe(updated => {
+      if (updated) {
+        this.activity.set(updated);
+        this.snackBar.open('Atividade atualizada.', 'Dismiss', { duration: 3000 });
+      }
+    });
+  }
+
+  protected remove(): void {
+    const current = this.activity();
+    if (!current) return;
+    if (!confirm(`Excluir a atividade "${current.title}"?`)) return;
+    this.removing.set(true);
+    this.dashboardService.deleteActivity(this.labId, this.activityId).subscribe({
+      next: () => {
+        this.removing.set(false);
+        this.snackBar.open('Atividade excluída.', 'Dismiss', { duration: 3000 });
+        this.router.navigate(['/labs', this.labId]);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.removing.set(false);
+        this.snackBar.open(extractApiError(err, 'Falha ao excluir atividade.'), 'Dismiss', {
+          duration: 4000,
+        });
       },
     });
   }

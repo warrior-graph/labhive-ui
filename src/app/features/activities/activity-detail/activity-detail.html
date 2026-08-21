@@ -27,6 +27,22 @@
           }
         </div>
       </div>
+      <div class="activity-actions">
+        @if (canEdit()) {
+          <button mat-raised-button (click)="openEdit()">
+            <span class="btn-label"><mat-icon>edit</mat-icon> Editar</span>
+          </button>
+        }
+        @if (canDelete()) {
+          <button mat-raised-button color="warn" (click)="remove()" [disabled]="removing()">
+            @if (removing()) {
+              <mat-progress-spinner diameter="18" mode="indeterminate" />
+            } @else {
+              <span class="btn-label"><mat-icon>delete</mat-icon> Excluir</span>
+            }
+          </button>
+        }
+      </div>
     </div>
 
     <div class="meta-grid">
