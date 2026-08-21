@@ -1,6 +1,6 @@
-# How to Run LABMMIF
+# How to Run LabHive UI
 
-LABMMIF is the Angular 21 frontend for the LABMM laboratory management API.
+LabHive UI is the Angular 21 frontend for the LabHive laboratory management API.
 
 ## Prerequisites
 
@@ -9,14 +9,14 @@ LABMMIF is the Angular 21 frontend for the LABMM laboratory management API.
 | Node.js (via nvm) | 24 LTS or later |
 | npm | 11+ |
 | Angular CLI | 21+ |
-| LABMM backend | running on `http://127.0.0.1:5000` |
+| LabHive backend | running on `http://127.0.0.1:5000` |
 
 ---
 
-## 1. Start the LABMM Backend
+## 1. Start the LabHive Backend
 
-The frontend requires the LABMM API to be running. Follow the steps in
-[LABMM/HOW_TO_RUN.md](../LABMM/HOW_TO_RUN.md), then verify it is up:
+The frontend requires the LabHive API to be running. Follow the steps in
+[LabHive/HOW_TO_RUN.md](../labhive/HOW_TO_RUN.md), then verify it is up:
 
 ```bash
 curl http://127.0.0.1:5000/labs
@@ -40,7 +40,7 @@ nvm install --lts
 ## 3. Install dependencies
 
 ```bash
-cd LABMMIF
+cd labhive-ui
 npm install
 ```
 
@@ -61,7 +61,7 @@ The app hot-reloads on every source file change.
 
 ## 5. First-time setup (register a super-admin)
 
-If the LABMM database is empty, navigate to **http://localhost:4200/register**
+If the LabHive database is empty, navigate to **http://localhost:4200/register**
 to create the first account. The first registration via the API is automatically
 granted super-admin privileges.
 
@@ -75,7 +75,7 @@ After registering, you will be redirected to the lab dashboard.
 
 ```bash
 ng build
-# output goes to dist/labmmif/
+# output goes to dist/labhive-ui/
 ```
 
 ---

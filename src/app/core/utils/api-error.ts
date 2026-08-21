@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 /**
- * Extracts a human-readable message from LABMM API error responses.
+ * Extracts a human-readable message from LabHive API error responses.
  *
  * The API can return:
  *   { message: "..." }         — abort() errors

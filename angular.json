@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "labmmif": {
+    "labhive-ui": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -59,10 +59,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "labmmif:build:production"
+              "buildTarget": "labhive-ui:build:production"
             },
             "development": {
-              "buildTarget": "labmmif:build:development"
+              "buildTarget": "labhive-ui:build:development"
             }
           },
           "defaultConfiguration": "development"
