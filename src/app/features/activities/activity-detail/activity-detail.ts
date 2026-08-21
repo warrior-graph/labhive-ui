@@ -103,7 +103,7 @@ export class ActivityDetail implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Atividade não encontrada', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Atividade não encontrada', 'Fechar', { duration: 3000 });
         this.router.navigate(['/labs', this.labId]);
       },
     });
@@ -119,7 +119,7 @@ export class ActivityDetail implements OnInit {
     ref.afterClosed().subscribe(updated => {
       if (updated) {
         this.activity.set(updated);
-        this.snackBar.open('Atividade atualizada.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Atividade atualizada.', 'Fechar', { duration: 3000 });
       }
     });
   }
@@ -132,12 +132,12 @@ export class ActivityDetail implements OnInit {
     this.dashboardService.deleteActivity(this.labId, this.activityId).subscribe({
       next: () => {
         this.removing.set(false);
-        this.snackBar.open('Atividade excluída.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Atividade excluída.', 'Fechar', { duration: 3000 });
         this.router.navigate(['/labs', this.labId]);
       },
       error: (err: HttpErrorResponse) => {
         this.removing.set(false);
-        this.snackBar.open(extractApiError(err, 'Falha ao excluir atividade.'), 'Dismiss', {
+        this.snackBar.open(extractApiError(err, 'Falha ao excluir atividade.'), 'Fechar', {
           duration: 4000,
         });
       },
@@ -152,7 +152,7 @@ export class ActivityDetail implements OnInit {
         this.reviewing.set(null);
         this.snackBar.open(
           decision === 'accepted' ? 'Atividade aceita.' : 'Atividade rejeitada.',
-          'Dismiss',
+          'Fechar',
           { duration: 3000 },
         );
       },
@@ -166,7 +166,7 @@ export class ActivityDetail implements OnInit {
         } else {
           msg = extractApiError(err, msg);
         }
-        this.snackBar.open(msg, 'Dismiss', { duration: 4000 });
+        this.snackBar.open(msg, 'Fechar', { duration: 4000 });
       },
     });
   }

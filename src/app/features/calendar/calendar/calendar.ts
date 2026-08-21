@@ -107,7 +107,7 @@ export class Calendar implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Falha ao carregar o calendário.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar o calendário.', 'Fechar', { duration: 4000 });
       },
     });
   }

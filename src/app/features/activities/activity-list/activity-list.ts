@@ -111,7 +111,7 @@ export class ActivityList implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Falha ao carregar atividades.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar atividades.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -126,7 +126,7 @@ export class ActivityList implements OnInit {
     });
     ref.afterClosed().subscribe(created => {
       if (created) {
-        this.snackBar.open('Atividade criada.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Atividade criada.', 'Fechar', { duration: 3000 });
         this.load();
       }
     });
