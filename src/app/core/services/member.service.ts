@@ -3,7 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { LabMembership, Member } from '../models';
+import {
+  InviteInfo,
+  InviteResponse,
+  LabMembership,
+  Member,
+  MembershipHistory,
+} from '../models';
 
 export interface AddMemberPayload {
   member_id: number;
@@ -71,9 +77,50 @@ export class MemberService {
 
   updateProfile(
     memberId: number,
-    data: Partial<{ first_name: string; last_name: string; password: string }>,
+    data: Partial<{
+      first_name: string;
+      last_name: string;
+      password: string;
+      lattes_url?: string | null;
+      orcid?: string | null;
+      github_url?: string | null;
+    }>,
   ): Observable<Member> {
     return this.http.put<Member>(`${this.api}/members/${memberId}`, data);
+  }
+
+  /** Histórico de lab membership do próprio usuário (ou de qualquer membro p/ super-admin). */
+  getHistory(memberId: number): Observable<MembershipHistory[]> {
+    return this.http.get<MembershipHistory[]>(`${this.api}/members/${memberId}/history`);
+  }
+
+  /** Desliga (soft-leave) um membro de um lab (MANAGER_ROLES). */
+  leaveMember(labId: number, memberId: number): Observable<LabMembership> {
+    return this.http.post<LabMembership>(
+      `${this.api}/labs/${labId}/members/${memberId}/leave`,
+      {},
+    );
+  }
+
+  /** Reintegra um membro desligado de um lab (MANAGER_ROLES). */
+  rejoinMember(labId: number, memberId: number): Observable<LabMembership> {
+    return this.http.post<LabMembership>(
+      `${this.api}/labs/${labId}/members/${memberId}/rejoin`,
+      {},
+    );
+  }
+
+  /** Gera um convite por link para um lab (MANAGER_ROLES). */
+  createInvite(labId: number, days?: number): Observable<InviteResponse> {
+    return this.http.post<InviteResponse>(
+      `${this.api}/labs/${labId}/invites`,
+      days ? { days } : {},
+    );
+  }
+
+  /** Resolve um convite público por token (404 se inválido/expirado/usado). */
+  getInvite(token: string): Observable<InviteInfo> {
+    return this.http.get<InviteInfo>(`${this.api}/invites/${token}`);
   }
 
   lookupByCpf(cpf: string): Observable<Member> {

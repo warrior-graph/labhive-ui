@@ -39,6 +39,12 @@
                 <mat-icon>person_add</mat-icon>
                 Add Member
               </button>
+              @if (isManager()) {
+                <button mat-stroked-button (click)="openInviteDialog()">
+                  <mat-icon>link</mat-icon>
+                  Generate Invite
+                </button>
+              }
             </div>
           }
 
@@ -80,6 +86,19 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let m">
+                @if (m.left_at) {
+                  <span class="status-chip status-inactive" matTooltip="Left on {{ m.left_at | date: 'mediumDate' }}">
+                    Inactive
+                  </span>
+                } @else {
+                  <span class="status-chip status-active">Active</span>
+                }
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let m">
@@ -93,6 +112,14 @@
                   </button>
                 }
                 @if (canManage(m) && m.member_id !== authService.currentUser()?.id) {
+                  <button
+                    mat-icon-button
+                    [color]="m.left_at ? 'primary' : 'warn'"
+                    [matTooltip]="m.left_at ? 'Reinstate member' : 'Deactivate member'"
+                    (click)="toggleMembership(m)"
+                  >
+                    <mat-icon>{{ m.left_at ? 'restore' : 'person_off' }}</mat-icon>
+                  </button>
                   <button
                     mat-icon-button
                     color="warn"

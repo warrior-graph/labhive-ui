@@ -55,6 +55,7 @@ import {
 } from '../../../shared/components/confirm-dialog/confirm-dialog';
 import { RoleBadge } from '../../../shared/components/role-badge/role-badge';
 import { EditMemberDialog, EditMemberData } from './edit-member-dialog';
+import { InviteDialog } from './invite-dialog';
 import { MemberFormDialog } from './member-form-dialog';
 import { ProjectFormDialog } from './project-form-dialog';
 import { ResearchFormDialog } from './research-form-dialog';
@@ -192,7 +193,7 @@ export class LabDetail implements OnInit, AfterViewInit {
     this.isSuperAdmin() || this.currentLevel() < 4
   );
 
-  readonly memberColumns = ['name', 'email', 'role', 'specialization', 'compensation', 'actions'];
+  readonly memberColumns = ['name', 'email', 'role', 'specialization', 'compensation', 'status', 'actions'];
   readonly projectColumns = ['name', 'status', 'start_date', 'end_date', 'actions'];
   readonly researchColumns = ['name', 'description', 'members', 'actions'];
   readonly articleColumns = ['title', 'status', 'conference', 'submission_deadline', 'in_charge', 'authors', 'actions'];
@@ -329,6 +330,59 @@ export class LabDetail implements OnInit, AfterViewInit {
         },
         error: () => this.snackBar.open('Failed to remove member', 'Dismiss', { duration: 3000 }),
       });
+    });
+  }
+
+  /** Desliga (leave) ou reintegra (rejoin) um membro, conforme left_at. */
+  protected toggleMembership(m: LabMembership): void {
+    const name = `${m.member?.first_name ?? ''} ${m.member?.last_name ?? ''}`.trim();
+    const reinstating = !!m.left_at;
+
+    const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
+      data: reinstating
+        ? {
+            title: 'Reinstate Member',
+            message: `Reinstate ${name}'s membership in this lab?`,
+            confirmLabel: 'Reinstate',
+          }
+        : {
+            title: 'Deactivate Membership',
+            message: `Deactivate ${name}'s membership in this lab? They can be reinstated later.`,
+            confirmLabel: 'Deactivate',
+          },
+    });
+
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      const call = reinstating
+        ? this.memberService.rejoinMember(this.labId, m.member_id)
+        : this.memberService.leaveMember(this.labId, m.member_id);
+      call.subscribe({
+        next: updated => {
+          this.members.update(ms =>
+            ms.map(x => (x.member_id === updated.member_id ? { ...x, ...updated } : x)),
+          );
+          this.snackBar.open(
+            reinstating ? `${name} reinstated` : `${name} deactivated`,
+            'Dismiss',
+            { duration: 2000 },
+          );
+        },
+        error: () =>
+          this.snackBar.open(
+            reinstating ? 'Failed to reinstate member' : 'Failed to deactivate member',
+            'Dismiss',
+            { duration: 3000 },
+          ),
+      });
+    });
+  }
+
+  /** Abre o dialog de geração de convite por link (MANAGER_ROLES). */
+  protected openInviteDialog(): void {
+    this.dialog.open(InviteDialog, {
+      width: '480px',
+      data: { labId: this.labId, labName: this.lab()?.name ?? `Lab #${this.labId}` },
     });
   }
 

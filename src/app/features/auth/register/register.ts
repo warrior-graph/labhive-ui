@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatButton } from '@angular/material/button';
 import { MatCardActions } from '@angular/material/card';
@@ -13,7 +13,9 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelect } from '@angular/material/select';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { InviteInfo } from '../../../core/models';
 import { LaboratoryService } from '../../../core/services/laboratory.service';
+import { MemberService } from '../../../core/services/member.service';
 import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
@@ -38,15 +40,21 @@ import { extractApiError } from '../../../core/utils/api-error';
 })
 export class Register implements OnInit {
   protected readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly labService = inject(LaboratoryService);
+  private readonly memberService = inject(MemberService);
 
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly successEmail = signal<string | null>(null);
   protected readonly pendingApproval = signal(false);
   protected readonly labs = signal<{ id: number; name: string }[]>([]);
+  protected readonly inviteToken = signal<string | null>(null);
+  protected readonly inviteInfo = signal<InviteInfo | null>(null);
+  protected readonly inviteError = signal<string | null>(null);
+  protected readonly inviteLoading = signal(false);
 
   protected readonly isSuperAdmin = computed(
     () => this.authService.currentUser()?.is_super_admin === true,
@@ -69,6 +77,23 @@ export class Register implements OnInit {
       this.labService.getDirectory().subscribe({
         next: labs => this.labs.set(labs),
         error: () => {},
+      });
+    }
+
+    // Resolve ?invite= token (public endpoint)
+    const token = this.route.snapshot.queryParamMap.get('invite');
+    if (token) {
+      this.inviteToken.set(token);
+      this.inviteLoading.set(true);
+      this.memberService.getInvite(token).subscribe({
+        next: info => {
+          this.inviteInfo.set(info);
+          this.inviteLoading.set(false);
+        },
+        error: () => {
+          this.inviteError.set('Convite inválido ou expirado.');
+          this.inviteLoading.set(false);
+        },
       });
     }
   }
@@ -99,11 +124,15 @@ export class Register implements OnInit {
 
     const payload: Record<string, unknown> = { ...rest, cpf: cpfDigits };
 
-    if (!this.isLoggedIn() && desired_lab_id) {
+    if (!this.isLoggedIn() && desired_lab_id && !this.inviteToken()) {
       payload['desired_lab_id'] = desired_lab_id;
     }
     if (is_professor) {
       payload['is_professor'] = true;
+    }
+    // Invite-based registration: backend auto-approves and adds to the lab
+    if (this.inviteToken()) {
+      payload['invite_token'] = this.inviteToken();
     }
 
     this.authService.register(payload as never).subscribe({

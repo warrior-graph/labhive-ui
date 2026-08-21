@@ -3,6 +3,21 @@
 
   @if (authService.currentUser()) {
     <p class="email">{{ authService.currentUser()!.email }}</p>
+    @if (profileLinks().length > 0) {
+      <div class="profile-links">
+        @for (link of profileLinks(); track link.label) {
+          <a
+            [href]="link.url!"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="profile-link"
+          >
+            <mat-icon>link</mat-icon>
+            {{ link.label }}
+          </a>
+        }
+      </div>
+    }
   }
 
   <mat-card>
@@ -36,6 +51,23 @@
           <input matInput type="password" formControlName="password" autocomplete="new-password" />
         </mat-form-field>
 
+        <div class="name-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Lattes URL</mat-label>
+            <input matInput formControlName="lattes_url" placeholder="https://lattes.cnpq.br/..." />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>ORCID</mat-label>
+            <input matInput formControlName="orcid" placeholder="https://orcid.org/0000-..." />
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>GitHub URL</mat-label>
+          <input matInput formControlName="github_url" placeholder="https://github.com/username" />
+        </mat-form-field>
+
         <div class="form-actions">
           <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
             @if (loading()) {
@@ -46,6 +78,42 @@
           </button>
         </div>
       </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Membership History -->
+  <mat-card class="history-card">
+    <mat-card-title>History</mat-card-title>
+    <mat-card-content>
+      @if (historyLoading()) {
+        <mat-progress-spinner mode="indeterminate" diameter="32" />
+      } @else if (history().length === 0) {
+        <p class="empty-text">No lab memberships found.</p>
+      } @else {
+        <div class="history-list">
+          @for (entry of history(); track $index) {
+            <div class="history-entry">
+              <div class="history-entry-header">
+                <span class="lab-name">{{ entry.lab_name }}</span>
+                <span class="history-dates">
+                  {{ entry.joined_at | date: 'mediumDate' }}
+                  @if (entry.left_at) {
+                    — {{ entry.left_at | date: 'mediumDate' }}
+                  }
+                </span>
+              </div>
+              <div class="history-roles">
+                @for (role of entry.roles; track role) {
+                  <span class="history-role-chip">{{ roleLabel(role) }}</span>
+                }
+                @if (entry.roles.length === 0) {
+                  <span class="history-no-role">—</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 

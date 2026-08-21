@@ -26,6 +26,27 @@
           <span class="cursor"></span>
         </h2>
 
+        @if (inviteLoading()) {
+          <div class="invite-banner">
+            <mat-progress-spinner diameter="16" mode="indeterminate" />
+            Checking invite…
+          </div>
+        } @else if (inviteError()) {
+          <div class="invite-banner invite-banner-error">
+            <mat-icon>error_outline</mat-icon>
+            {{ inviteError() }}
+          </div>
+        } @else if (inviteInfo()) {
+          <div class="invite-banner invite-banner-success">
+            <mat-icon>mark_email_read</mat-icon>
+            <span>
+              You've been invited to join
+              <strong>{{ inviteInfo()!.lab_name }}</strong>. Your account will be
+              approved automatically.
+            </span>
+          </div>
+        }
+
         @if (successEmail()) {
           <div class="success-banner">
             ✓ Account created for {{ successEmail() }}. You can create another below.
@@ -86,7 +107,7 @@
             }
           </mat-form-field>
 
-          @if (!isLoggedIn() && labs().length > 0) {
+          @if (!isLoggedIn() && labs().length > 0 && !inviteInfo()) {
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Laboratory</mat-label>
               <mat-select formControlName="desired_lab_id">

@@ -79,4 +79,8 @@
     background: var(--mat-sys-error-container);
     color: var(--mat-sys-on-error-container);
   }
+  &.status-inactive {
+    background: var(--mat-sys-surface-container-highest);
+    color: var(--mat-sys-on-surface-variant);
+  }
 }

@@ -115,6 +115,34 @@ h2 {
   margin-bottom: 16px;
 }
 
+.invite-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 0 4px 4px 0;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
+
+  strong { font-weight: 600; }
+
+  &.invite-banner-success {
+    color: #28c840;
+    background: rgba(40, 200, 64, 0.08);
+    border-left: 3px solid #28c840;
+  }
+
+  &.invite-banner-error {
+    color: #ff7b72;
+    background: rgba(255, 123, 114, 0.08);
+    border-left: 3px solid #ff7b72;
+  }
+}
+
 .pending-banner {
   text-align: center;
   padding: 12px 0 4px;

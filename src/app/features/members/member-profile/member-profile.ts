@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,7 +12,13 @@ import { MatInput } from '@angular/material/input';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { LAB_ROLE_LABELS, LabMembership, LabRole, ROLE_LEVEL } from '../../../core/models';
+import {
+  LAB_ROLE_LABELS,
+  LabMembership,
+  LabRole,
+  MembershipHistory,
+  ROLE_LEVEL,
+} from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MemberService } from '../../../core/services/member.service';
 
@@ -25,6 +32,7 @@ interface LabReportingInfo {
   selector: 'app-member-profile',
   imports: [
     RouterLink,
+    DatePipe,
     ReactiveFormsModule,
     MatCard,
     MatCardTitle,
@@ -49,11 +57,25 @@ export class MemberProfile implements OnInit {
   protected readonly loading = signal(false);
   protected readonly hierarchyLoading = signal(true);
   protected readonly reportingInfo = signal<LabReportingInfo[]>([]);
+  protected readonly history = signal<MembershipHistory[]>([]);
+  protected readonly historyLoading = signal(true);
 
   protected readonly form = this.fb.nonNullable.group({
     first_name: ['', Validators.required],
     last_name: ['', Validators.required],
     password: [''],
+    lattes_url: [''],
+    orcid: [''],
+    github_url: [''],
+  });
+
+  protected readonly profileLinks = computed(() => {
+    const u = this.authService.currentUser();
+    return [
+      { label: 'Lattes', url: u?.lattes_url ?? null },
+      { label: 'ORCID', url: u?.orcid ?? null },
+      { label: 'GitHub', url: u?.github_url ?? null },
+    ].filter(l => !!l.url);
   });
 
   protected roleLabel(role: LabRole | string): string {
@@ -66,6 +88,9 @@ export class MemberProfile implements OnInit {
       this.form.patchValue({
         first_name: user.first_name,
         last_name: user.last_name,
+        lattes_url: user.lattes_url ?? '',
+        orcid: user.orcid ?? '',
+        github_url: user.github_url ?? '',
       });
     }
 
@@ -114,6 +139,18 @@ export class MemberProfile implements OnInit {
       },
       error: () => this.hierarchyLoading.set(false),
     });
+
+    // Membership history
+    const userId = user?.id;
+    if (userId) {
+      this.memberService.getHistory(userId).subscribe({
+        next: history => this.history.set(history),
+        error: () => this.historyLoading.set(false),
+        complete: () => this.historyLoading.set(false),
+      });
+    } else {
+      this.historyLoading.set(false);
+    }
   }
 
   protected submit(): void {
@@ -121,11 +158,15 @@ export class MemberProfile implements OnInit {
     const userId = this.authService.currentUser()?.id;
     if (!userId) return;
     this.loading.set(true);
-    const { first_name, last_name, password } = this.form.getRawValue();
+    const { first_name, last_name, password, lattes_url, orcid, github_url } = this.form.getRawValue();
+    const norm = (v: string): string | null => (v?.trim() ? v.trim() : null);
     this.memberService
       .updateProfile(userId, {
         first_name,
         last_name,
+        lattes_url: norm(lattes_url),
+        orcid: norm(orcid),
+        github_url: norm(github_url),
         ...(password && { password }),
       })
       .subscribe({

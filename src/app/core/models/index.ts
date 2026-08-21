@@ -122,6 +122,9 @@ export interface Member {
   last_name: string;
   email: string;
   cpf?: string | null;
+  lattes_url?: string | null;
+  orcid?: string | null;
+  github_url?: string | null;
   is_super_admin: boolean;
   is_professor: boolean;
   is_approved: boolean;
@@ -145,12 +148,22 @@ export interface LabMembership {
   roles: LabRole[];
   specialization?: string | null;
   joined_at: string;
+  left_at?: string | null;
   compensation_type: CompensationType | null;
   compensation_value: number | null;
   reports_to_id?: number | null;
   resolved_reports_to_id?: number | null;
   member?: Member;
   laboratory?: Laboratory;
+}
+
+/** Histórico de um membro em um laboratório (GET /members/{id}/history). */
+export interface MembershipHistory {
+  lab_id: number;
+  lab_name: string;
+  roles: string[];
+  joined_at: string;
+  left_at: string | null;
 }
 
 export interface Project {
@@ -236,6 +249,21 @@ export interface RegisterRequest {
   password: string;
   is_professor?: boolean;
   desired_lab_id?: number;
+  invite_token?: string;
+}
+
+// ─── Invites DTOs (POST /labs/{labId}/invites, GET /invites/{token}) ─────────
+
+export interface InviteResponse {
+  token: string;
+  expires_at: string;
+  url: string;
+}
+
+export interface InviteInfo {
+  lab_id: number;
+  lab_name: string;
+  expires_at: string;
 }
 
 // ─── Dashboard DTOs (GET /dashboard/summary) ─────────────────────────────────

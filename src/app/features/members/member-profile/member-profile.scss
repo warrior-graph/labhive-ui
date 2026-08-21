@@ -7,7 +7,35 @@ h1 { margin: 0 0 4px; }
 
 .email {
   color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 8px;
+}
+
+.profile-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 0 0 24px;
+}
+
+.profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover { text-decoration: underline; }
 }
 
 mat-card {
@@ -38,6 +66,57 @@ mat-card {
 .hierarchy-card {
   margin-top: 24px;
   padding: 24px;
+}
+
+.history-card {
+  margin-top: 24px;
+  padding: 24px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-entry {
+  padding: 12px 0;
+
+  & + .history-entry {
+    border-top: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.history-entry-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history-dates {
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+}
+
+.history-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.history-role-chip {
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+  font-size: 12px;
+  color: var(--mat-sys-on-surface);
+}
+
+.history-no-role {
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 .empty-text {
