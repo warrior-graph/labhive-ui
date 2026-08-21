@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>New Project</h2>
+<h2 mat-dialog-title>{{ isEdit ? 'Edit Project' : 'New Project' }}</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="submit()" id="project-form" novalidate>
@@ -9,6 +9,23 @@
         <mat-error>Name is required</mat-error>
       }
     </mat-form-field>
+
+    @if (data.labId === null) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Laboratory</mat-label>
+        <mat-select formControlName="lab_id" [disabled]="isEdit">
+          @if ((data.labs?.length ?? 0) === 0) {
+            <mat-option disabled>No laboratories available</mat-option>
+          }
+          @for (lab of data.labs ?? []; track lab.id) {
+            <mat-option [value]="lab.id">{{ lab.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.get('lab_id')?.hasError('required') && form.get('lab_id')?.touched) {
+          <mat-error>Select a laboratory.</mat-error>
+        }
+      </mat-form-field>
+    }
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Description (optional)</mat-label>
@@ -36,12 +53,12 @@
       </mat-form-field>
     </div>
 
-    @if (data.research.length > 0) {
+    @if (research().length > 0) {
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Research Group (optional)</mat-label>
         <mat-select formControlName="research_id">
           <mat-option [value]="null">None</mat-option>
-          @for (r of data.research; track r.id) {
+          @for (r of research(); track r.id) {
             <mat-option [value]="r.id">{{ r.name }}</mat-option>
           }
         </mat-select>
@@ -52,13 +69,16 @@
       <mat-label>Tech Lead</mat-label>
       <mat-select formControlName="tech_lead_id">
         <mat-option [value]="null">— None —</mat-option>
-        @for (tl of data.techLeads; track tl.member_id) {
+        @if (labDataLoading()) {
+          <mat-option disabled>Loading members…</mat-option>
+        }
+        @for (tl of techLeads(); track tl.member_id) {
           <mat-option [value]="tl.member_id">
-            {{ tl.member?.first_name }} {{ tl.member?.last_name }}
+            {{ memberName(tl) }}
           </mat-option>
         }
       </mat-select>
-      @if (data.techLeads.length === 0) {
+      @if (techLeads().length === 0 && !labDataLoading()) {
         <mat-hint>No Tech Lead members found — add a member with Tech Lead role first</mat-hint>
       }
     </mat-form-field>
@@ -76,12 +96,12 @@
     color="primary"
     form="project-form"
     type="submit"
-    [disabled]="loading()"
+    [disabled]="loading() || form.invalid"
   >
     @if (loading()) {
       <mat-progress-spinner diameter="18" mode="indeterminate" />
     } @else {
-      Create
+      {{ isEdit ? 'Save Changes' : 'Create' }}
     }
   </button>
 </mat-dialog-actions>

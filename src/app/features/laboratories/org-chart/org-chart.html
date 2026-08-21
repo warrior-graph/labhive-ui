@@ -4,6 +4,19 @@
       <mat-icon>arrow_back</mat-icon>
     </button>
     <h1>Org Chart</h1>
+
+    <div class="zoom-controls">
+      <button mat-icon-button matTooltip="Reduzir zoom" (click)="zoomOut()">
+        <mat-icon>remove</mat-icon>
+      </button>
+      <button mat-stroked-button matTooltip="Resetar zoom" (click)="resetZoom()">
+        {{ zoomLabel() }}
+      </button>
+      <button mat-icon-button matTooltip="Aumentar zoom" (click)="zoomIn()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
     @if (focusedMemberId() !== null) {
       <button mat-stroked-button class="full-chart-btn" (click)="focus(null)">
         <mat-icon>account_tree</mat-icon>
@@ -55,109 +68,125 @@
   } @else if (treeRoots().length === 0) {
     <p class="empty">No members in this lab.</p>
 
-  } @else if (focusedMemberId() === null) {
-    <!-- ── Tree View ─────────────────────────────────────────────────────── -->
-    <div class="org-tree-view">
-      @for (root of treeRoots(); track root.membership.member_id) {
-        <ng-container
-          [ngTemplateOutlet]="nodeTemplate"
-          [ngTemplateOutletContext]="{ $implicit: root }">
-        </ng-container>
-      }
-    </div>
-
   } @else {
-    <!-- ── Focus View ────────────────────────────────────────────────────── -->
-    <div class="org-focus-view">
-
-      @if (focusedManager(); as mgr) {
-        <!-- Full context: manager → (peers + self) → self's reports, using tree CSS -->
-        <div class="org-node">
-          <div class="org-card sm"
-               [class.current-user]="isCurrentUser(mgr)"
-               (click)="focus(mgr.member_id)">
-            <div class="avatar">{{ initials(mgr) }}</div>
-            <div class="org-name">{{ mgr.member?.first_name }} {{ mgr.member?.last_name }}</div>
-            <div class="org-role">{{ roleLabels(mgr.roles) }}</div>
-          </div>
-          <div class="connector-v"></div>
-          <div class="org-children">
-            @for (peer of focusedPeers(); track peer.membership.member_id) {
-              <div class="org-child-slot">
-                <div class="org-node">
-                  <div class="org-card sm"
-                       [class.current-user]="isCurrentUser(peer.membership)"
-                       (click)="focus(peer.membership.member_id)">
-                    <div class="avatar">{{ initials(peer.membership) }}</div>
-                    <div class="org-name">{{ peer.membership.member?.first_name }} {{ peer.membership.member?.last_name }}</div>
-                    <div class="org-role">{{ roleLabels(peer.membership.roles) }}</div>
-                  </div>
-                </div>
-              </div>
+    <!--
+      Scrollable canvas: drag the background to pan, use the +/- buttons to zoom.
+      The inner wrapper uses margin:auto so the tree stays centred when it fits,
+      but can still be scrolled to BOTH edges when it is wider than the screen
+      (fixes the old "left side unreachable" bug).
+    -->
+    <div class="org-canvas"
+         #canvas
+         [class.panning]="panning()"
+         (mousedown)="onPanStart($event, canvas)"
+         (mousemove)="onPanMove($event, canvas)"
+         (mouseup)="onPanEnd()"
+         (mouseleave)="onPanEnd()">
+      <div class="org-canvas-inner" [style.zoom]="zoom()">
+        @if (focusedMemberId() === null) {
+          <!-- ── Tree View ─────────────────────────────────────────────── -->
+          <div class="org-tree-view">
+            @for (root of treeRoots(); track root.membership.member_id) {
+              <ng-container
+                [ngTemplateOutlet]="nodeTemplate"
+                [ngTemplateOutletContext]="{ $implicit: root }">
+              </ng-container>
             }
-            @if (focusedNode(); as self) {
-              <div class="org-child-slot">
-                <div class="org-node">
-                  <div class="org-card focus-self"
-                       [class.current-user]="isCurrentUser(self.membership)">
-                    <div class="avatar">{{ initials(self.membership) }}</div>
-                    <div class="org-name">{{ self.membership.member?.first_name }} {{ self.membership.member?.last_name }}</div>
-                    <div class="org-role">{{ roleLabels(self.membership.roles) }}</div>
-                  </div>
-                  @if (focusedReports().length > 0) {
-                    <div class="connector-v"></div>
-                    <div class="org-children">
-                      @for (report of focusedReports(); track report.membership.member_id) {
-                        <div class="org-child-slot">
-                          <div class="org-node">
-                            <div class="org-card sm"
-                                 [class.current-user]="isCurrentUser(report.membership)"
-                                 (click)="focus(report.membership.member_id)">
-                              <div class="avatar">{{ initials(report.membership) }}</div>
-                              <div class="org-name">{{ report.membership.member?.first_name }} {{ report.membership.member?.last_name }}</div>
-                              <div class="org-role">{{ roleLabels(report.membership.roles) }}</div>
-                            </div>
-                          </div>
+          </div>
+
+        } @else {
+          <!-- ── Focus View ────────────────────────────────────────────── -->
+          <div class="org-focus-view">
+
+            @if (focusedManager(); as mgr) {
+              <div class="org-node">
+                <div class="org-card sm"
+                     [class.current-user]="isCurrentUser(mgr)"
+                     (click)="focus(mgr.member_id)">
+                  <div class="avatar">{{ initials(mgr) }}</div>
+                  <div class="org-name">{{ mgr.member?.first_name }} {{ mgr.member?.last_name }}</div>
+                  <div class="org-role">{{ roleLabels(mgr.roles) }}</div>
+                </div>
+                <div class="connector-v"></div>
+                <div class="org-children">
+                  @for (peer of focusedPeers(); track peer.membership.member_id) {
+                    <div class="org-child-slot">
+                      <div class="org-node">
+                        <div class="org-card sm"
+                             [class.current-user]="isCurrentUser(peer.membership)"
+                             (click)="focus(peer.membership.member_id)">
+                          <div class="avatar">{{ initials(peer.membership) }}</div>
+                          <div class="org-name">{{ peer.membership.member?.first_name }} {{ peer.membership.member?.last_name }}</div>
+                          <div class="org-role">{{ roleLabels(peer.membership.roles) }}</div>
                         </div>
-                      }
+                      </div>
+                    </div>
+                  }
+                  @if (focusedNode(); as self) {
+                    <div class="org-child-slot">
+                      <div class="org-node">
+                        <div class="org-card focus-self"
+                             [class.current-user]="isCurrentUser(self.membership)">
+                          <div class="avatar">{{ initials(self.membership) }}</div>
+                          <div class="org-name">{{ self.membership.member?.first_name }} {{ self.membership.member?.last_name }}</div>
+                          <div class="org-role">{{ roleLabels(self.membership.roles) }}</div>
+                        </div>
+                        @if (focusedReports().length > 0) {
+                          <div class="connector-v"></div>
+                          <div class="org-children">
+                            @for (report of focusedReports(); track report.membership.member_id) {
+                              <div class="org-child-slot">
+                                <div class="org-node">
+                                  <div class="org-card sm"
+                                       [class.current-user]="isCurrentUser(report.membership)"
+                                       (click)="focus(report.membership.member_id)">
+                                    <div class="avatar">{{ initials(report.membership) }}</div>
+                                    <div class="org-name">{{ report.membership.member?.first_name }} {{ report.membership.member?.last_name }}</div>
+                                    <div class="org-role">{{ roleLabels(report.membership.roles) }}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
                     </div>
                   }
                 </div>
               </div>
-            }
-          </div>
-        </div>
 
-      } @else if (focusedNode(); as self) {
-        <!-- Root node (no manager): self centered + reports below -->
-        <div class="org-node">
-          <div class="org-card focus-self"
-               [class.current-user]="isCurrentUser(self.membership)">
-            <div class="avatar">{{ initials(self.membership) }}</div>
-            <div class="org-name">{{ self.membership.member?.first_name }} {{ self.membership.member?.last_name }}</div>
-            <div class="org-role">{{ roleLabels(self.membership.roles) }}</div>
-          </div>
-          @if (focusedReports().length > 0) {
-            <div class="connector-v"></div>
-            <div class="org-children">
-              @for (report of focusedReports(); track report.membership.member_id) {
-                <div class="org-child-slot">
-                  <div class="org-node">
-                    <div class="org-card sm"
-                         [class.current-user]="isCurrentUser(report.membership)"
-                         (click)="focus(report.membership.member_id)">
-                      <div class="avatar">{{ initials(report.membership) }}</div>
-                      <div class="org-name">{{ report.membership.member?.first_name }} {{ report.membership.member?.last_name }}</div>
-                      <div class="org-role">{{ roleLabels(report.membership.roles) }}</div>
-                    </div>
-                  </div>
+            } @else if (focusedNode(); as self) {
+              <div class="org-node">
+                <div class="org-card focus-self"
+                     [class.current-user]="isCurrentUser(self.membership)">
+                  <div class="avatar">{{ initials(self.membership) }}</div>
+                  <div class="org-name">{{ self.membership.member?.first_name }} {{ self.membership.member?.last_name }}</div>
+                  <div class="org-role">{{ roleLabels(self.membership.roles) }}</div>
                 </div>
-              }
-            </div>
-          }
-        </div>
-      }
+                @if (focusedReports().length > 0) {
+                  <div class="connector-v"></div>
+                  <div class="org-children">
+                    @for (report of focusedReports(); track report.membership.member_id) {
+                      <div class="org-child-slot">
+                        <div class="org-node">
+                          <div class="org-card sm"
+                               [class.current-user]="isCurrentUser(report.membership)"
+                               (click)="focus(report.membership.member_id)">
+                            <div class="avatar">{{ initials(report.membership) }}</div>
+                            <div class="org-name">{{ report.membership.member?.first_name }} {{ report.membership.member?.last_name }}</div>
+                            <div class="org-role">{{ roleLabels(report.membership.roles) }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
 
+          </div>
+        }
+      </div>
     </div>
   }
 </div>

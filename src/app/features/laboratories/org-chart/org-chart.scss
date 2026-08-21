@@ -32,15 +32,57 @@
   padding: 48px 0;
 }
 
+// ─── Scroll canvas + zoom ──────────────────────────────────────────────────
+
+.org-canvas {
+  overflow: auto;
+  display: flex;
+  min-height: 60vh;
+  max-height: calc(100vh - 180px);
+  cursor: grab;
+  user-select: none;
+  background:
+    radial-gradient(circle, var(--mat-sys-outline-variant) 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+
+  &.panning {
+    cursor: grabbing;
+  }
+
+  // Cards remain clickable while the background pans
+  .org-card {
+    cursor: pointer;
+    user-select: auto;
+  }
+}
+
+.org-canvas-inner {
+  margin: auto; // centres when it fits; keeps both edges scrollable when it overflows
+  flex-shrink: 0;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 24px;
+
+  button {
+    line-height: 1;
+  }
+}
+
 // ─── Tree View ────────────────────────────────────────────────────────────────
 
 .org-tree-view {
   display: flex;
   flex-direction: row;
-  justify-content: center;
   align-items: flex-start;
   padding: 16px 24px 48px;
-  overflow-x: auto;
   gap: 32px;
 }
 
@@ -197,5 +239,4 @@
   flex-direction: column;
   align-items: center;
   padding: 32px 24px 48px;
-  overflow-x: auto;
 }

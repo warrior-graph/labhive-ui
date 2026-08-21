@@ -4,6 +4,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatTooltip } from '@angular/material/tooltip';
 
 import { LAB_ROLE_LABELS, LabMembership, LabRole, ROLE_LEVEL } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -17,7 +18,15 @@ interface TreeNode {
 
 @Component({
   selector: 'app-org-chart',
-  imports: [RouterLink, NgTemplateOutlet, MatButton, MatIconButton, MatIcon, MatProgressSpinner],
+  imports: [
+    RouterLink,
+    NgTemplateOutlet,
+    MatButton,
+    MatIconButton,
+    MatIcon,
+    MatProgressSpinner,
+    MatTooltip,
+  ],
   templateUrl: './org-chart.html',
   styleUrl: './org-chart.scss',
 })
@@ -32,6 +41,11 @@ export class OrgChart implements OnInit {
 
   /** null = full tree view; a member_id = focus view centred on that person */
   protected readonly focusedMemberId = signal<number | null>(null);
+
+  /** Zoom factor (CSS zoom, keeps scroll area correct) */
+  protected readonly zoom = signal(1);
+  protected readonly panning = signal(false);
+  private panStart = { x: 0, y: 0, scrollLeft: 0, scrollTop: 0 };
 
   protected readonly memberMap = computed(() =>
     new Map(this.memberships().map(m => [m.member_id, m]))
@@ -62,6 +76,48 @@ export class OrgChart implements OnInit {
 
   protected focus(id: number | null): void {
     this.focusedMemberId.set(id);
+  }
+
+  // ── Zoom ────────────────────────────────────────────────────────────────
+
+  protected zoomIn(): void {
+    this.zoom.set(Math.min(1.5, +(this.zoom() + 0.2).toFixed(2)));
+  }
+
+  protected zoomOut(): void {
+    this.zoom.set(Math.max(0.5, +(this.zoom() - 0.2).toFixed(2)));
+  }
+
+  protected resetZoom(): void {
+    this.zoom.set(1);
+  }
+
+  protected zoomLabel(): string {
+    return `${Math.round(this.zoom() * 100)}%`;
+  }
+
+  // ── Drag to pan ─────────────────────────────────────────────────────────
+
+  protected onPanStart(event: MouseEvent, canvas: HTMLElement): void {
+    const target = event.target as HTMLElement;
+    if (target.closest('.org-card')) return; // não sequestrar cliques nos cards
+    this.panning.set(true);
+    this.panStart = {
+      x: event.clientX,
+      y: event.clientY,
+      scrollLeft: canvas.scrollLeft,
+      scrollTop: canvas.scrollTop,
+    };
+  }
+
+  protected onPanMove(event: MouseEvent, canvas: HTMLElement): void {
+    if (!this.panning()) return;
+    canvas.scrollLeft = this.panStart.scrollLeft - (event.clientX - this.panStart.x);
+    canvas.scrollTop = this.panStart.scrollTop - (event.clientY - this.panStart.y);
+  }
+
+  protected onPanEnd(): void {
+    this.panning.set(false);
   }
 
   protected roleLabel(role: string): string {

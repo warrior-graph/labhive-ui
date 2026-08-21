@@ -4,6 +4,17 @@
       <mat-icon>workspaces</mat-icon>
       Projetos
     </h1>
+    @if (canManageProjects()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openCreate()"
+        [disabled]="labsLoading() || createableLabs().length === 0"
+      >
+        <mat-icon>add</mat-icon>
+        Novo projeto
+      </button>
+    }
   </div>
 
   <div class="filter-bar">
@@ -51,6 +62,26 @@
           </a>
           <span class="item-badges">
             <span [class]="'status-chip status-' + p.status">{{ statusLabel(p.status) }}</span>
+            @if (canManageProjects()) {
+              <button mat-icon-button [matTooltip]="'Editar'" (click)="openEdit(p)">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+            @if (canDeleteProject()) {
+              <button
+                mat-icon-button
+                color="warn"
+                [matTooltip]="'Excluir'"
+                (click)="deleteProject(p)"
+                [disabled]="deleting().has(p.id)"
+              >
+                @if (deleting().has(p.id)) {
+                  <mat-progress-spinner diameter="18" mode="indeterminate" />
+                } @else {
+                  <mat-icon>delete</mat-icon>
+                }
+              </button>
+            }
           </span>
         </li>
       }

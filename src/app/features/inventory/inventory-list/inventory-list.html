@@ -4,6 +4,17 @@
       <mat-icon>inventory_2</mat-icon>
       Inventário
     </h1>
+    @if (canManageInventory()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openCreate()"
+        [disabled]="labsLoading() || createableLabs().length === 0"
+      >
+        <mat-icon>add</mat-icon>
+        Novo item
+      </button>
+    }
   </div>
 
   @if (loading()) {
@@ -33,6 +44,24 @@
           </a>
           <span class="item-badges">
             <span [class]="'status-chip status-' + i.condition">{{ conditionLabel(i.condition) }}</span>
+            @if (canManageInventory()) {
+              <button mat-icon-button [matTooltip]="'Editar'" (click)="openEdit(i)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                [matTooltip]="'Excluir'"
+                (click)="deleteItem(i)"
+                [disabled]="deleting().has(i.id)"
+              >
+                @if (deleting().has(i.id)) {
+                  <mat-progress-spinner diameter="18" mode="indeterminate" />
+                } @else {
+                  <mat-icon>delete</mat-icon>
+                }
+              </button>
+            }
           </span>
         </li>
       }

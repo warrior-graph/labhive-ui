@@ -3,6 +3,23 @@
 <mat-dialog-content>
   <form [formGroup]="form" novalidate>
 
+    @if (data.labId === null) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Laboratory</mat-label>
+        <mat-select formControlName="lab_id">
+          @if ((data.labs?.length ?? 0) === 0) {
+            <mat-option disabled>No laboratories available</mat-option>
+          }
+          @for (lab of data.labs ?? []; track lab.id) {
+            <mat-option [value]="lab.id">{{ lab.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.get('lab_id')?.hasError('required') && form.get('lab_id')?.touched) {
+          <mat-error>Laboratory is required</mat-error>
+        }
+      </mat-form-field>
+    }
+
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Name</mat-label>
       <input matInput formControlName="name" />
@@ -45,8 +62,16 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Assigned To (Member ID)</mat-label>
-      <input matInput type="number" formControlName="assigned_to_id" />
+      <mat-label>Assigned To</mat-label>
+      <mat-select formControlName="assigned_to_id">
+        <mat-option [value]="null">— Unassigned —</mat-option>
+        @if (membersLoading()) {
+          <mat-option disabled>Loading members…</mat-option>
+        }
+        @for (m of labMembers(); track m.member_id) {
+          <mat-option [value]="m.member_id">{{ memberName(m) }}</mat-option>
+        }
+      </mat-select>
       <mat-hint>Optional — leave blank if unassigned</mat-hint>
     </mat-form-field>
 
