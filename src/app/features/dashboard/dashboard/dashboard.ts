@@ -9,10 +9,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import {
+  Announcement,
   DashboardDeadline,
   DashboardPendingMember,
   DashboardSummary,
 } from '../../../core/models';
+import { AnnouncementsService } from '../../../core/services/announcements.service';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { MemberService } from '../../../core/services/member.service';
 
@@ -42,10 +44,13 @@ export class Dashboard implements OnInit {
   protected readonly summary = signal<DashboardSummary | null>(null);
   protected readonly loading = signal(true);
   protected readonly approving = signal<Set<number>>(new Set());
+  /** Até 2 avisos fixados, exibidos na faixa abaixo dos prazos. */
+  protected readonly pinnedAnnouncements = signal<Announcement[]>([]);
 
   protected readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
   private readonly memberService = inject(MemberService);
+  private readonly announcementsService = inject(AnnouncementsService);
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly userName = computed(() => {
@@ -84,6 +89,7 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadPinnedAnnouncements();
   }
 
   protected load(): void {
@@ -97,6 +103,13 @@ export class Dashboard implements OnInit {
         this.loading.set(false);
         this.snackBar.open('Failed to load dashboard.', 'Dismiss', { duration: 4000 });
       },
+    });
+  }
+
+  protected loadPinnedAnnouncements(): void {
+    this.announcementsService.getAnnouncements(true).subscribe({
+      next: list => this.pinnedAnnouncements.set(list.slice(0, 2)),
+      error: () => this.pinnedAnnouncements.set([]),
     });
   }
 

@@ -1,0 +1,128 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>campaign</mat-icon>
+      Avisos
+    </h1>
+    @if (canManage()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openCreate()"
+        [disabled]="labsLoading() || manageableLabs().length === 0"
+      >
+        <mat-icon>add</mat-icon>
+        Novo aviso
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (announcements().length === 0) {
+    <p class="empty-state">Nada por aqui.</p>
+  } @else {
+    @if (pinned().length > 0) {
+      <h2 class="section-title">
+        <mat-icon>push_pin</mat-icon>
+        Fixados
+      </h2>
+      <div class="announcement-list">
+        @for (a of pinned(); track a.id) {
+          <div class="announcement-item" [class.announcement-item-pinned]="a.is_pinned">
+            <div class="announcement-main">
+              <span class="announcement-title">
+                @if (a.is_pinned) {
+                  <mat-icon class="pin-icon">push_pin</mat-icon>
+                }
+                {{ a.title }}
+              </span>
+              @if (a.body) {
+                <p class="announcement-body">{{ a.body }}</p>
+              }
+              <span class="announcement-meta">
+                {{ a.author_name ?? '—' }}
+                · {{ a.lab_name ?? '—' }}
+                · {{ a.created_at | date:'mediumDate' }}
+              </span>
+            </div>
+            <div class="announcement-actions">
+              @if (a.is_pinned) {
+                <span class="chip-pinned">Fixado</span>
+              }
+              @if (canEdit(a)) {
+                <button mat-icon-button [matTooltip]="'Editar'" (click)="openEdit(a)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  [matTooltip]="'Excluir'"
+                  (click)="remove(a)"
+                  [disabled]="deleting().has(a.id)"
+                >
+                  @if (deleting().has(a.id)) {
+                    <mat-progress-spinner diameter="18" mode="indeterminate" />
+                  } @else {
+                    <mat-icon>delete</mat-icon>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (recent().length > 0) {
+      <h2 class="section-title">Recentes</h2>
+      <div class="announcement-list">
+        @for (a of recent(); track a.id) {
+          <div class="announcement-item" [class.announcement-item-pinned]="a.is_pinned">
+            <div class="announcement-main">
+              <span class="announcement-title">
+                @if (a.is_pinned) {
+                  <mat-icon class="pin-icon">push_pin</mat-icon>
+                }
+                {{ a.title }}
+              </span>
+              @if (a.body) {
+                <p class="announcement-body">{{ a.body }}</p>
+              }
+              <span class="announcement-meta">
+                {{ a.author_name ?? '—' }}
+                · {{ a.lab_name ?? '—' }}
+                · {{ a.created_at | date:'mediumDate' }}
+              </span>
+            </div>
+            <div class="announcement-actions">
+              @if (a.is_pinned) {
+                <span class="chip-pinned">Fixado</span>
+              }
+              @if (canEdit(a)) {
+                <button mat-icon-button [matTooltip]="'Editar'" (click)="openEdit(a)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  [matTooltip]="'Excluir'"
+                  (click)="remove(a)"
+                  [disabled]="deleting().has(a.id)"
+                >
+                  @if (deleting().has(a.id)) {
+                    <mat-progress-spinner diameter="18" mode="indeterminate" />
+                  } @else {
+                    <mat-icon>delete</mat-icon>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

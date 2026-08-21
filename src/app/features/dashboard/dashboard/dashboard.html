@@ -33,6 +33,24 @@
         </div>
       </div>
     }
+
+    @let pinned = pinnedAnnouncements();
+    @if (pinned.length > 0) {
+      <div class="announcement-strip">
+        <span class="strip-label">
+          <mat-icon>campaign</mat-icon>
+          Avisos fixados
+        </span>
+        <div class="strip-items">
+          @for (a of pinned; track a.id) {
+            <a class="strip-item" routerLink="/announcements">
+              <mat-icon class="announcement-pin">push_pin</mat-icon>
+              <span class="strip-title">{{ a.title }}</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
     <div class="dashboard">
       @if (s.is_manager) {
         <!-- ── Manager view ── -->

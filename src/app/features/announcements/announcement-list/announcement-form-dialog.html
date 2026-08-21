@@ -1,0 +1,68 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar aviso' : 'Novo aviso' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="announcement-form">
+    @if (error()) {
+      <div class="form-error">{{ error() }}</div>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Título</mat-label>
+      <input matInput formControlName="title" placeholder="Ex.: Reunião semanal" required />
+      @if (form.controls.title.invalid && form.controls.title.touched) {
+        <mat-error>Título é obrigatório.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Corpo (opcional)</mat-label>
+      <textarea matInput formControlName="body" rows="4" placeholder="Detalhes do aviso…"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Laboratório</mat-label>
+      <mat-select formControlName="lab_id" [disabled]="isEdit">
+        @if (data.labs.length === 0) {
+          <mat-option disabled>Sem laboratórios disponíveis</mat-option>
+        }
+        @for (lab of data.labs; track lab.id) {
+          <mat-option [value]="lab.id">{{ lab.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.lab_id.invalid && form.controls.lab_id.touched) {
+        <mat-error>Selecione um laboratório.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Público-alvo</mat-label>
+      <mat-select formControlName="audience" multiple>
+        @for (r of roles; track r.value) {
+          <mat-option [value]="r.value">{{ r.label }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Vazio = visível para todos os membros do laboratório</mat-hint>
+    </mat-form-field>
+
+    <mat-checkbox formControlName="is_pinned" class="pin-check">
+      Fixar no topo (destaque no dashboard)
+    </mat-checkbox>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="dialogRef.close()">Cancelar</button>
+  <button
+    mat-raised-button
+    color="primary"
+    type="submit"
+    (click)="submit()"
+    [disabled]="form.invalid || loading()"
+  >
+    @if (loading()) {
+      <mat-progress-spinner diameter="18" mode="indeterminate" />
+    } @else {
+      {{ isEdit ? 'Salvar' : 'Criar' }}
+    }
+  </button>
+</mat-dialog-actions>

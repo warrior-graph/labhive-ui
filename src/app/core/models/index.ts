@@ -359,6 +359,39 @@ export interface CalendarEvent {
   date: string;
 }
 
+
+// ─── Announcements & Notifications DTOs (GET /announcements, /notifications) ─
+
+export interface Announcement {
+  id: number;
+  title: string;
+  body: string | null;
+  lab_id: number;
+  lab_name: string | null;
+  audience: string[];
+  is_pinned: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  author_id: number | null;
+  author_name: string | null;
+}
+
+export type AppNotificationType =
+  | 'member_pending'
+  | 'member_approved'
+  | 'announcement'
+  | 'activity_deadline';
+
+export interface AppNotification {
+  id: number;
+  type: AppNotificationType;
+  message: string;
+  link: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
 // ─── Activity DTOs (GET /labs/{labId}/activities/{activityId}) ───────────────
 
 export interface ActivityPerson {

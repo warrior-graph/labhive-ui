@@ -11,6 +11,56 @@
   </button>
 
   @if (authService.isAuthenticated()) {
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="notifMenu"
+      (menuOpened)="loadNotifications()"
+      aria-label="Notificações"
+      matTooltip="Notificações"
+    >
+      <mat-icon
+        [matBadge]="unreadCount()"
+        [matBadgeHidden]="unreadCount() === 0"
+        matBadgeOverlap="false"
+        matBadgeColor="warn"
+      >notifications</mat-icon>
+    </button>
+    <mat-menu #notifMenu="matMenu" panelClass="notif-panel" xPosition="before">
+      <div class="notif-header">
+        <span class="notif-title">Notificações</span>
+        <button mat-button class="notif-action" (click)="markAllRead()">Marcar todas como lidas</button>
+      </div>
+      <mat-divider />
+      @if (notifications().length === 0) {
+        <div class="notif-empty">Sem notificações.</div>
+      } @else {
+        @for (n of notifications(); track n.id) {
+          <button
+            mat-menu-item
+            class="notif-item"
+            [class.notif-item-unread]="!n.is_read"
+            (click)="openNotification(n)"
+          >
+            <mat-icon class="notif-icon">{{ notificationIcon(n.type) }}</mat-icon>
+            <span class="notif-text">
+              <span class="notif-message">{{ n.message }}</span>
+              <span class="notif-time">{{ relativeTime(n.created_at) }}</span>
+            </span>
+            @if (!n.is_read) {
+              <span class="notif-dot"></span>
+            }
+          </button>
+        }
+      }
+      <mat-divider />
+      <button mat-menu-item class="notif-item" (click)="loadNotifications()">
+        <mat-icon class="notif-icon">refresh</mat-icon>
+        <span class="notif-text">
+          <span class="notif-message">Ver todas</span>
+          <span class="notif-time">Atualizar lista</span>
+        </span>
+      </button>
+    </mat-menu>
     <a mat-icon-button routerLink="/calendar" aria-label="Calendário">
       <mat-icon>calendar_month</mat-icon>
     </a>

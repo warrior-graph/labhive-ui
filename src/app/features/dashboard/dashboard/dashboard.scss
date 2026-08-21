@@ -106,6 +106,26 @@
   white-space: nowrap;
 }
 
+// ── Avisos fixados (strip) ─────────────────────────────────────────────────
+.announcement-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 40%, var(--mat-sys-outline-variant));
+  background: color-mix(in srgb, var(--mat-sys-primary) 8%, var(--mat-sys-surface-container));
+}
+
+.announcement-pin {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--mat-sys-primary);
+}
+
 // ── Stat cards ──────────────────────────────────────────────────────────────
 .stat-grid {
   display: grid;

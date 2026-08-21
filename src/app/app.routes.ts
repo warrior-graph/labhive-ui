@@ -27,6 +27,14 @@ export const routes: Routes = [
       import('./features/calendar/calendar/calendar').then(m => m.Calendar),
   },
   {
+    path: 'announcements',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/announcements/announcement-list/announcement-list').then(
+        m => m.AnnouncementList,
+      ),
+  },
+  {
     path: 'activities',
     canActivate: [authGuard],
     loadComponent: () =>

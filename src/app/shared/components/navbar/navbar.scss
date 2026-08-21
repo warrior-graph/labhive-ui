@@ -22,3 +22,92 @@
   color: var(--mat-sys-on-surface-variant);
   pointer-events: none;
 }
+
+// ── Bell badge ──────────────────────────────────────────────────────────────
+.mat-badge-content {
+  font-family: var(--font-mono);
+}
+
+// ── Notification dropdown ───────────────────────────────────────────────────
+// O painel do mat-menu é renderizado no overlay (fora do componente);
+// por isso as regras do painel usam ::ng-deep, restritas à classe .notif-panel.
+:host {
+  ::ng-deep .notif-panel {
+    min-width: 320px;
+    max-width: 380px;
+  }
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 8px 16px;
+}
+
+.notif-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.notif-action {
+  font-size: 12px;
+}
+
+.notif-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.notif-item {
+  height: auto !important;
+  min-height: 48px;
+  padding: 8px 16px !important;
+  white-space: normal;
+  line-height: 1.35;
+
+  &.notif-item-unread {
+    background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
+  }
+}
+
+.notif-icon {
+  color: var(--mat-sys-primary);
+  margin-right: 12px;
+}
+
+.notif-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.notif-message {
+  font-size: 13px;
+  color: var(--mat-sys-on-surface);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mat-sys-error);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
