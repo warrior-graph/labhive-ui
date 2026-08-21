@@ -124,7 +124,7 @@ export class ProjectList implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Failed to load projects.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar os projetos.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -144,7 +144,7 @@ export class ProjectList implements OnInit {
     });
     ref.afterClosed().subscribe(created => {
       if (created) {
-        this.snackBar.open('Projeto criado.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Projeto criado.', 'Fechar', { duration: 3000 });
         this.load();
       }
     });
@@ -164,19 +164,19 @@ export class ProjectList implements OnInit {
         });
         ref.afterClosed().subscribe(updated => {
           if (updated) {
-            this.snackBar.open('Projeto atualizado.', 'Dismiss', { duration: 3000 });
+            this.snackBar.open('Projeto atualizado.', 'Fechar', { duration: 3000 });
             this.load();
           }
         });
       },
       error: () =>
-        this.snackBar.open('Falha ao carregar o projeto.', 'Dismiss', { duration: 4000 }),
+        this.snackBar.open('Falha ao carregar o projeto.', 'Fechar', { duration: 4000 }),
     });
   }
 
   protected deleteProject(p: DashboardProjectItem): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Delete Project', message: `Delete project "${p.name}"?` },
+      data: { title: 'Excluir projeto', message: `Excluir o projeto "${p.name}"?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
@@ -192,7 +192,7 @@ export class ProjectList implements OnInit {
             n.delete(p.id);
             return n;
           });
-          this.snackBar.open('Projeto excluído.', 'Dismiss', { duration: 3000 });
+          this.snackBar.open('Projeto excluído.', 'Fechar', { duration: 3000 });
           this.load();
         },
         error: () => {
@@ -201,7 +201,7 @@ export class ProjectList implements OnInit {
             n.delete(p.id);
             return n;
           });
-          this.snackBar.open('Falha ao excluir o projeto.', 'Dismiss', { duration: 4000 });
+          this.snackBar.open('Falha ao excluir o projeto.', 'Fechar', { duration: 4000 });
         },
       });
     });

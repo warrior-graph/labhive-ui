@@ -99,7 +99,7 @@ export class ArticleDetail implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Article not found', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Artigo não encontrado', 'Fechar', { duration: 3000 });
         this.router.navigate(['/labs', this.labId], { queryParams: { tab: 3 } });
       },
     });
@@ -144,11 +144,11 @@ export class ArticleDetail implements OnInit {
         this.article.set(updated);
         this.saving.set(false);
         this.editMode.set(false);
-        this.snackBar.open('Article updated', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Artigo atualizado', 'Fechar', { duration: 2000 });
       },
       error: (err: any) => {
         this.saving.set(false);
-        this.snackBar.open(err.error?.message ?? 'Failed to update article', 'Dismiss', {
+        this.snackBar.open(err.error?.message ?? 'Falha ao atualizar o artigo', 'Fechar', {
           duration: 3000,
         });
       },

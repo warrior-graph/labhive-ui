@@ -65,7 +65,7 @@ export class LabList implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.snackBar.open('Failed to load laboratories', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Falha ao carregar laboratórios', 'Fechar', { duration: 3000 });
         this.loading.set(false);
       },
     });
@@ -86,11 +86,11 @@ export class LabList implements OnInit {
       next: updated => {
         this.labs.update(list => list.map(l => l.id === lab.id ? updated : l));
         this.toggling.update(s => { const n = new Set(s); n.delete(lab.id); return n; });
-        this.snackBar.open(`${lab.name} ${updated.is_active ? 'activated' : 'deactivated'}.`, 'Dismiss', { duration: 3000 });
+        this.snackBar.open(`${lab.name} ${updated.is_active ? 'ativado' : 'desativado'}.`, 'Fechar', { duration: 3000 });
       },
       error: () => {
         this.toggling.update(s => { const n = new Set(s); n.delete(lab.id); return n; });
-        this.snackBar.open('Failed to update laboratory status.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Falha ao atualizar o status do laboratório.', 'Fechar', { duration: 3000 });
       },
     });
   }

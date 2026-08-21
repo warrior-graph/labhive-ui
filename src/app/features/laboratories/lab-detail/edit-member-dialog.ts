@@ -45,7 +45,7 @@ export interface EditMemberData {
     MatProgressSpinner,
   ],
   template: `
-    <h2 mat-dialog-title>Edit Member</h2>
+    <h2 mat-dialog-title>Editar Membro</h2>
     <mat-dialog-content>
       <p class="member-name">
         {{ data.membership.member?.first_name }} {{ data.membership.member?.last_name }}
@@ -53,7 +53,7 @@ export interface EditMemberData {
 
       <form [formGroup]="form">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Role</mat-label>
+          <mat-label>Papel</mat-label>
           <mat-select formControlName="roles" multiple>
             @for (r of roles(); track r.value) {
               <mat-option [value]="r.value">{{ r.label }}</mat-option>
@@ -62,14 +62,14 @@ export interface EditMemberData {
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Specialization</mat-label>
+          <mat-label>Especialização</mat-label>
           <input matInput formControlName="specialization" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Compensation Type</mat-label>
+          <mat-label>Tipo de remuneração</mat-label>
           <mat-select formControlName="compensation_type">
-            <mat-option value="">None</mat-option>
+            <mat-option value="">Nenhum</mat-option>
             @for (ct of compensationTypes; track ct.value) {
               <mat-option [value]="ct.value">{{ ct.label }}</mat-option>
             }
@@ -78,16 +78,16 @@ export interface EditMemberData {
 
         @if (form.value.compensation_type) {
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Compensation Value</mat-label>
+            <mat-label>Valor da remuneração</mat-label>
             <input matInput type="number" formControlName="compensation_value" />
           </mat-form-field>
         }
 
         @if (data.requesterRoleLevel <= 0) {
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Reports To</mat-label>
+            <mat-label>Reporta a</mat-label>
             <mat-select formControlName="reports_to_id">
-              <mat-option [value]="null">— Default (by role level) —</mat-option>
+              <mat-option [value]="null">— Padrão (por nível de papel) —</mat-option>
               @for (m of data.labMembers; track m.member_id) {
                 <mat-option [value]="m.member_id">
                   {{ m.member?.first_name }} {{ m.member?.last_name }} ({{ m.roles.join(', ') }})
@@ -104,7 +104,7 @@ export interface EditMemberData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
+      <button mat-button (click)="dialogRef.close()">Cancelar</button>
       <button
         mat-raised-button
         color="primary"
@@ -114,7 +114,7 @@ export interface EditMemberData {
         @if (loading()) {
           <mat-progress-spinner diameter="18" mode="indeterminate" />
         } @else {
-          Save
+          Salvar
         }
       </button>
     </mat-dialog-actions>
@@ -137,9 +137,9 @@ export class EditMemberDialog implements OnInit {
   protected readonly roles = signal<{ value: string; label: string }[]>([]);
 
   protected readonly compensationTypes = [
-    { value: CompensationType.PROJECT_SALARY, label: 'Project Salary' },
-    { value: CompensationType.RESEARCH_GRANT, label: 'Research Grant' },
-    { value: CompensationType.VOLUNTEER, label: 'Volunteer' },
+    { value: CompensationType.PROJECT_SALARY, label: 'Salário de projeto' },
+    { value: CompensationType.RESEARCH_GRANT, label: 'Bolsa de pesquisa' },
+    { value: CompensationType.VOLUNTEER, label: 'Voluntário' },
   ];
 
   protected readonly form = this.fb.nonNullable.group({
@@ -178,7 +178,7 @@ export class EditMemberDialog implements OnInit {
       .subscribe({
         next: updated => this.dialogRef.close(updated),
         error: (err: HttpErrorResponse) => {
-          this.error.set(err.error?.message ?? 'Failed to update member.');
+          this.error.set(err.error?.message ?? 'Falha ao atualizar membro.');
           this.loading.set(false);
         },
       });

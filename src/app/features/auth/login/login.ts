@@ -49,9 +49,9 @@ export class Login {
       next: () => this.router.navigate(['/labs']),
       error: (err: HttpErrorResponse) => {
         if (err.status === 403) {
-          this.error.set('Your account is pending approval by your lab professor. Please try again after you are approved.');
+          this.error.set('Sua conta está aguardando aprovação pelo professor do laboratório. Tente novamente depois que for aprovado(a).');
         } else {
-          this.error.set(extractApiError(err, 'Login failed. Please try again.'));
+          this.error.set(extractApiError(err, 'Falha no login. Tente novamente.'));
         }
         this.loading.set(false);
       },

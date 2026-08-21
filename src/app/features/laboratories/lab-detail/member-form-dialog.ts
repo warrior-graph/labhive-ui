@@ -57,9 +57,9 @@ export class MemberFormDialog implements OnInit {
   protected readonly roles = signal<{ value: string; label: string }[]>([]);
 
   protected readonly compensationTypes = [
-    { value: CompensationType.PROJECT_SALARY, label: 'Project Salary' },
-    { value: CompensationType.RESEARCH_GRANT, label: 'Research Grant' },
-    { value: CompensationType.VOLUNTEER, label: 'Volunteer' },
+    { value: CompensationType.PROJECT_SALARY, label: 'Salário de projeto' },
+    { value: CompensationType.RESEARCH_GRANT, label: 'Bolsa de pesquisa' },
+    { value: CompensationType.VOLUNTEER, label: 'Voluntário' },
   ];
 
   protected readonly form = this.fb.nonNullable.group({
@@ -114,7 +114,7 @@ export class MemberFormDialog implements OnInit {
       },
       error: () => {
         this.foundMember.set(null);
-        this.lookupError.set('No member found with this CPF. Create their account first via the Register page.');
+        this.lookupError.set('Nenhum membro encontrado com este CPF. Crie a conta dele(a) primeiro pela página de Cadastro.');
         this.lookupLoading.set(false);
       },
     });
@@ -138,7 +138,7 @@ export class MemberFormDialog implements OnInit {
       .subscribe({
         next: membership => this.dialogRef.close(membership),
         error: (err: HttpErrorResponse) => {
-          this.error.set(err.error?.message ?? 'Failed to add member.');
+          this.error.set(err.error?.message ?? 'Falha ao adicionar membro.');
           this.loading.set(false);
         },
       });

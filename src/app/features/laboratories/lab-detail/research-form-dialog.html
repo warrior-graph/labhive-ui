@@ -1,25 +1,25 @@
-<h2 mat-dialog-title>New Research Group</h2>
+<h2 mat-dialog-title>Novo Grupo de Pesquisa</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="submit()" id="research-form" novalidate>
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Name</mat-label>
+      <mat-label>Nome</mat-label>
       <input matInput formControlName="name" />
       @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-        <mat-error>Name is required</mat-error>
+        <mat-error>Nome é obrigatório</mat-error>
       }
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Description (optional)</mat-label>
+      <mat-label>Descrição (opcional)</mat-label>
       <textarea matInput formControlName="description" rows="3"></textarea>
     </mat-form-field>
 
     @if (data.labMembers.length > 0) {
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Area Manager (optional)</mat-label>
+        <mat-label>Gerente de Área (opcional)</mat-label>
         <mat-select formControlName="manager_id">
-          <mat-option [value]="null">None</mat-option>
+          <mat-option [value]="null">Nenhum</mat-option>
           @for (m of data.labMembers; track m.member_id) {
             <mat-option [value]="m.member_id">
               {{ m.member?.first_name }} {{ m.member?.last_name }}
@@ -36,7 +36,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="dialogRef.close()">Cancel</button>
+  <button mat-button (click)="dialogRef.close()">Cancelar</button>
   <button
     mat-raised-button
     color="primary"
@@ -47,7 +47,7 @@
     @if (loading()) {
       <mat-progress-spinner diameter="18" mode="indeterminate" />
     } @else {
-      Create
+      Criar
     }
   </button>
 </mat-dialog-actions>

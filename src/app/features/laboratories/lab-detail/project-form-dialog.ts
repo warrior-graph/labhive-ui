@@ -72,10 +72,10 @@ export class ProjectFormDialog implements OnInit {
   protected readonly techLeads = signal<LabMembership[]>(this.data.techLeads ?? []);
 
   protected readonly statuses = [
-    { value: ProjectStatus.PLANNED, label: 'Planned' },
-    { value: ProjectStatus.ACTIVE, label: 'Active' },
-    { value: ProjectStatus.COMPLETED, label: 'Completed' },
-    { value: ProjectStatus.CANCELLED, label: 'Cancelled' },
+    { value: ProjectStatus.PLANNED, label: 'Planejado' },
+    { value: ProjectStatus.ACTIVE, label: 'Ativo' },
+    { value: ProjectStatus.COMPLETED, label: 'Concluído' },
+    { value: ProjectStatus.CANCELLED, label: 'Cancelado' },
   ];
 
   protected readonly form = this.fb.nonNullable.group({
@@ -114,7 +114,7 @@ export class ProjectFormDialog implements OnInit {
     const p = m.member;
     return p
       ? [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
-      : `Member #${m.member_id}`;
+      : `Membro #${m.member_id}`;
   }
 
   private loadLabData(labId: number): void {
@@ -177,7 +177,7 @@ export class ProjectFormDialog implements OnInit {
       this.form.getRawValue();
     const labId = this.data.labId ?? lab_id;
     if (!labId) {
-      this.error.set('Select a laboratory.');
+      this.error.set('Selecione um laboratório.');
       this.loading.set(false);
       return;
     }
@@ -198,7 +198,7 @@ export class ProjectFormDialog implements OnInit {
     call.subscribe({
       next: project => this.dialogRef.close(project),
       error: (err: HttpErrorResponse) => {
-        this.error.set(err.error?.message ?? 'Failed to save project.');
+        this.error.set(err.error?.message ?? 'Falha ao salvar o projeto.');
         this.loading.set(false);
       },
     });

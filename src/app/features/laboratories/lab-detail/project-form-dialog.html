@@ -1,34 +1,34 @@
-<h2 mat-dialog-title>{{ isEdit ? 'Edit Project' : 'New Project' }}</h2>
+<h2 mat-dialog-title>{{ isEdit ? 'Editar Projeto' : 'Novo Projeto' }}</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="submit()" id="project-form" novalidate>
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Name</mat-label>
+      <mat-label>Nome</mat-label>
       <input matInput formControlName="name" />
       @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-        <mat-error>Name is required</mat-error>
+        <mat-error>Nome é obrigatório</mat-error>
       }
     </mat-form-field>
 
     @if (data.labId === null) {
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Laboratory</mat-label>
+        <mat-label>Laboratório</mat-label>
         <mat-select formControlName="lab_id" [disabled]="isEdit">
           @if ((data.labs?.length ?? 0) === 0) {
-            <mat-option disabled>No laboratories available</mat-option>
+            <mat-option disabled>Nenhum laboratório disponível</mat-option>
           }
           @for (lab of data.labs ?? []; track lab.id) {
             <mat-option [value]="lab.id">{{ lab.name }}</mat-option>
           }
         </mat-select>
         @if (form.get('lab_id')?.hasError('required') && form.get('lab_id')?.touched) {
-          <mat-error>Select a laboratory.</mat-error>
+          <mat-error>Selecione um laboratório.</mat-error>
         }
       </mat-form-field>
     }
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Description (optional)</mat-label>
+      <mat-label>Descrição (opcional)</mat-label>
       <textarea matInput formControlName="description" rows="3"></textarea>
     </mat-form-field>
 
@@ -43,21 +43,21 @@
 
     <div class="date-row">
       <mat-form-field appearance="outline">
-        <mat-label>Start Date (optional)</mat-label>
+        <mat-label>Data de início (opcional)</mat-label>
         <input matInput type="date" formControlName="start_date" />
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>End Date (optional)</mat-label>
+        <mat-label>Data de término (opcional)</mat-label>
         <input matInput type="date" formControlName="end_date" />
       </mat-form-field>
     </div>
 
     @if (research().length > 0) {
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Research Group (optional)</mat-label>
+        <mat-label>Grupo de Pesquisa (opcional)</mat-label>
         <mat-select formControlName="research_id">
-          <mat-option [value]="null">None</mat-option>
+          <mat-option [value]="null">Nenhum</mat-option>
           @for (r of research(); track r.id) {
             <mat-option [value]="r.id">{{ r.name }}</mat-option>
           }
@@ -66,11 +66,11 @@
     }
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Tech Lead</mat-label>
+      <mat-label>Líder Técnico</mat-label>
       <mat-select formControlName="tech_lead_id">
-        <mat-option [value]="null">— None —</mat-option>
+        <mat-option [value]="null">— Nenhum —</mat-option>
         @if (labDataLoading()) {
-          <mat-option disabled>Loading members…</mat-option>
+          <mat-option disabled>Carregando membros…</mat-option>
         }
         @for (tl of techLeads(); track tl.member_id) {
           <mat-option [value]="tl.member_id">
@@ -79,7 +79,7 @@
         }
       </mat-select>
       @if (techLeads().length === 0 && !labDataLoading()) {
-        <mat-hint>No Tech Lead members found — add a member with Tech Lead role first</mat-hint>
+        <mat-hint>Nenhum membro com papel de Líder Técnico encontrado — adicione primeiro um membro com o papel de Líder Técnico</mat-hint>
       }
     </mat-form-field>
 
@@ -90,7 +90,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="dialogRef.close()">Cancel</button>
+  <button mat-button (click)="dialogRef.close()">Cancelar</button>
   <button
     mat-raised-button
     color="primary"
@@ -101,7 +101,7 @@
     @if (loading()) {
       <mat-progress-spinner diameter="18" mode="indeterminate" />
     } @else {
-      {{ isEdit ? 'Save Changes' : 'Create' }}
+      {{ isEdit ? 'Salvar Alterações' : 'Criar' }}
     }
   </button>
 </mat-dialog-actions>

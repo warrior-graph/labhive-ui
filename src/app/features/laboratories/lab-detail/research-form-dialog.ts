@@ -70,7 +70,7 @@ export class ResearchFormDialog {
       .subscribe({
         next: research => this.dialogRef.close(research),
         error: (err: HttpErrorResponse) => {
-          this.error.set(err.error?.message ?? 'Failed to create research group.');
+          this.error.set(err.error?.message ?? 'Falha ao criar grupo de pesquisa.');
           this.loading.set(false);
         },
       });

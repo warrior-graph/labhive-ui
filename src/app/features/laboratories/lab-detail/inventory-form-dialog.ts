@@ -104,7 +104,7 @@ export class InventoryFormDialog implements OnInit {
     const p = m.member;
     return p
       ? [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
-      : `Member #${m.member_id}`;
+      : `Membro #${m.member_id}`;
   }
 
   private loadLabMembers(labId: number): void {
@@ -144,7 +144,7 @@ export class InventoryFormDialog implements OnInit {
     const raw = this.form.getRawValue();
     const labId = this.data.labId ?? raw.lab_id;
     if (!labId) {
-      this.snackBar.open('Select a laboratory first', 'Dismiss', { duration: 3000 });
+      this.snackBar.open('Selecione um laboratório primeiro', 'Fechar', { duration: 3000 });
       return;
     }
     const payload: CreateInventoryItemPayload = {
@@ -164,7 +164,7 @@ export class InventoryFormDialog implements OnInit {
     call.subscribe({
       next: item => this.dialogRef.close(item),
       error: err =>
-        this.snackBar.open(err.error?.message ?? 'Failed to save item', 'Dismiss', {
+        this.snackBar.open(err.error?.message ?? 'Falha ao salvar o item', 'Fechar', {
           duration: 3000,
         }),
     });

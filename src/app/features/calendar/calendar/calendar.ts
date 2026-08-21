@@ -17,6 +17,18 @@ type CalendarFilter = 'all' | CalendarEventType;
   styleUrl: './calendar.scss',
 })
 export class Calendar implements OnInit {
+  private static readonly STATUS_LABELS: Record<string, string> = {
+    planned: 'Planejada',
+    in_progress: 'Em andamento',
+    on_hold: 'Em espera',
+    under_review: 'Em revisão',
+    accepted: 'Aceita',
+    rejected: 'Rejeitada',
+    completed: 'Concluída',
+    cancelled: 'Cancelada',
+    active: 'Ativo',
+  };
+
   protected readonly filters: CalendarFilter[] = ['all', 'activity', 'project'];
 
   protected readonly month = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
@@ -95,7 +107,7 @@ export class Calendar implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Failed to load calendar.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar o calendário.', 'Dismiss', { duration: 4000 });
       },
     });
   }
@@ -155,6 +167,9 @@ export class Calendar implements OnInit {
   }
 
   protected statusLabel(status: string): string {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return (
+      Calendar.STATUS_LABELS[status] ??
+      status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    );
   }
 }

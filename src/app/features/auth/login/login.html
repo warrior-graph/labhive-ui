@@ -8,21 +8,21 @@
     </div>
 
     <div class="window-body">
-      <h2><span class="prompt">$</span> authenticate<span class="cursor"></span></h2>
+      <h2><span class="prompt">$</span> autenticar<span class="cursor"></span></h2>
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="email" autocomplete="email" />
           @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-            <mat-error>Email is required</mat-error>
+            <mat-error>Email é obrigatório</mat-error>
           } @else if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-            <mat-error>Enter a valid email address</mat-error>
+            <mat-error>Digite um email válido</mat-error>
           }
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
+          <mat-label>Senha</mat-label>
           <input
             matInput
             type="password"
@@ -30,7 +30,7 @@
             autocomplete="current-password"
           />
           @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-            <mat-error>Password is required</mat-error>
+            <mat-error>Senha é obrigatória</mat-error>
           }
         </mat-form-field>
 
@@ -48,14 +48,14 @@
           @if (loading()) {
             <mat-progress-spinner diameter="20" mode="indeterminate" />
           } @else {
-            Sign In
+            Entrar
           }
         </button>
       </form>
     </div>
 
     <mat-card-actions>
-      <a routerLink="/register">Don't have an account? Register</a>
+      <a routerLink="/register">Não tem uma conta? Cadastre-se</a>
     </mat-card-actions>
   </div>
 </div>

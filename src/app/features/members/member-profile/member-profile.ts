@@ -130,7 +130,7 @@ export class MemberProfile implements OnInit {
           }
           return {
             labId: myMembership.lab_id,
-            labName: myMembership.laboratory?.name ?? `Lab #${myMembership.lab_id}`,
+            labName: myMembership.laboratory?.name ?? `Laboratório #${myMembership.lab_id}`,
             reportsTo: superiors,
           };
         });
@@ -173,11 +173,11 @@ export class MemberProfile implements OnInit {
         next: updated => {
           this.authService.currentUser.set(updated);
           this.form.patchValue({ password: '' });
-          this.snackBar.open('Profile updated', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Perfil atualizado', 'Fechar', { duration: 2000 });
           this.loading.set(false);
         },
         error: (err: HttpErrorResponse) => {
-          this.snackBar.open(err.error?.message ?? 'Update failed', 'Dismiss', {
+          this.snackBar.open(err.error?.message ?? 'Falha na atualização', 'Fechar', {
             duration: 3000,
           });
           this.loading.set(false);

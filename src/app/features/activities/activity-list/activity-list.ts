@@ -26,6 +26,18 @@ import { ActivityFormDialog } from '../activity-form-dialog/activity-form-dialog
   styleUrl: './activity-list.scss',
 })
 export class ActivityList implements OnInit {
+  private static readonly STATUS_LABELS: Record<string, string> = {
+    planned: 'Planejada',
+    in_progress: 'Em andamento',
+    on_hold: 'Em espera',
+    under_review: 'Em revisão',
+    accepted: 'Aceita',
+    rejected: 'Rejeitada',
+    completed: 'Concluída',
+    cancelled: 'Cancelada',
+    active: 'Ativo',
+  };
+
   protected readonly statuses = ACTIVITY_STATUSES;
   protected readonly selectedStatus = signal<string | null>(null);
   protected readonly activities = signal<DashboardActivityItem[]>([]);
@@ -99,7 +111,7 @@ export class ActivityList implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Failed to load activities.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar atividades.', 'Dismiss', { duration: 4000 });
       },
     });
   }
@@ -121,7 +133,10 @@ export class ActivityList implements OnInit {
   }
 
   protected statusLabel(status: string): string {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return (
+      ActivityList.STATUS_LABELS[status] ??
+      status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    );
   }
 
   protected activityLink(a: DashboardActivityItem): (string | number)[] {
@@ -145,8 +160,8 @@ export class ActivityList implements OnInit {
   protected deadlineLabel(deadline: string | null): string {
     const days = this.daysLeft(deadline);
     if (days === null) return '—';
-    if (days < 0) return `${Math.abs(days)}d late`;
-    if (days === 0) return 'Due today';
-    return `${days}d left`;
+    if (days < 0) return `${Math.abs(days)}d em atraso`;
+    if (days === 0) return 'Vence hoje';
+    return `${days}d restantes`;
   }
 }

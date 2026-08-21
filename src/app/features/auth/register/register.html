@@ -11,25 +11,25 @@
       @if (pendingApproval()) {
         <div class="pending-banner">
           <mat-icon class="pending-icon">hourglass_top</mat-icon>
-          <h3>Account created — awaiting approval</h3>
+          <h3>Conta criada — aguardando aprovação</h3>
           <p>
-            Your registration was received. A professor of your selected lab
-            will review and approve your account. You will be able to sign in
-            once approved.
+            Seu cadastro foi recebido. Um professor do laboratório selecionado
+            revisará e aprovará sua conta. Você poderá entrar assim que for
+            aprovado(a).
           </p>
-          <a mat-raised-button color="primary" routerLink="/login">Go to Sign In</a>
+          <a mat-raised-button color="primary" routerLink="/login">Ir para o login</a>
         </div>
       } @else {
         <h2>
           <span class="prompt">$</span>
-          @if (isLoggedIn()) { create-member } @else { register }
+          @if (isLoggedIn()) { criar-membro } @else { registrar }
           <span class="cursor"></span>
         </h2>
 
         @if (inviteLoading()) {
           <div class="invite-banner">
             <mat-progress-spinner diameter="16" mode="indeterminate" />
-            Checking invite…
+            Verificando convite…
           </div>
         } @else if (inviteError()) {
           <div class="invite-banner invite-banner-error">
@@ -40,34 +40,34 @@
           <div class="invite-banner invite-banner-success">
             <mat-icon>mark_email_read</mat-icon>
             <span>
-              You've been invited to join
-              <strong>{{ inviteInfo()!.lab_name }}</strong>. Your account will be
-              approved automatically.
+              Você foi convidado(a) a entrar no laboratório
+              <strong>{{ inviteInfo()!.lab_name }}</strong>. Sua conta será
+              aprovada automaticamente.
             </span>
           </div>
         }
 
         @if (successEmail()) {
           <div class="success-banner">
-            ✓ Account created for {{ successEmail() }}. You can create another below.
+            ✓ Conta criada para {{ successEmail() }}. Você pode criar outra abaixo.
           </div>
         }
 
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <div class="name-row">
             <mat-form-field appearance="outline">
-              <mat-label>First Name</mat-label>
+              <mat-label>Nome</mat-label>
               <input matInput formControlName="first_name" autocomplete="given-name" />
               @if (form.get('first_name')?.hasError('required') && form.get('first_name')?.touched) {
-                <mat-error>Required</mat-error>
+                <mat-error>Obrigatório</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Last Name</mat-label>
+              <mat-label>Sobrenome</mat-label>
               <input matInput formControlName="last_name" autocomplete="family-name" />
               @if (form.get('last_name')?.hasError('required') && form.get('last_name')?.touched) {
-                <mat-error>Required</mat-error>
+                <mat-error>Obrigatório</mat-error>
               }
             </mat-form-field>
           </div>
@@ -76,9 +76,9 @@
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" autocomplete="email" />
             @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-              <mat-error>Email is required</mat-error>
+              <mat-error>Email é obrigatório</mat-error>
             } @else if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-              <mat-error>Enter a valid email address</mat-error>
+              <mat-error>Digite um email válido</mat-error>
             }
           </mat-form-field>
 
@@ -86,14 +86,14 @@
             <mat-label>CPF</mat-label>
             <input matInput formControlName="cpf" placeholder="000.000.000-00" autocomplete="off" (input)="onCpfInput($event)" />
             @if (form.get('cpf')?.hasError('required') && form.get('cpf')?.touched) {
-              <mat-error>CPF is required</mat-error>
+              <mat-error>CPF é obrigatório</mat-error>
             } @else if (form.get('cpf')?.hasError('pattern') && form.get('cpf')?.touched) {
-              <mat-error>Enter a valid CPF (e.g. 000.000.000-00)</mat-error>
+              <mat-error>Digite um CPF válido (ex.: 000.000.000-00)</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Password</mat-label>
+            <mat-label>Senha</mat-label>
             <input
               matInput
               type="password"
@@ -101,17 +101,17 @@
               autocomplete="new-password"
             />
             @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-              <mat-error>Password is required</mat-error>
+              <mat-error>Senha é obrigatória</mat-error>
             } @else if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
-              <mat-error>Password must be at least 8 characters</mat-error>
+              <mat-error>A senha deve ter pelo menos 8 caracteres</mat-error>
             }
           </mat-form-field>
 
           @if (!isLoggedIn() && labs().length > 0 && !inviteInfo()) {
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Laboratory</mat-label>
+              <mat-label>Laboratório</mat-label>
               <mat-select formControlName="desired_lab_id">
-                <mat-option [value]="null">— Select a lab —</mat-option>
+                <mat-option [value]="null">— Selecione um laboratório —</mat-option>
                 @for (lab of labs(); track lab.id) {
                   <mat-option [value]="lab.id">{{ lab.name }}</mat-option>
                 }
@@ -120,7 +120,7 @@
           }
 
           <mat-checkbox formControlName="is_professor" class="professor-check">
-            I am a Professor
+            Sou professor(a)
           </mat-checkbox>
 
           @if (error()) {
@@ -137,9 +137,9 @@
             @if (loading()) {
               <mat-progress-spinner diameter="20" mode="indeterminate" />
             } @else if (isLoggedIn()) {
-              Create Member Account
+              Criar conta de membro
             } @else {
-              Create Account
+              Criar conta
             }
           </button>
         </form>
@@ -148,11 +148,11 @@
 
     @if (!isLoggedIn() && !pendingApproval()) {
       <mat-card-actions>
-        <a routerLink="/login">Already have an account? Sign in</a>
+        <a routerLink="/login">Já tem uma conta? Entrar</a>
       </mat-card-actions>
     } @else if (isLoggedIn()) {
       <mat-card-actions>
-        <a routerLink="/labs">← Back to Labs</a>
+        <a routerLink="/labs">← Voltar para Laboratórios</a>
       </mat-card-actions>
     }
   </div>

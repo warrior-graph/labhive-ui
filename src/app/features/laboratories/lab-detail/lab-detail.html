@@ -13,12 +13,12 @@
       <div class="lab-header-actions">
         <button mat-stroked-button [routerLink]="['/labs', lab()!.id, 'org-chart']">
           <mat-icon>account_tree</mat-icon>
-          Org Chart
+          Organograma
         </button>
         @if (isSuperAdmin()) {
           <button mat-stroked-button color="warn" (click)="deleteLab()">
             <mat-icon>delete</mat-icon>
-            Delete Lab
+            Excluir Laboratório
           </button>
         }
       </div>
@@ -31,18 +31,18 @@
       (selectedTabChange)="onTabChange($event.index)"
     >
       <!-- ── Members ── -->
-      <mat-tab label="Members">
+      <mat-tab label="Membros">
         <div class="tab-content">
           @if (canAddMember()) {
             <div class="tab-actions">
               <button mat-raised-button color="primary" (click)="openAddMember()">
                 <mat-icon>person_add</mat-icon>
-                Add Member
+                Adicionar Membro
               </button>
               @if (isManager()) {
                 <button mat-stroked-button (click)="openInviteDialog()">
                   <mat-icon>link</mat-icon>
-                  Generate Invite
+                  Gerar Convite
                 </button>
               }
             </div>
@@ -50,7 +50,7 @@
 
           <table mat-table [dataSource]="members()" class="full-width">
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <th mat-header-cell *matHeaderCellDef>Nome</th>
               <td mat-cell *matCellDef="let m">
                 {{ m.member?.first_name }} {{ m.member?.last_name }}
                 <span class="member-id">(ID: {{ m.member_id }})</span>
@@ -63,19 +63,19 @@
             </ng-container>
 
             <ng-container matColumnDef="role">
-              <th mat-header-cell *matHeaderCellDef>Role</th>
+              <th mat-header-cell *matHeaderCellDef>Papel</th>
               <td mat-cell *matCellDef="let m">
                 <app-role-badge [roles]="m.roles" />
               </td>
             </ng-container>
 
             <ng-container matColumnDef="specialization">
-              <th mat-header-cell *matHeaderCellDef>Specialization</th>
+              <th mat-header-cell *matHeaderCellDef>Especialização</th>
               <td mat-cell *matCellDef="let m">{{ m.specialization || '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="compensation">
-              <th mat-header-cell *matHeaderCellDef>Compensation</th>
+              <th mat-header-cell *matHeaderCellDef>Remuneração</th>
               <td mat-cell *matCellDef="let m">
                 @if (m.compensation_type) {
                   {{ m.compensation_type | titlecase }} —
@@ -90,11 +90,11 @@
               <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let m">
                 @if (m.left_at) {
-                  <span class="status-chip status-inactive" matTooltip="Left on {{ m.left_at | date: 'mediumDate' }}">
-                    Inactive
+                  <span class="status-chip status-inactive" matTooltip="Saiu em {{ m.left_at | date: 'mediumDate' }}">
+                    Inativo
                   </span>
                 } @else {
-                  <span class="status-chip status-active">Active</span>
+                  <span class="status-chip status-active">Ativo</span>
                 }
               </td>
             </ng-container>
@@ -105,7 +105,7 @@
                 @if (canManage(m)) {
                   <button
                     mat-icon-button
-                    matTooltip="Edit member"
+                    matTooltip="Editar membro"
                     (click)="openEditMember(m)"
                   >
                     <mat-icon>edit</mat-icon>
@@ -115,7 +115,7 @@
                   <button
                     mat-icon-button
                     [color]="m.left_at ? 'primary' : 'warn'"
-                    [matTooltip]="m.left_at ? 'Reinstate member' : 'Deactivate member'"
+                    [matTooltip]="m.left_at ? 'Reintegrar membro' : 'Desativar membro'"
                     (click)="toggleMembership(m)"
                   >
                     <mat-icon>{{ m.left_at ? 'restore' : 'person_off' }}</mat-icon>
@@ -123,7 +123,7 @@
                   <button
                     mat-icon-button
                     color="warn"
-                    matTooltip="Remove member"
+                    matTooltip="Remover membro"
                     (click)="removeMember(m.member_id, m.member?.first_name + ' ' + m.member?.last_name)"
                   >
                     <mat-icon>person_remove</mat-icon>
@@ -136,7 +136,7 @@
             <tr mat-row *matRowDef="let row; columns: memberColumns"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" [attr.colspan]="memberColumns.length">
-                No members yet.
+                Nenhum membro ainda.
               </td>
             </tr>
           </table>
@@ -144,20 +144,20 @@
       </mat-tab>
 
       <!-- ── Projects ── -->
-      <mat-tab label="Projects">
+      <mat-tab label="Projetos">
         <div class="tab-content">
           @if (isTechLead()) {
             <div class="tab-actions">
               <button mat-raised-button color="primary" (click)="openAddProject()">
                 <mat-icon>add</mat-icon>
-                New Project
+                Novo Projeto
               </button>
             </div>
           }
 
           <table mat-table [dataSource]="projects()" class="full-width">
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <th mat-header-cell *matHeaderCellDef>Nome</th>
               <td mat-cell *matCellDef="let p">{{ p.name }}</td>
             </ng-container>
 
@@ -171,14 +171,14 @@
             </ng-container>
 
             <ng-container matColumnDef="start_date">
-              <th mat-header-cell *matHeaderCellDef>Start</th>
+              <th mat-header-cell *matHeaderCellDef>Início</th>
               <td mat-cell *matCellDef="let p">
                 {{ p.start_date ? (p.start_date | date: 'mediumDate') : '—' }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="end_date">
-              <th mat-header-cell *matHeaderCellDef>End</th>
+              <th mat-header-cell *matHeaderCellDef>Fim</th>
               <td mat-cell *matCellDef="let p">
                 {{ p.end_date ? (p.end_date | date: 'mediumDate') : '—' }}
               </td>
@@ -190,7 +190,7 @@
                 <a
                   mat-icon-button
                   [routerLink]="['/labs', labId, 'projects', p.id]"
-                  matTooltip="View project"
+                  matTooltip="Ver projeto"
                 >
                   <mat-icon>open_in_new</mat-icon>
                 </a>
@@ -198,7 +198,7 @@
                   <button
                     mat-icon-button
                     [color]="p.is_active ? 'warn' : 'primary'"
-                    [matTooltip]="p.is_active ? 'Deactivate project' : 'Activate project'"
+                    [matTooltip]="p.is_active ? 'Desativar projeto' : 'Ativar projeto'"
                     (click)="toggleProject(p)"
                   >
                     <mat-icon>{{ p.is_active ? 'block' : 'check_circle' }}</mat-icon>
@@ -206,7 +206,7 @@
                   <button
                     mat-icon-button
                     color="warn"
-                    matTooltip="Delete project"
+                    matTooltip="Excluir projeto"
                     (click)="deleteProject(p.id, p.name)"
                   >
                     <mat-icon>delete</mat-icon>
@@ -219,7 +219,7 @@
             <tr mat-row *matRowDef="let row; columns: projectColumns"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" [attr.colspan]="projectColumns.length">
-                No projects yet.
+                Nenhum projeto ainda.
               </td>
             </tr>
           </table>
@@ -227,30 +227,30 @@
       </mat-tab>
 
       <!-- ── Research ── -->
-      <mat-tab label="Research Groups">
+      <mat-tab label="Grupos de Pesquisa">
         <div class="tab-content">
           @if (isChiefScientist()) {
             <div class="tab-actions">
               <button mat-raised-button color="primary" (click)="openAddResearch()">
                 <mat-icon>add</mat-icon>
-                New Research Group
+                Novo Grupo de Pesquisa
               </button>
             </div>
           }
 
           <table mat-table [dataSource]="research()" class="full-width">
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <th mat-header-cell *matHeaderCellDef>Nome</th>
               <td mat-cell *matCellDef="let r">{{ r.name }}</td>
             </ng-container>
 
             <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>Description</th>
+              <th mat-header-cell *matHeaderCellDef>Descrição</th>
               <td mat-cell *matCellDef="let r">{{ r.description || '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="members">
-              <th mat-header-cell *matHeaderCellDef>Members</th>
+              <th mat-header-cell *matHeaderCellDef>Membros</th>
               <td mat-cell *matCellDef="let r">{{ r.members?.length ?? 0 }}</td>
             </ng-container>
 
@@ -260,7 +260,7 @@
                 <a
                   mat-icon-button
                   [routerLink]="['/labs', labId, 'research', r.id]"
-                  matTooltip="View research group"
+                  matTooltip="Ver grupo de pesquisa"
                 >
                   <mat-icon>open_in_new</mat-icon>
                 </a>
@@ -268,7 +268,7 @@
                   <button
                     mat-icon-button
                     [color]="r.is_active ? 'warn' : 'primary'"
-                    [matTooltip]="r.is_active ? 'Deactivate research group' : 'Activate research group'"
+                    [matTooltip]="r.is_active ? 'Desativar grupo de pesquisa' : 'Ativar grupo de pesquisa'"
                     (click)="toggleResearch(r)"
                   >
                     <mat-icon>{{ r.is_active ? 'block' : 'check_circle' }}</mat-icon>
@@ -276,7 +276,7 @@
                   <button
                     mat-icon-button
                     color="warn"
-                    matTooltip="Delete research group"
+                    matTooltip="Excluir grupo de pesquisa"
                     (click)="deleteResearch(r.id, r.name)"
                   >
                     <mat-icon>delete</mat-icon>
@@ -289,7 +289,7 @@
             <tr mat-row *matRowDef="let row; columns: researchColumns"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" [attr.colspan]="researchColumns.length">
-                No research groups yet.
+                Nenhum grupo de pesquisa ainda.
               </td>
             </tr>
           </table>
@@ -297,20 +297,20 @@
       </mat-tab>
 
       <!-- ── Articles ── -->
-      <mat-tab label="Articles">
+      <mat-tab label="Artigos">
         <div class="tab-content">
           @if (isResearcher()) {
             <div class="tab-actions">
               <a mat-raised-button color="primary" [routerLink]="['/labs', labId, 'articles', 'new']">
                 <mat-icon>add</mat-icon>
-                New Article
+                Novo Artigo
               </a>
             </div>
           }
 
           <table mat-table [dataSource]="articlesDataSource" matSort #articleSort="matSort" class="full-width">
             <ng-container matColumnDef="title">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Título</th>
               <td mat-cell *matCellDef="let a">{{ a.title }}</td>
             </ng-container>
 
@@ -343,24 +343,24 @@
             </ng-container>
 
             <ng-container matColumnDef="conference">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Conference / Journal</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Conferência / Periódico</th>
               <td mat-cell *matCellDef="let a">{{ a.conference || '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="submission_deadline">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Deadline</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Prazo</th>
               <td mat-cell *matCellDef="let a">
                 {{ a.submission_deadline ? (a.submission_deadline | date: 'mediumDate') : '—' }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="in_charge">
-              <th mat-header-cell *matHeaderCellDef>In Charge</th>
+              <th mat-header-cell *matHeaderCellDef>Responsáveis</th>
               <td mat-cell *matCellDef="let a">{{ a.in_charge?.join(', ') || '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="authors">
-              <th mat-header-cell *matHeaderCellDef>Authors</th>
+              <th mat-header-cell *matHeaderCellDef>Autores</th>
               <td mat-cell *matCellDef="let a">{{ a.authors?.join(', ') || '—' }}</td>
             </ng-container>
 
@@ -370,7 +370,7 @@
                 <a
                   mat-icon-button
                   [routerLink]="['/labs', labId, 'articles', a.id]"
-                  matTooltip="View article"
+                  matTooltip="Ver artigo"
                 >
                   <mat-icon>open_in_new</mat-icon>
                 </a>
@@ -378,7 +378,7 @@
                   <button
                     mat-icon-button
                     [color]="a.is_active ? 'warn' : 'primary'"
-                    [matTooltip]="a.is_active ? 'Deactivate article' : 'Activate article'"
+                    [matTooltip]="a.is_active ? 'Desativar artigo' : 'Ativar artigo'"
                     (click)="toggleArticle(a)"
                   >
                     <mat-icon>{{ a.is_active ? 'block' : 'check_circle' }}</mat-icon>
@@ -386,7 +386,7 @@
                   <button
                     mat-icon-button
                     color="warn"
-                    matTooltip="Delete article"
+                    matTooltip="Excluir artigo"
                     (click)="deleteArticle(a.id, a.title)"
                   >
                     <mat-icon>delete</mat-icon>
@@ -399,7 +399,7 @@
             <tr mat-row *matRowDef="let row; columns: articleColumns"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" [attr.colspan]="articleColumns.length">
-                No articles yet.
+                Nenhum artigo ainda.
               </td>
             </tr>
           </table>
@@ -407,35 +407,35 @@
       </mat-tab>
 
       <!-- ── Inventory ── -->
-      <mat-tab label="Inventory">
+      <mat-tab label="Inventário">
         <div class="tab-content">
           @if (isManager()) {
             <div class="tab-actions">
               <button mat-raised-button color="primary" (click)="openAddInventoryItem()">
                 <mat-icon>add</mat-icon>
-                Add Item
+                Adicionar Item
               </button>
             </div>
           }
 
           <table mat-table [dataSource]="inventory()" class="full-width">
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <th mat-header-cell *matHeaderCellDef>Nome</th>
               <td mat-cell *matCellDef="let i">{{ i.name }}</td>
             </ng-container>
 
             <ng-container matColumnDef="category">
-              <th mat-header-cell *matHeaderCellDef>Category</th>
+              <th mat-header-cell *matHeaderCellDef>Categoria</th>
               <td mat-cell *matCellDef="let i">{{ i.category }}</td>
             </ng-container>
 
             <ng-container matColumnDef="quantity">
-              <th mat-header-cell *matHeaderCellDef>Qty</th>
+              <th mat-header-cell *matHeaderCellDef>Qtd</th>
               <td mat-cell *matCellDef="let i">{{ i.quantity }}</td>
             </ng-container>
 
             <ng-container matColumnDef="condition">
-              <th mat-header-cell *matHeaderCellDef>Condition</th>
+              <th mat-header-cell *matHeaderCellDef>Condição</th>
               <td mat-cell *matCellDef="let i">
                 <span [class]="'condition-chip condition-' + i.condition">
                   {{ itemConditionLabel(i.condition) }}
@@ -444,12 +444,12 @@
             </ng-container>
 
             <ng-container matColumnDef="serial_number">
-              <th mat-header-cell *matHeaderCellDef>Serial #</th>
+              <th mat-header-cell *matHeaderCellDef>Nº de série</th>
               <td mat-cell *matCellDef="let i">{{ i.serial_number || '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="assigned_to">
-              <th mat-header-cell *matHeaderCellDef>Assigned To</th>
+              <th mat-header-cell *matHeaderCellDef>Atribuído a</th>
               <td mat-cell *matCellDef="let i">
                 @if (i.assigned_to) {
                   {{ i.assigned_to.first_name }} {{ i.assigned_to.last_name }}
@@ -465,7 +465,7 @@
                 @if (isManager()) {
                   <button
                     mat-icon-button
-                    matTooltip="Edit item"
+                    matTooltip="Editar item"
                     (click)="openEditInventoryItem(i)"
                   >
                     <mat-icon>edit</mat-icon>
@@ -473,7 +473,7 @@
                   <button
                     mat-icon-button
                     color="warn"
-                    matTooltip="Delete item"
+                    matTooltip="Excluir item"
                     (click)="deleteInventoryItem(i.id, i.name)"
                   >
                     <mat-icon>delete</mat-icon>
@@ -486,7 +486,7 @@
             <tr mat-row *matRowDef="let row; columns: inventoryColumns"></tr>
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" [attr.colspan]="inventoryColumns.length">
-                No inventory items yet.
+                Nenhum item de inventário ainda.
               </td>
             </tr>
           </table>

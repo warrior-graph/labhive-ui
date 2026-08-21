@@ -101,7 +101,7 @@ export class Dashboard implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Failed to load dashboard.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar o dashboard.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -131,14 +131,14 @@ export class Dashboard implements OnInit {
         );
         this.setApproving(m.member_id, false);
         this.snackBar.open(
-          `${m.first_name} ${m.last_name} approved.`,
-          'Dismiss',
+          `${m.first_name} ${m.last_name} aprovado(a).`,
+          'Fechar',
           { duration: 4000 },
         );
       },
       error: () => {
         this.setApproving(m.member_id, false);
-        this.snackBar.open('Failed to approve member.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao aprovar membro.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -153,7 +153,19 @@ export class Dashboard implements OnInit {
   }
 
   protected statusLabel(status: string): string {
-    return status
+    const labels: Record<string, string> = {
+      planned: 'Planejado',
+      active: 'Ativo',
+      pending: 'Pendente',
+      in_progress: 'Em andamento',
+      on_hold: 'Em espera',
+      under_review: 'Em revisão',
+      accepted: 'Aceito',
+      rejected: 'Rejeitado',
+      completed: 'Concluído',
+      cancelled: 'Cancelado',
+    };
+    return labels[status] ?? status
       .replace(/_/g, ' ')
       .replace(/\b\w/g, c => c.toUpperCase());
   }
@@ -166,9 +178,9 @@ export class Dashboard implements OnInit {
 
   protected deadlineLabel(d: DashboardDeadline): string {
     if (d.days_left === null) return '—';
-    if (d.overdue) return `${Math.abs(d.days_left)}d late`;
-    if (d.days_left === 0) return 'Due today';
-    return `${d.days_left}d left`;
+    if (d.overdue) return `${Math.abs(d.days_left)}d atrasado`;
+    if (d.days_left === 0) return 'Vence hoje';
+    return `${d.days_left}d restantes`;
   }
 
   protected deadlineLink(d: DashboardDeadline): (string | number)[] {

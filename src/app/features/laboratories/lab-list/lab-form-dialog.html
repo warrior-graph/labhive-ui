@@ -1,22 +1,22 @@
-<h2 mat-dialog-title>{{ isEdit ? 'Edit' : 'New' }} Laboratory</h2>
+<h2 mat-dialog-title>{{ isEdit ? 'Editar' : 'Novo' }} Laboratório</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="submit()" id="lab-form" novalidate>
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Name</mat-label>
+      <mat-label>Nome</mat-label>
       <input matInput formControlName="name" />
       @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-        <mat-error>Name is required</mat-error>
+        <mat-error>Nome é obrigatório</mat-error>
       }
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Description</mat-label>
+      <mat-label>Descrição</mat-label>
       <textarea matInput formControlName="description" rows="4"></textarea>
       @if (
         form.get('description')?.hasError('required') && form.get('description')?.touched
       ) {
-        <mat-error>Description is required</mat-error>
+        <mat-error>Descrição é obrigatória</mat-error>
       }
     </mat-form-field>
 
@@ -27,7 +27,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="dialogRef.close()">Cancel</button>
+  <button mat-button (click)="dialogRef.close()">Cancelar</button>
   <button
     mat-raised-button
     color="primary"
@@ -38,7 +38,7 @@
     @if (loading()) {
       <mat-progress-spinner diameter="18" mode="indeterminate" />
     } @else {
-      {{ isEdit ? 'Save' : 'Create' }}
+      {{ isEdit ? 'Salvar' : 'Criar' }}
     }
   </button>
 </mat-dialog-actions>

@@ -6,7 +6,7 @@
     </a>
     <a mat-button [routerLink]="['/labs', labId]" class="back-link">
       <mat-icon>business</mat-icon>
-      Lab
+      Laboratório
     </a>
   </div>
 
@@ -47,15 +47,15 @@
 
     <div class="meta-grid">
       <div class="meta-item">
-        <span class="label">Lab</span>
-        <span><a [routerLink]="['/labs', a.lab_id]">Lab #{{ a.lab_id }}</a></span>
+        <span class="label">Laboratório</span>
+        <span><a [routerLink]="['/labs', a.lab_id]">Laboratório #{{ a.lab_id }}</a></span>
       </div>
       <div class="meta-item">
-        <span class="label">Venue</span>
+        <span class="label">Local</span>
         <span>{{ a.venue || '—' }}</span>
       </div>
       <div class="meta-item">
-        <span class="label">Reference Link</span>
+        <span class="label">Link de referência</span>
         <span>
           @if (a.reference_link) {
             <a [href]="a.reference_link" target="_blank" rel="noopener noreferrer">
@@ -67,7 +67,7 @@
         </span>
       </div>
       <div class="meta-item">
-        <span class="label">Deadline</span>
+        <span class="label">Prazo</span>
         <span class="deadline-cell">
           @if (a.deadline) {
             <span [class]="'deadline-badge ' + deadlineClass(a.deadline)">
@@ -80,11 +80,11 @@
         </span>
       </div>
       <div class="meta-item">
-        <span class="label">Completed At</span>
+        <span class="label">Concluída em</span>
         <span>{{ a.completed_at ? (a.completed_at | date:'mediumDate') : '—' }}</span>
       </div>
       <div class="meta-item">
-        <span class="label">Created</span>
+        <span class="label">Criada em</span>
         <span>{{ a.created_at | date:'mediumDate' }}</span>
       </div>
     </div>

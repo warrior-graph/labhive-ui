@@ -1,37 +1,37 @@
 <div class="page-container">
   <a mat-button [routerLink]="['/labs', labId]" [queryParams]="{ tab: 3 }" class="back-link">
     <mat-icon>arrow_back</mat-icon>
-    Back to Lab
+    Voltar ao laboratório
   </a>
 
   <mat-card>
-    <mat-card-title>New Article</mat-card-title>
+    <mat-card-title>Novo artigo</mat-card-title>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Title</mat-label>
+          <mat-label>Título</mat-label>
           <input matInput formControlName="title" />
           @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
-            <mat-error>Title is required</mat-error>
+            <mat-error>Título é obrigatório</mat-error>
           }
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Abstract</mat-label>
+          <mat-label>Resumo</mat-label>
           <textarea matInput formControlName="abstract" rows="6"></textarea>
         </mat-form-field>
 
         <div class="two-col">
           <mat-form-field appearance="outline">
-            <mat-label>Conference / Journal</mat-label>
+            <mat-label>Conferência / Periódico</mat-label>
             <input matInput formControlName="conference" />
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>DOI</mat-label>
             <input matInput formControlName="doi" />
-            <mat-hint>e.g. 10.1000/xyz123 (only if published)</mat-hint>
+            <mat-hint>ex.: 10.1000/xyz123 (somente se publicado)</mat-hint>
           </mat-form-field>
         </div>
 
@@ -46,20 +46,20 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Submission Deadline</mat-label>
+            <mat-label>Prazo de submissão</mat-label>
             <input matInput type="date" formControlName="submission_deadline" />
           </mat-form-field>
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Publication Date</mat-label>
+          <mat-label>Data de publicação</mat-label>
           <input matInput type="date" formControlName="published_at" />
-          <mat-hint>Only set when status is Published</mat-hint>
+          <mat-hint>Defina somente quando o status for Publicado</mat-hint>
         </mat-form-field>
 
         <!-- In Charge -->
         <mat-form-field appearance="outline" class="full-width" floatLabel="always">
-          <mat-label>In Charge</mat-label>
+          <mat-label>Responsáveis</mat-label>
           <mat-chip-grid #inChargeGrid>
             @for (person of inCharge; track person) {
               <mat-chip (removed)="removeInCharge(person)">
@@ -68,18 +68,18 @@
               </mat-chip>
             }
             <input
-              placeholder="Type name and press Enter…"
+              placeholder="Digite o nome e pressione Enter…"
               [matChipInputFor]="inChargeGrid"
               [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
               (matChipInputTokenEnd)="addInCharge($event)"
             />
           </mat-chip-grid>
-          <mat-hint>People responsible for leading this article</mat-hint>
+          <mat-hint>Pessoas responsáveis por conduzir este artigo</mat-hint>
         </mat-form-field>
 
         <!-- Authors -->
         <mat-form-field appearance="outline" class="full-width" floatLabel="always">
-          <mat-label>Authors</mat-label>
+          <mat-label>Autores</mat-label>
           <mat-chip-grid #authorGrid>
             @for (author of authors; track author) {
               <mat-chip (removed)="removeAuthor(author)">
@@ -88,22 +88,22 @@
               </mat-chip>
             }
             <input
-              placeholder="Type name and press Enter…"
+              placeholder="Digite o nome e pressione Enter…"
               [matChipInputFor]="authorGrid"
               [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
               (matChipInputTokenEnd)="addAuthor($event)"
             />
           </mat-chip-grid>
-          <mat-hint>Can include external collaborators</mat-hint>
+          <mat-hint>Pode incluir colaboradores externos</mat-hint>
         </mat-form-field>
 
         <div class="form-actions">
-          <button mat-button type="button" [routerLink]="['/labs', labId]" [queryParams]="{ tab: 3 }">Cancel</button>
+          <button mat-button type="button" [routerLink]="['/labs', labId]" [queryParams]="{ tab: 3 }">Cancelar</button>
           <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
             @if (loading()) {
               <mat-progress-spinner diameter="18" mode="indeterminate" />
             } @else {
-              Create Article
+              Criar artigo
             }
           </button>
         </div>

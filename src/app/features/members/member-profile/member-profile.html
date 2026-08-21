@@ -1,5 +1,5 @@
 <div class="page-container">
-  <h1>My Profile</h1>
+  <h1>Meu Perfil</h1>
 
   @if (authService.currentUser()) {
     <p class="email">{{ authService.currentUser()!.email }}</p>
@@ -21,39 +21,39 @@
   }
 
   <mat-card>
-    <mat-card-title>Edit Profile</mat-card-title>
+    <mat-card-title>Editar Perfil</mat-card-title>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <div class="name-row">
           <mat-form-field appearance="outline">
-            <mat-label>First Name</mat-label>
+            <mat-label>Nome</mat-label>
             <input matInput formControlName="first_name" />
             @if (
               form.get('first_name')?.hasError('required') && form.get('first_name')?.touched
             ) {
-              <mat-error>Required</mat-error>
+              <mat-error>Obrigatório</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Last Name</mat-label>
+            <mat-label>Sobrenome</mat-label>
             <input matInput formControlName="last_name" />
             @if (
               form.get('last_name')?.hasError('required') && form.get('last_name')?.touched
             ) {
-              <mat-error>Required</mat-error>
+              <mat-error>Obrigatório</mat-error>
             }
           </mat-form-field>
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>New Password (leave blank to keep current)</mat-label>
+          <mat-label>Nova senha (deixe em branco para manter a atual)</mat-label>
           <input matInput type="password" formControlName="password" autocomplete="new-password" />
         </mat-form-field>
 
         <div class="name-row">
           <mat-form-field appearance="outline">
-            <mat-label>Lattes URL</mat-label>
+            <mat-label>URL do Lattes</mat-label>
             <input matInput formControlName="lattes_url" placeholder="https://lattes.cnpq.br/..." />
           </mat-form-field>
 
@@ -64,7 +64,7 @@
         </div>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>GitHub URL</mat-label>
+          <mat-label>URL do GitHub</mat-label>
           <input matInput formControlName="github_url" placeholder="https://github.com/username" />
         </mat-form-field>
 
@@ -73,7 +73,7 @@
             @if (loading()) {
               <mat-progress-spinner diameter="18" mode="indeterminate" />
             } @else {
-              Save Changes
+              Salvar Alterações
             }
           </button>
         </div>
@@ -83,12 +83,12 @@
 
   <!-- Membership History -->
   <mat-card class="history-card">
-    <mat-card-title>History</mat-card-title>
+    <mat-card-title>Histórico</mat-card-title>
     <mat-card-content>
       @if (historyLoading()) {
         <mat-progress-spinner mode="indeterminate" diameter="32" />
       } @else if (history().length === 0) {
-        <p class="empty-text">No lab memberships found.</p>
+        <p class="empty-text">Nenhuma associação a laboratório encontrada.</p>
       } @else {
         <div class="history-list">
           @for (entry of history(); track $index) {
@@ -119,12 +119,12 @@
 
   <!-- Reporting Structure -->
   <mat-card class="hierarchy-card">
-    <mat-card-title>Reporting Structure</mat-card-title>
+    <mat-card-title>Estrutura hierárquica</mat-card-title>
     <mat-card-content>
       @if (hierarchyLoading()) {
         <mat-progress-spinner mode="indeterminate" diameter="32" />
       } @else if (reportingInfo().length === 0) {
-        <p class="empty-text">No lab memberships found.</p>
+        <p class="empty-text">Nenhuma associação a laboratório encontrada.</p>
       } @else {
         @for (info of reportingInfo(); track info.labId) {
           <div class="lab-section">
@@ -132,13 +132,13 @@
               <span class="lab-name">{{ info.labName }}</span>
               <a mat-button [routerLink]="['/labs', info.labId, 'org-chart']" class="org-chart-link">
                 <mat-icon>account_tree</mat-icon>
-                View Org Chart
+                Ver Organograma
               </a>
             </div>
             @if (info.reportsTo.length === 0) {
-              <p class="top-text">Top of hierarchy in this lab.</p>
+              <p class="top-text">Topo da hierarquia neste laboratório.</p>
             } @else {
-              <p class="reports-label">Reports to:</p>
+              <p class="reports-label">Reporta a:</p>
               <div class="reports-list">
                 @for (m of info.reportsTo; track m.member_id) {
                   <div class="report-chip">

@@ -62,7 +62,7 @@ export class LabFormDialog {
     req$.subscribe({
       next: lab => this.dialogRef.close(lab),
       error: (err: HttpErrorResponse) => {
-        this.error.set(err.error?.message ?? 'Operation failed.');
+        this.error.set(err.error?.message ?? 'Falha na operação.');
         this.loading.set(false);
       },
     });

@@ -79,6 +79,18 @@ export interface ActivityFormData {
   ],
 })
 export class ActivityFormDialog implements OnInit {
+  private static readonly STATUS_LABELS: Record<string, string> = {
+    planned: 'Planejada',
+    in_progress: 'Em andamento',
+    on_hold: 'Em espera',
+    under_review: 'Em revisão',
+    accepted: 'Aceita',
+    rejected: 'Rejeitada',
+    completed: 'Concluída',
+    cancelled: 'Cancelada',
+    active: 'Ativo',
+  };
+
   readonly dialogRef = inject(MatDialogRef<ActivityFormDialog>);
   readonly data = inject<ActivityFormData>(MAT_DIALOG_DATA);
   private readonly dashboardService = inject(DashboardService);
@@ -133,6 +145,7 @@ export class ActivityFormDialog implements OnInit {
 
   protected statusLabel(status: string): string {
     return (
+      ActivityFormDialog.STATUS_LABELS[status] ??
       ACTIVITY_STATUS_LABELS[status as ActivityStatus] ??
       status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
     );
@@ -142,7 +155,7 @@ export class ActivityFormDialog implements OnInit {
     const p = m.member;
     return p
       ? [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
-      : `Member #${m.member_id}`;
+      : `Membro #${m.member_id}`;
   }
 
   private loadMembers(labId: number): void {

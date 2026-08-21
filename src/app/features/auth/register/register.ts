@@ -153,7 +153,7 @@ export class Register implements OnInit {
         this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        this.error.set(extractApiError(err, 'Registration failed. Please try again.'));
+        this.error.set(extractApiError(err, 'Falha no cadastro. Tente novamente.'));
         this.loading.set(false);
       },
     });

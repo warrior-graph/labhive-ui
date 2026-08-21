@@ -18,7 +18,7 @@
       <mat-label>Laboratório</mat-label>
       <mat-select formControlName="lab_id" [disabled]="isEdit">
         @if (isEdit && data.labId) {
-          <mat-option [value]="data.labId">Lab #{{ data.labId }}</mat-option>
+          <mat-option [value]="data.labId">Laboratório #{{ data.labId }}</mat-option>
         } @else if ((data.labs?.length ?? 0) === 0) {
           <mat-option disabled>Sem laboratórios disponíveis</mat-option>
         }

@@ -65,15 +65,15 @@ export const RESEARCHER_AND_ABOVE: LabRole[] = [
 ];
 
 export const LAB_ROLE_LABELS: Record<LabRole, string> = {
-  [LabRole.LAB_COORDINATOR]: 'Lab Coordinator',
-  [LabRole.ENGINEERING_MANAGER]: 'Engineering Manager',
-  [LabRole.PROJECT_MANAGER]: 'Project Manager',
-  [LabRole.CHIEF_SCIENTIST]: 'Chief Scientist',
-  [LabRole.TECH_LEAD]: 'Tech Lead',
-  [LabRole.ENGINEER]: 'Engineer',
-  [LabRole.RESEARCHER]: 'Researcher',
-  [LabRole.RESEARCH_FELLOW]: 'Research Fellow',
-  [LabRole.STAFF]: 'Staff',
+  [LabRole.LAB_COORDINATOR]: 'Coordenador(a) do Laboratório',
+  [LabRole.ENGINEERING_MANAGER]: 'Gerente de Engenharia',
+  [LabRole.PROJECT_MANAGER]: 'Gerente de Projetos',
+  [LabRole.CHIEF_SCIENTIST]: 'Cientista Chefe',
+  [LabRole.TECH_LEAD]: 'Líder Técnico',
+  [LabRole.ENGINEER]: 'Engenheiro(a)',
+  [LabRole.RESEARCHER]: 'Pesquisador(a)',
+  [LabRole.RESEARCH_FELLOW]: 'Pesquisador(a) Júnior',
+  [LabRole.STAFF]: 'Equipe de Apoio',
 };
 
 export const ROLE_LEVEL: Record<LabRole, number> = {
@@ -89,21 +89,21 @@ export const ROLE_LEVEL: Record<LabRole, number> = {
 };
 
 export const ARTICLE_STATUS_LABELS: Record<ArticleStatus, string> = {
-  [ArticleStatus.IN_PROGRESS]: 'In Progress',
-  [ArticleStatus.UNDER_REVIEW]: 'Under Review',
-  [ArticleStatus.SUBMITTED]: 'Submitted',
-  [ArticleStatus.ACCEPTED]: 'Accepted',
-  [ArticleStatus.REJECTED]: 'Rejected',
-  [ArticleStatus.WITHDRAWN]: 'Withdrawn',
-  [ArticleStatus.PUBLISHED]: 'Published',
+  [ArticleStatus.IN_PROGRESS]: 'Em andamento',
+  [ArticleStatus.UNDER_REVIEW]: 'Em revisão',
+  [ArticleStatus.SUBMITTED]: 'Submetido',
+  [ArticleStatus.ACCEPTED]: 'Aceito',
+  [ArticleStatus.REJECTED]: 'Rejeitado',
+  [ArticleStatus.WITHDRAWN]: 'Retirado',
+  [ArticleStatus.PUBLISHED]: 'Publicado',
 };
 
 export const ITEM_CONDITION_LABELS: Record<ItemCondition, string> = {
-  [ItemCondition.NEW]: 'New',
-  [ItemCondition.GOOD]: 'Good',
-  [ItemCondition.FAIR]: 'Fair',
-  [ItemCondition.POOR]: 'Poor',
-  [ItemCondition.BROKEN]: 'Broken',
+  [ItemCondition.NEW]: 'Novo',
+  [ItemCondition.GOOD]: 'Bom',
+  [ItemCondition.FAIR]: 'Regular',
+  [ItemCondition.POOR]: 'Ruim',
+  [ItemCondition.BROKEN]: 'Quebrado',
 };
 
 // ─── Entities ─────────────────────────────────────────────────────────────────
@@ -470,14 +470,14 @@ export const ACTIVITY_STATUSES: string[] = [
 ];
 
 export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
-  planned: 'Planned',
-  in_progress: 'In Progress',
-  on_hold: 'On Hold',
-  under_review: 'Under Review',
-  accepted: 'Accepted',
-  rejected: 'Rejected',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
+  planned: 'Planejada',
+  in_progress: 'Em andamento',
+  on_hold: 'Em espera',
+  under_review: 'Em revisão',
+  accepted: 'Aceita',
+  rejected: 'Rejeitada',
+  completed: 'Concluída',
+  cancelled: 'Cancelada',
 };
 
 /** Papéis que podem criar/editar atividades. */

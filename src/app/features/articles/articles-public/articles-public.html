@@ -1,17 +1,17 @@
 <div class="page-container">
   <a mat-button [routerLink]="['/labs', labId]" class="back-link">
     <mat-icon>arrow_back</mat-icon>
-    Back to Lab
+    Voltar ao laboratório
   </a>
 
-  <h1>Published Articles</h1>
+  <h1>Artigos publicados</h1>
 
   @if (loading()) {
     <div class="spinner-center">
       <mat-progress-spinner mode="indeterminate" />
     </div>
   } @else if (articles().length === 0) {
-    <p class="empty-state">No published articles yet.</p>
+    <p class="empty-state">Nenhum artigo publicado ainda.</p>
   } @else {
     <div class="articles-list">
       @for (article of articles(); track article.id) {
@@ -22,7 +22,7 @@
 
           <div class="meta">
             @if (article.conference) {
-              <span><strong>Conference / Journal:</strong> {{ article.conference }}</span>
+              <span><strong>Conferência / Periódico:</strong> {{ article.conference }}</span>
             }
             @if (article.doi) {
               <span>
@@ -34,17 +34,17 @@
             }
             @if (article.published_at) {
               <span>
-                <strong>Published:</strong> {{ article.published_at | date: 'longDate' }}
+                <strong>Publicado:</strong> {{ article.published_at | date: 'longDate' }}
               </span>
             }
             @if (article.in_charge && article.in_charge.length > 0) {
               <span>
-                <strong>In Charge:</strong> {{ article.in_charge.join(', ') }}
+                <strong>Responsáveis:</strong> {{ article.in_charge.join(', ') }}
               </span>
             }
             @if (article.authors && article.authors.length > 0) {
               <span>
-                <strong>Authors:</strong> {{ article.authors.join(', ') }}
+                <strong>Autores:</strong> {{ article.authors.join(', ') }}
               </span>
             }
           </div>

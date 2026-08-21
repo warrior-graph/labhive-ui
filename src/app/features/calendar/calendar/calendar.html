@@ -96,7 +96,7 @@
                 <li class="day-item">
                   <a class="day-item-link" [routerLink]="eventLink(e)">
                     <span class="day-item-title">{{ e.title }}</span>
-                    <span class="day-item-meta">{{ e.lab_name ?? ('Lab #' + e.lab_id) }}</span>
+                    <span class="day-item-meta">{{ e.lab_name ?? ('Laboratório #' + e.lab_id) }}</span>
                   </a>
                   <span [class]="'status-chip status-' + e.status">{{ statusLabel(e.status) }}</span>
                 </li>

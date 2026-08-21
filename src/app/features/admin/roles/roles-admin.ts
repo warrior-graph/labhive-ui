@@ -37,28 +37,28 @@ import { RoleService } from '../../../core/services/role.service';
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">Role Management</h1>
+      <h1 class="page-title">Gestão de Papéis</h1>
 
       <!-- Create form -->
       <div class="create-card">
-        <h2>Add Custom Role</h2>
+        <h2>Adicionar papel personalizado</h2>
         <form [formGroup]="form" (ngSubmit)="create()" class="create-form">
           <mat-form-field appearance="outline">
-            <mat-label>Name</mat-label>
-            <input matInput formControlName="name" placeholder="e.g. Postdoc" />
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="name" placeholder="ex.: Pós-doutor" />
             @if (form.get('name')?.hasError('required')) {
-              <mat-error>Name is required</mat-error>
+              <mat-error>Nome é obrigatório</mat-error>
             }
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Level</mat-label>
+            <mat-label>Nível</mat-label>
             <mat-select formControlName="level">
-              <mat-option [value]="0">0 – Same as Lab Coordinator</mat-option>
-              <mat-option [value]="1">1 – Manager tier</mat-option>
-              <mat-option [value]="2">2 – Lead tier</mat-option>
-              <mat-option [value]="3">3 – Individual contributor</mat-option>
-              <mat-option [value]="4">4 – Support staff</mat-option>
+              <mat-option [value]="0">0 – Igual ao coordenador de laboratório</mat-option>
+              <mat-option [value]="1">1 – Nível de gerência</mat-option>
+              <mat-option [value]="2">2 – Nível de liderança</mat-option>
+              <mat-option [value]="3">3 – Contribuidor individual</mat-option>
+              <mat-option [value]="4">4 – Equipe de suporte</mat-option>
             </mat-select>
           </mat-form-field>
 
@@ -71,7 +71,7 @@ import { RoleService } from '../../../core/services/role.service';
             @if (creating()) {
               <mat-progress-spinner diameter="18" mode="indeterminate" />
             } @else {
-              Add Role
+              Adicionar papel
             }
           </button>
         </form>
@@ -83,23 +83,23 @@ import { RoleService } from '../../../core/services/role.service';
       <!-- Roles table -->
       <mat-table [dataSource]="roles()" class="roles-table">
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <th mat-header-cell *matHeaderCellDef>Nome</th>
           <td mat-cell *matCellDef="let r">{{ r.name }}</td>
         </ng-container>
 
         <ng-container matColumnDef="key">
-          <th mat-header-cell *matHeaderCellDef>Key</th>
+          <th mat-header-cell *matHeaderCellDef>Chave</th>
           <td mat-cell *matCellDef="let r"><code>{{ r.key }}</code></td>
         </ng-container>
 
         <ng-container matColumnDef="level">
-          <th mat-header-cell *matHeaderCellDef>Level</th>
+          <th mat-header-cell *matHeaderCellDef>Nível</th>
           <td mat-cell *matCellDef="let r">{{ r.level }}</td>
         </ng-container>
 
         <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
-          <td mat-cell *matCellDef="let r">{{ r.is_system ? 'System' : 'Custom' }}</td>
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let r">{{ r.is_system ? 'Sistema' : 'Personalizado' }}</td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
@@ -109,7 +109,7 @@ import { RoleService } from '../../../core/services/role.service';
               <button
                 mat-icon-button
                 color="warn"
-                matTooltip="Delete role"
+                matTooltip="Excluir papel"
                 [disabled]="deletingKey() === r.key"
                 (click)="delete(r)"
               >
@@ -130,7 +130,7 @@ import { RoleService } from '../../../core/services/role.service';
             @if (loading()) {
               <mat-progress-spinner mode="indeterminate" diameter="32" />
             } @else {
-              No roles found.
+              Nenhum papel encontrado.
             }
           </td>
         </tr>
@@ -200,10 +200,10 @@ export class RolesAdmin implements OnInit {
         this.roles.update(rs => [...rs, role].sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)));
         this.form.reset({ name: '', level: 3 });
         this.creating.set(false);
-        this.snackBar.open('Role created', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Papel criado', 'Fechar', { duration: 2000 });
       },
       error: err => {
-        this.createError.set(err.error?.error ?? 'Failed to create role.');
+        this.createError.set(err.error?.error ?? 'Falha ao criar papel.');
         this.creating.set(false);
       },
     });
@@ -215,10 +215,10 @@ export class RolesAdmin implements OnInit {
       next: () => {
         this.roles.update(rs => rs.filter(r => r.key !== role.key));
         this.deletingKey.set(null);
-        this.snackBar.open('Role deleted', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Papel excluído', 'Fechar', { duration: 2000 });
       },
       error: err => {
-        this.snackBar.open(err.error?.error ?? 'Failed to delete role.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open(err.error?.error ?? 'Falha ao excluir papel.', 'Fechar', { duration: 3000 });
         this.deletingKey.set(null);
       },
     });

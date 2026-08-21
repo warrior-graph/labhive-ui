@@ -253,7 +253,7 @@ export class LabDetail implements OnInit, AfterViewInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Failed to load laboratory', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Falha ao carregar laboratório', 'Fechar', { duration: 3000 });
         this.router.navigate(['/labs']);
       },
     });
@@ -312,23 +312,23 @@ export class LabDetail implements OnInit, AfterViewInit {
         this.members.update(ms => ms.map(x =>
           x.member_id === updated.member_id ? { ...x, ...updated } : x
         ));
-        this.snackBar.open('Member updated', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Membro atualizado', 'Fechar', { duration: 2000 });
       }
     });
   }
 
   protected removeMember(memberId: number, name: string): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Remove Member', message: `Remove ${name} from this lab?` },
+      data: { title: 'Remover Membro', message: `Remover ${name} deste laboratório?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
       this.memberService.removeMember(this.labId, memberId).subscribe({
         next: () => {
           this.members.update(ms => ms.filter(m => m.member_id !== memberId));
-          this.snackBar.open('Member removed', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Membro removido', 'Fechar', { duration: 2000 });
         },
-        error: () => this.snackBar.open('Failed to remove member', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Falha ao remover membro', 'Fechar', { duration: 3000 }),
       });
     });
   }
@@ -341,14 +341,14 @@ export class LabDetail implements OnInit, AfterViewInit {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
       data: reinstating
         ? {
-            title: 'Reinstate Member',
-            message: `Reinstate ${name}'s membership in this lab?`,
-            confirmLabel: 'Reinstate',
+            title: 'Reintegrar Membro',
+            message: `Reintegrar a associação de ${name} a este laboratório?`,
+            confirmLabel: 'Reintegrar',
           }
         : {
-            title: 'Deactivate Membership',
-            message: `Deactivate ${name}'s membership in this lab? They can be reinstated later.`,
-            confirmLabel: 'Deactivate',
+            title: 'Desativar Associação',
+            message: `Desativar a associação de ${name} a este laboratório? Ele(a) pode ser reintegrado(a) depois.`,
+            confirmLabel: 'Desativar',
           },
     });
 
@@ -363,15 +363,15 @@ export class LabDetail implements OnInit, AfterViewInit {
             ms.map(x => (x.member_id === updated.member_id ? { ...x, ...updated } : x)),
           );
           this.snackBar.open(
-            reinstating ? `${name} reinstated` : `${name} deactivated`,
-            'Dismiss',
+            reinstating ? `${name} reintegrado(a)` : `${name} desativado(a)`,
+            'Fechar',
             { duration: 2000 },
           );
         },
         error: () =>
           this.snackBar.open(
-            reinstating ? 'Failed to reinstate member' : 'Failed to deactivate member',
-            'Dismiss',
+            reinstating ? 'Falha ao reintegrar membro' : 'Falha ao desativar membro',
+            'Fechar',
             { duration: 3000 },
           ),
       });
@@ -382,7 +382,7 @@ export class LabDetail implements OnInit, AfterViewInit {
   protected openInviteDialog(): void {
     this.dialog.open(InviteDialog, {
       width: '480px',
-      data: { labId: this.labId, labName: this.lab()?.name ?? `Lab #${this.labId}` },
+      data: { labId: this.labId, labName: this.lab()?.name ?? `Laboratório #${this.labId}` },
     });
   }
 
@@ -403,16 +403,16 @@ export class LabDetail implements OnInit, AfterViewInit {
 
   protected deleteProject(projectId: number, name: string): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Delete Project', message: `Delete project "${name}"?` },
+      data: { title: 'Excluir Projeto', message: `Excluir o projeto "${name}"?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
       this.projectService.delete(this.labId, projectId).subscribe({
         next: () => {
           this.projects.update(ps => ps.filter(p => p.id !== projectId));
-          this.snackBar.open('Project deleted', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Projeto excluído', 'Fechar', { duration: 2000 });
         },
-        error: () => this.snackBar.open('Failed to delete project', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Falha ao excluir projeto', 'Fechar', { duration: 3000 }),
       });
     });
   }
@@ -424,9 +424,9 @@ export class LabDetail implements OnInit, AfterViewInit {
     call.subscribe({
       next: updated => {
         this.projects.update(ps => ps.map(p => p.id === project.id ? updated : p));
-        this.snackBar.open(`Project ${updated.is_active ? 'activated' : 'deactivated'}.`, 'Dismiss', { duration: 2000 });
+        this.snackBar.open(`Projeto ${updated.is_active ? 'ativado' : 'desativado'}.`, 'Fechar', { duration: 2000 });
       },
-      error: () => this.snackBar.open('Failed to update project status.', 'Dismiss', { duration: 3000 }),
+      error: () => this.snackBar.open('Falha ao atualizar o status do projeto.', 'Fechar', { duration: 3000 }),
     });
   }
 
@@ -449,16 +449,16 @@ export class LabDetail implements OnInit, AfterViewInit {
 
   protected deleteResearch(researchId: number, name: string): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Delete Research Group', message: `Delete "${name}"?` },
+      data: { title: 'Excluir Grupo de Pesquisa', message: `Excluir "${name}"?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
       this.researchService.delete(this.labId, researchId).subscribe({
         next: () => {
           this.research.update(rs => rs.filter(r => r.id !== researchId));
-          this.snackBar.open('Research group deleted', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Grupo de pesquisa excluído', 'Fechar', { duration: 2000 });
         },
-        error: () => this.snackBar.open('Failed to delete research group', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Falha ao excluir grupo de pesquisa', 'Fechar', { duration: 3000 }),
       });
     });
   }
@@ -470,9 +470,9 @@ export class LabDetail implements OnInit, AfterViewInit {
     call.subscribe({
       next: updated => {
         this.research.update(rs => rs.map(r => r.id === group.id ? updated : r));
-        this.snackBar.open(`Research group ${updated.is_active ? 'activated' : 'deactivated'}.`, 'Dismiss', { duration: 2000 });
+        this.snackBar.open(`Grupo de pesquisa ${updated.is_active ? 'ativado' : 'desativado'}.`, 'Fechar', { duration: 2000 });
       },
-      error: () => this.snackBar.open('Failed to update research group status.', 'Dismiss', { duration: 3000 }),
+      error: () => this.snackBar.open('Falha ao atualizar o status do grupo de pesquisa.', 'Fechar', { duration: 3000 }),
     });
   }
 
@@ -485,22 +485,22 @@ export class LabDetail implements OnInit, AfterViewInit {
           a.id === updated.id ? updated : a
         );
       },
-      error: () => this.snackBar.open('Failed to update status', 'Dismiss', { duration: 3000 }),
+      error: () => this.snackBar.open('Falha ao atualizar o status', 'Fechar', { duration: 3000 }),
     });
   }
 
   protected deleteArticle(articleId: number, title: string): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Delete Article', message: `Delete "${title}"?` },
+      data: { title: 'Excluir Artigo', message: `Excluir "${title}"?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
       this.articleService.delete(this.labId, articleId).subscribe({
         next: () => {
           this.articlesDataSource.data = this.articlesDataSource.data.filter(a => a.id !== articleId);
-          this.snackBar.open('Article deleted', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Artigo excluído', 'Fechar', { duration: 2000 });
         },
-        error: () => this.snackBar.open('Failed to delete article', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Falha ao excluir artigo', 'Fechar', { duration: 3000 }),
       });
     });
   }
@@ -514,9 +514,9 @@ export class LabDetail implements OnInit, AfterViewInit {
         this.articlesDataSource.data = this.articlesDataSource.data.map(a =>
           a.id === article.id ? updated : a
         );
-        this.snackBar.open(`Article ${updated.is_active ? 'activated' : 'deactivated'}.`, 'Dismiss', { duration: 2000 });
+        this.snackBar.open(`Artigo ${updated.is_active ? 'ativado' : 'desativado'}.`, 'Fechar', { duration: 2000 });
       },
-      error: () => this.snackBar.open('Failed to update article status.', 'Dismiss', { duration: 3000 }),
+      error: () => this.snackBar.open('Falha ao atualizar o status do artigo.', 'Fechar', { duration: 3000 }),
     });
   }
 
@@ -530,7 +530,7 @@ export class LabDetail implements OnInit, AfterViewInit {
     ref.afterClosed().subscribe(created => {
       if (created) {
         this.inventory.update(items => [...items, created]);
-        this.snackBar.open('Item added', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Item adicionado', 'Fechar', { duration: 2000 });
       }
     });
   }
@@ -543,23 +543,23 @@ export class LabDetail implements OnInit, AfterViewInit {
     ref.afterClosed().subscribe(updated => {
       if (updated) {
         this.inventory.update(items => items.map(i => i.id === updated.id ? updated : i));
-        this.snackBar.open('Item updated', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Item atualizado', 'Fechar', { duration: 2000 });
       }
     });
   }
 
   protected deleteInventoryItem(itemId: number, name: string): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Delete Item', message: `Delete "${name}" from inventory?` },
+      data: { title: 'Excluir Item', message: `Excluir "${name}" do inventário?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
       this.inventoryService.delete(this.labId, itemId).subscribe({
         next: () => {
           this.inventory.update(items => items.filter(i => i.id !== itemId));
-          this.snackBar.open('Item deleted', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Item excluído', 'Fechar', { duration: 2000 });
         },
-        error: () => this.snackBar.open('Failed to delete item', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Falha ao excluir item', 'Fechar', { duration: 3000 }),
       });
     });
   }
@@ -569,15 +569,15 @@ export class LabDetail implements OnInit, AfterViewInit {
   protected deleteLab(): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
       data: {
-        title: 'Delete Laboratory',
-        message: `Permanently delete "${this.lab()?.name}"? This cannot be undone.`,
+        title: 'Excluir Laboratório',
+        message: `Excluir permanentemente "${this.lab()?.name}"? Esta ação não pode ser desfeita.`,
       },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
       this.labService.delete(this.labId).subscribe({
         next: () => this.router.navigate(['/labs']),
-        error: () => this.snackBar.open('Failed to delete laboratory', 'Dismiss', { duration: 3000 }),
+        error: () => this.snackBar.open('Falha ao excluir laboratório', 'Fechar', { duration: 3000 }),
       });
     });
   }

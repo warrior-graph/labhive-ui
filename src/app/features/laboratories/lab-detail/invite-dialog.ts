@@ -44,22 +44,22 @@ export interface InviteDialogData {
     MatTooltip,
   ],
   template: `
-    <h2 mat-dialog-title>Generate Invite Link</h2>
+    <h2 mat-dialog-title>Gerar link de convite</h2>
     <mat-dialog-content>
       <p class="invite-intro">
-        Anyone with this link can register and will be auto-approved as a
-        <strong>Research Fellow</strong> in
+        Qualquer pessoa com este link pode se cadastrar e será aprovada automaticamente como
+        <strong>Pesquisador(a) Júnior</strong> em
         <strong>{{ data.labName }}</strong>.
       </p>
 
       @if (!invite()) {
         <form class="invite-form" (ngSubmit)="generate()">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Validity</mat-label>
+            <mat-label>Validade</mat-label>
             <mat-select [value]="days" (valueChange)="days = $event">
-              <mat-option [value]="1">1 day</mat-option>
-              <mat-option [value]="7">7 days</mat-option>
-              <mat-option [value]="30">30 days</mat-option>
+              <mat-option [value]="1">1 dia</mat-option>
+              <mat-option [value]="7">7 dias</mat-option>
+              <mat-option [value]="30">30 dias</mat-option>
             </mat-select>
           </mat-form-field>
 
@@ -70,7 +70,7 @@ export interface InviteDialogData {
       } @else {
         <div class="invite-result">
           <p class="expiry-label">
-            Expires on {{ invite()!.expires_at | date: 'medium' }}
+            Expira em {{ invite()!.expires_at | date: 'medium' }}
           </p>
           <div class="invite-url-row">
             <input
@@ -82,21 +82,21 @@ export interface InviteDialogData {
             <button
               mat-icon-button
               color="primary"
-              matTooltip="Copy link"
-              aria-label="Copy invite link"
+              matTooltip="Copiar link"
+              aria-label="Copiar link de convite"
               (click)="copy()"
             >
               <mat-icon>content_copy</mat-icon>
             </button>
           </div>
-          <p class="copy-hint">Share this link with the person you want to invite.</p>
+          <p class="copy-hint">Compartilhe este link com a pessoa que você deseja convidar.</p>
         </div>
       }
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
       <button mat-button (click)="dialogRef.close()">
-        @if (invite()) { Close } @else { Cancel }
+        @if (invite()) { Fechar } @else { Cancelar }
       </button>
       @if (!invite()) {
         <button
@@ -108,7 +108,7 @@ export interface InviteDialogData {
           @if (generating()) {
             <mat-progress-spinner diameter="18" mode="indeterminate" />
           } @else {
-            Generate Link
+            Gerar Link
           }
         </button>
       }
@@ -179,7 +179,7 @@ export class InviteDialog {
         this.generating.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        this.error.set(extractApiError(err, 'Failed to generate invite link.'));
+        this.error.set(extractApiError(err, 'Falha ao gerar o link de convite.'));
         this.generating.set(false);
       },
     });
@@ -194,7 +194,7 @@ export class InviteDialog {
     if (!url) return;
     try {
       await navigator.clipboard.writeText(url);
-      this.snackBar.open('Invite link copied', 'Dismiss', { duration: 2000 });
+      this.snackBar.open('Link de convite copiado', 'Fechar', { duration: 2000 });
     } catch {
       // Fallback for non-secure contexts
       const textarea = document.createElement('textarea');
@@ -205,7 +205,7 @@ export class InviteDialog {
       textarea.select();
       try {
         document.execCommand('copy');
-        this.snackBar.open('Invite link copied', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Link de convite copiado', 'Fechar', { duration: 2000 });
       } finally {
         document.body.removeChild(textarea);
       }

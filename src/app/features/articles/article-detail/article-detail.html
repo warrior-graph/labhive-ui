@@ -1,7 +1,7 @@
 <div class="page-container">
   <a mat-button [routerLink]="['/labs', labId]" [queryParams]="{ tab: 3 }" class="back-link">
     <mat-icon>arrow_back</mat-icon>
-    Back to Lab
+    Voltar ao laboratório
   </a>
 
   @if (loading()) {
@@ -14,7 +14,7 @@
     @if (!editMode()) {
       <div class="article-header">
         <h1>{{ article()!.title }}</h1>
-        <button mat-icon-button matTooltip="Edit article" (click)="startEdit()">
+        <button mat-icon-button matTooltip="Editar artigo" (click)="startEdit()">
           <mat-icon>edit</mat-icon>
         </button>
       </div>
@@ -27,20 +27,20 @@
           </span>
         </span>
         @if (article()!.conference) {
-          <span><strong>Conference / Journal:</strong> {{ article()!.conference }}</span>
+          <span><strong>Conferência / Periódico:</strong> {{ article()!.conference }}</span>
         }
         @if (article()!.doi) {
           <span><strong>DOI:</strong> {{ article()!.doi }}</span>
         }
         @if (article()!.submission_deadline) {
           <span>
-            <strong>Submission Deadline:</strong>
+            <strong>Prazo de submissão:</strong>
             {{ article()!.submission_deadline! | date: 'mediumDate' }}
           </span>
         }
         @if (article()!.published_at) {
           <span>
-            <strong>Published:</strong>
+            <strong>Publicado:</strong>
             {{ article()!.published_at! | date: 'longDate' }}
           </span>
         }
@@ -48,7 +48,7 @@
 
       @if (article()!.abstract) {
         <section class="abstract">
-          <h2>Abstract</h2>
+          <h2>Resumo</h2>
           <p>{{ article()!.abstract }}</p>
         </section>
       }
@@ -57,14 +57,14 @@
 
       @if (article()!.in_charge && article()!.in_charge.length > 0) {
         <section class="authors">
-          <h3>In Charge</h3>
+          <h3>Responsáveis</h3>
           <p>{{ article()!.in_charge.join(', ') }}</p>
         </section>
       }
 
       @if (article()!.authors && article()!.authors.length > 0) {
         <section class="authors">
-          <h3>Authors</h3>
+          <h3>Autores</h3>
           <p>{{ article()!.authors.join(', ') }}</p>
         </section>
       }
@@ -72,33 +72,33 @@
     <!-- ── Edit Mode — same structure as New Article page ── -->
     } @else {
       <mat-card>
-        <mat-card-title>Edit Article</mat-card-title>
+        <mat-card-title>Editar artigo</mat-card-title>
         <mat-card-content>
           <form [formGroup]="form" (ngSubmit)="saveEdit()" novalidate>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Title</mat-label>
+              <mat-label>Título</mat-label>
               <input matInput formControlName="title" />
               @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
-                <mat-error>Title is required</mat-error>
+                <mat-error>Título é obrigatório</mat-error>
               }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Abstract</mat-label>
+              <mat-label>Resumo</mat-label>
               <textarea matInput formControlName="abstract" rows="6"></textarea>
             </mat-form-field>
 
             <div class="two-col">
               <mat-form-field appearance="outline">
-                <mat-label>Conference / Journal</mat-label>
+                <mat-label>Conferência / Periódico</mat-label>
                 <input matInput formControlName="conference" />
               </mat-form-field>
 
               <mat-form-field appearance="outline">
                 <mat-label>DOI</mat-label>
                 <input matInput formControlName="doi" />
-                <mat-hint>e.g. 10.1000/xyz123 (only if published)</mat-hint>
+                <mat-hint>ex.: 10.1000/xyz123 (somente se publicado)</mat-hint>
               </mat-form-field>
             </div>
 
@@ -113,19 +113,19 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Submission Deadline</mat-label>
+                <mat-label>Prazo de submissão</mat-label>
                 <input matInput type="date" formControlName="submission_deadline" />
               </mat-form-field>
             </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Publication Date</mat-label>
+              <mat-label>Data de publicação</mat-label>
               <input matInput type="date" formControlName="published_at" />
-              <mat-hint>Only set when status is Published</mat-hint>
+              <mat-hint>Defina somente quando o status for Publicado</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width" floatLabel="always">
-              <mat-label>In Charge</mat-label>
+              <mat-label>Responsáveis</mat-label>
               <mat-chip-grid #inChargeGrid>
                 @for (person of editInCharge; track person) {
                   <mat-chip (removed)="removeEditInCharge(person)">
@@ -134,17 +134,17 @@
                   </mat-chip>
                 }
                 <input
-                  placeholder="Type name and press Enter…"
+                  placeholder="Digite o nome e pressione Enter…"
                   [matChipInputFor]="inChargeGrid"
                   [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                   (matChipInputTokenEnd)="addEditInCharge($event)"
                 />
               </mat-chip-grid>
-              <mat-hint>People responsible for leading this article</mat-hint>
+              <mat-hint>Pessoas responsáveis por conduzir este artigo</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width" floatLabel="always">
-              <mat-label>Authors</mat-label>
+              <mat-label>Autores</mat-label>
               <mat-chip-grid #authorGrid>
                 @for (author of editAuthors; track author) {
                   <mat-chip (removed)="removeEditAuthor(author)">
@@ -153,22 +153,22 @@
                   </mat-chip>
                 }
                 <input
-                  placeholder="Type name and press Enter…"
+                  placeholder="Digite o nome e pressione Enter…"
                   [matChipInputFor]="authorGrid"
                   [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                   (matChipInputTokenEnd)="addEditAuthor($event)"
                 />
               </mat-chip-grid>
-              <mat-hint>Can include external collaborators</mat-hint>
+              <mat-hint>Pode incluir colaboradores externos</mat-hint>
             </mat-form-field>
 
             <div class="form-actions">
-              <button mat-button type="button" (click)="cancelEdit()">Cancel</button>
+              <button mat-button type="button" (click)="cancelEdit()">Cancelar</button>
               <button mat-raised-button color="primary" type="submit" [disabled]="saving() || form.invalid">
                 @if (saving()) {
                   <mat-progress-spinner diameter="18" mode="indeterminate" />
                 } @else {
-                  Save Changes
+                  Salvar alterações
                 }
               </button>
             </div>

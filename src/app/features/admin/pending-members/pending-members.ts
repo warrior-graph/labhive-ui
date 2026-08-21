@@ -96,11 +96,11 @@ export class PendingMembers implements OnInit {
         this.pending.update(list => list.filter(m => m.id !== member.id));
         this.allMembers.update(list => list.map(m => m.id === member.id ? updated : m));
         this.setApproving(member.id, false);
-        this.snackBar.open(`${member.first_name} ${member.last_name} approved.`, 'Dismiss', { duration: 4000 });
+        this.snackBar.open(`${member.first_name} ${member.last_name} aprovado(a).`, 'Fechar', { duration: 4000 });
       },
       error: () => {
         this.setApproving(member.id, false);
-        this.snackBar.open('Failed to approve member.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao aprovar membro.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -114,12 +114,12 @@ export class PendingMembers implements OnInit {
       next: updated => {
         this.allMembers.update(list => list.map(m => m.id === member.id ? updated : m));
         this.setToggling(member.id, false);
-        const action = updated.is_active ? 'activated' : 'deactivated';
-        this.snackBar.open(`${member.first_name} ${member.last_name} ${action}.`, 'Dismiss', { duration: 4000 });
+        const action = updated.is_active ? 'ativado(a)' : 'desativado(a)';
+        this.snackBar.open(`${member.first_name} ${member.last_name} ${action}.`, 'Fechar', { duration: 4000 });
       },
       error: () => {
         this.setToggling(member.id, false);
-        this.snackBar.open('Failed to update member status.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao atualizar o status do membro.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -133,17 +133,17 @@ export class PendingMembers implements OnInit {
   }
 
   protected resetDb(): void {
-    if (!confirm('Reset the database? All data will be wiped and re-seeded.')) return;
+    if (!confirm('Resetar o banco? Todos os dados serão apagados e recriados.')) return;
     this.resetting.set(true);
     this.memberService.debugResetDb().subscribe({
       next: () => {
         this.resetting.set(false);
-        this.snackBar.open('Database reset. Reload the page.', 'Reload', { duration: 8000 })
+        this.snackBar.open('Banco resetado. Recarregue a página.', 'Recarregar', { duration: 8000 })
           .onAction().subscribe(() => location.reload());
       },
       error: () => {
         this.resetting.set(false);
-        this.snackBar.open('DB reset failed — check backend logs.', 'Dismiss', { duration: 6000 });
+        this.snackBar.open('Falha ao resetar o banco — verifique os logs do servidor.', 'Fechar', { duration: 6000 });
       },
     });
   }
@@ -156,7 +156,7 @@ export class PendingMembers implements OnInit {
   protected roleLabel(m: Member): string {
     if (m.is_super_admin) return 'Super Admin';
     if (m.is_professor) return 'Professor';
-    return 'Member';
+    return 'Membro';
   }
 
   protected manageLabs(member: Member): void {

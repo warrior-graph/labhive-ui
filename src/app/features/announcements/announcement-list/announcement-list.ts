@@ -99,7 +99,7 @@ export class AnnouncementList implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Falha ao carregar avisos.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar avisos.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -111,7 +111,7 @@ export class AnnouncementList implements OnInit {
     });
     ref.afterClosed().subscribe(created => {
       if (created) {
-        this.snackBar.open('Aviso criado.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Aviso criado.', 'Fechar', { duration: 3000 });
         this.load();
       }
     });
@@ -124,7 +124,7 @@ export class AnnouncementList implements OnInit {
     });
     ref.afterClosed().subscribe(updated => {
       if (updated) {
-        this.snackBar.open('Aviso atualizado.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Aviso atualizado.', 'Fechar', { duration: 3000 });
         this.load();
       }
     });
@@ -137,11 +137,11 @@ export class AnnouncementList implements OnInit {
       next: () => {
         this.announcements.update(list => list.filter(x => x.id !== a.id));
         this.deleting.update(s => { const n = new Set(s); n.delete(a.id); return n; });
-        this.snackBar.open('Aviso excluído.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Aviso excluído.', 'Fechar', { duration: 3000 });
       },
       error: (err: HttpErrorResponse) => {
         this.deleting.update(s => { const n = new Set(s); n.delete(a.id); return n; });
-        this.snackBar.open(extractApiError(err, 'Falha ao excluir aviso.'), 'Dismiss', {
+        this.snackBar.open(extractApiError(err, 'Falha ao excluir aviso.'), 'Fechar', {
           duration: 4000,
         });
       },

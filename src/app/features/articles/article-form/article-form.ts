@@ -110,12 +110,12 @@ export class ArticleForm implements OnInit {
       })
       .subscribe({
         next: (_article: any) => {
-          this.snackBar.open('Article created', 'Dismiss', { duration: 2000 });
+          this.snackBar.open('Artigo criado', 'Fechar', { duration: 2000 });
           // Redirect back to lab detail on the Articles tab (index 3)
           this.router.navigate(['/labs', this.labId], { queryParams: { tab: 3 } });
         },
         error: (err: HttpErrorResponse) => {
-          this.snackBar.open(err.error?.message ?? 'Failed to create article', 'Dismiss', {
+          this.snackBar.open(err.error?.message ?? 'Falha ao criar o artigo', 'Fechar', {
             duration: 3000,
           });
           this.loading.set(false);

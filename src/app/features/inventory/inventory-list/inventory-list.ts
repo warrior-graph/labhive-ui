@@ -96,7 +96,7 @@ export class InventoryList implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Failed to load inventory.', 'Dismiss', { duration: 4000 });
+        this.snackBar.open('Falha ao carregar o inventário.', 'Fechar', { duration: 4000 });
       },
     });
   }
@@ -116,7 +116,7 @@ export class InventoryList implements OnInit {
     );
     ref.afterClosed().subscribe(created => {
       if (created) {
-        this.snackBar.open('Item criado.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Item criado.', 'Fechar', { duration: 3000 });
         this.load();
       }
     });
@@ -131,19 +131,19 @@ export class InventoryList implements OnInit {
         );
         ref.afterClosed().subscribe(updated => {
           if (updated) {
-            this.snackBar.open('Item atualizado.', 'Dismiss', { duration: 3000 });
+            this.snackBar.open('Item atualizado.', 'Fechar', { duration: 3000 });
             this.load();
           }
         });
       },
       error: () =>
-        this.snackBar.open('Falha ao carregar o item.', 'Dismiss', { duration: 4000 }),
+        this.snackBar.open('Falha ao carregar o item.', 'Fechar', { duration: 4000 }),
     });
   }
 
   protected deleteItem(i: DashboardInventoryItem): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Delete Item', message: `Delete "${i.name}" from inventory?` },
+      data: { title: 'Excluir item', message: `Excluir "${i.name}" do inventário?` },
     });
     ref.afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
@@ -159,7 +159,7 @@ export class InventoryList implements OnInit {
             n.delete(i.id);
             return n;
           });
-          this.snackBar.open('Item excluído.', 'Dismiss', { duration: 3000 });
+          this.snackBar.open('Item excluído.', 'Fechar', { duration: 3000 });
           this.load();
         },
         error: () => {
@@ -168,7 +168,7 @@ export class InventoryList implements OnInit {
             n.delete(i.id);
             return n;
           });
-          this.snackBar.open('Falha ao excluir o item.', 'Dismiss', { duration: 4000 });
+          this.snackBar.open('Falha ao excluir o item.', 'Fechar', { duration: 4000 });
         },
       });
     });

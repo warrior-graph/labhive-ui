@@ -38,7 +38,7 @@ export interface ManageLabsData {
   ],
   template: `
     <h2 mat-dialog-title>
-      Manage Labs — {{ data.member.first_name }} {{ data.member.last_name }}
+      Gerenciar laboratórios — {{ data.member.first_name }} {{ data.member.last_name }}
     </h2>
     <mat-dialog-content>
       @if (loading()) {
@@ -46,16 +46,16 @@ export interface ManageLabsData {
           <mat-progress-spinner mode="indeterminate" diameter="36" />
         </div>
       } @else {
-        <p class="section-label">Current Memberships</p>
+        <p class="section-label">Associações atuais</p>
         @if (memberships().length === 0) {
-          <p class="empty-text">No lab memberships yet.</p>
+          <p class="empty-text">Nenhuma associação a laboratório ainda.</p>
         } @else {
           @for (m of memberships(); track m.lab_id) {
             <div class="membership-row">
-              <span class="lab-name">{{ m.laboratory?.name ?? 'Lab #' + m.lab_id }}</span>
+              <span class="lab-name">{{ m.laboratory?.name ?? 'Laboratório #' + m.lab_id }}</span>
               <span class="role-badge">{{ m.roles.map(roleLabel).join(', ') }}</span>
               <button mat-icon-button color="warn"
-                [matTooltip]="isSelf() ? 'Cannot modify your own membership' : 'Remove from this lab'"
+                [matTooltip]="isSelf() ? 'Não é possível alterar sua própria associação' : 'Remover deste laboratório'"
                 (click)="remove(m)" [disabled]="removing().has(m.lab_id) || isSelf()">
                 @if (removing().has(m.lab_id)) {
                   <mat-progress-spinner diameter="18" mode="indeterminate" />
@@ -69,13 +69,13 @@ export interface ManageLabsData {
 
         <mat-divider class="divider" />
 
-        <p class="section-label">Add to Lab</p>
+        <p class="section-label">Adicionar ao laboratório</p>
         <form [formGroup]="addForm" (ngSubmit)="add()" class="add-form">
           <mat-form-field appearance="outline">
-            <mat-label>Laboratory</mat-label>
+            <mat-label>Laboratório</mat-label>
             <mat-select formControlName="lab_id">
               @if (availableLabs().length === 0) {
-                <mat-option disabled>Member is already in all labs</mat-option>
+                <mat-option disabled>O membro já está em todos os laboratórios</mat-option>
               }
               @for (lab of availableLabs(); track lab.id) {
                 <mat-option [value]="lab.id">{{ lab.name }}</mat-option>
@@ -84,7 +84,7 @@ export interface ManageLabsData {
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Role</mat-label>
+            <mat-label>Papel</mat-label>
             <mat-select formControlName="roles" multiple>
               @for (r of roles; track r.value) {
                 <mat-option [value]="r.value">{{ r.label }}</mat-option>
@@ -97,14 +97,14 @@ export interface ManageLabsData {
             @if (adding()) {
               <mat-progress-spinner diameter="18" mode="indeterminate" />
             } @else {
-              Add to Lab
+              Adicionar ao laboratório
             }
           </button>
         </form>
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="close()">Close</button>
+      <button mat-button (click)="close()">Fechar</button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -189,11 +189,11 @@ export class ManageLabsDialog implements OnInit {
       next: () => {
         this.memberships.update(list => list.filter(m => m.lab_id !== membership.lab_id));
         this.removing.update(s => { const n = new Set(s); n.delete(membership.lab_id); return n; });
-        this.snackBar.open('Removed from lab.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Removido do laboratório.', 'Fechar', { duration: 3000 });
       },
       error: () => {
         this.removing.update(s => { const n = new Set(s); n.delete(membership.lab_id); return n; });
-        this.snackBar.open('Failed to remove from lab.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Falha ao remover do laboratório.', 'Fechar', { duration: 3000 });
       },
     });
   }
@@ -208,11 +208,11 @@ export class ManageLabsDialog implements OnInit {
         this.memberships.update(list => [...list, membership]);
         this.adding.set(false);
         this.addForm.patchValue({ lab_id: null });
-        this.snackBar.open('Added to lab.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Adicionado ao laboratório.', 'Fechar', { duration: 3000 });
       },
       error: () => {
         this.adding.set(false);
-        this.snackBar.open('Failed to add to lab.', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Falha ao adicionar ao laboratório.', 'Fechar', { duration: 3000 });
       },
     });
   }

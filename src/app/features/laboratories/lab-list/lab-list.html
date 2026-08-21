@@ -1,10 +1,10 @@
 <div class="page-container">
   <div class="page-header">
-    <h1>Laboratories</h1>
+    <h1>Laboratórios</h1>
     @if (authService.currentUser()?.is_super_admin || authService.currentUser()?.is_professor) {
       <button mat-raised-button color="primary" (click)="openCreate()">
         <mat-icon>add</mat-icon>
-        New Laboratory
+        Novo Laboratório
       </button>
     }
   </div>
@@ -14,32 +14,32 @@
       <mat-progress-spinner mode="indeterminate" />
     </div>
   } @else if (labs().length === 0) {
-    <p class="empty-state">No laboratories found.</p>
+    <p class="empty-state">Nenhum laboratório encontrado.</p>
   } @else {
     @if (myLabs().length > 0) {
-      <h2 class="section-title">My Labs</h2>
+      <h2 class="section-title">Meus Laboratórios</h2>
       <div class="lab-grid">
         @for (lab of myLabs(); track lab.id) {
           <mat-card class="lab-card" [class.lab-inactive]="!lab.is_active" [routerLink]="['/labs', lab.id]">
             <mat-card-header>
               <mat-card-title>
                 {{ lab.name }}
-                <mat-chip class="chip-member" disableRipple>Member</mat-chip>
+                <mat-chip class="chip-member" disableRipple>Membro</mat-chip>
                 @if (!lab.is_active) {
-                  <mat-chip class="chip-inactive" disableRipple>Inactive</mat-chip>
+                  <mat-chip class="chip-inactive" disableRipple>Inativo</mat-chip>
                 }
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <p>{{ lab.description || 'No description provided.' }}</p>
+              <p>{{ lab.description || 'Nenhuma descrição fornecida.' }}</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary">Open</button>
+              <button mat-button color="primary">Abrir</button>
               @if (authService.currentUser()?.is_super_admin) {
                 <button
                   mat-icon-button
                   [color]="lab.is_active ? 'warn' : 'primary'"
-                  [matTooltip]="lab.is_active ? 'Deactivate lab' : 'Activate lab'"
+                  [matTooltip]="lab.is_active ? 'Desativar laboratório' : 'Ativar laboratório'"
                   (click)="toggleActive(lab, $event)"
                   [disabled]="toggling().has(lab.id)"
                 >
@@ -57,7 +57,7 @@
     }
 
     @if (otherLabs().length > 0) {
-      <h2 class="section-title">{{ myLabs().length > 0 ? 'Other Laboratories' : 'Laboratories' }}</h2>
+      <h2 class="section-title">{{ myLabs().length > 0 ? 'Outros Laboratórios' : 'Laboratórios' }}</h2>
       <div class="lab-grid">
         @for (lab of otherLabs(); track lab.id) {
           <mat-card class="lab-card" [class.lab-inactive]="!lab.is_active" [routerLink]="['/labs', lab.id]">
@@ -65,20 +65,20 @@
               <mat-card-title>
                 {{ lab.name }}
                 @if (!lab.is_active) {
-                  <mat-chip class="chip-inactive" disableRipple>Inactive</mat-chip>
+                  <mat-chip class="chip-inactive" disableRipple>Inativo</mat-chip>
                 }
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <p>{{ lab.description || 'No description provided.' }}</p>
+              <p>{{ lab.description || 'Nenhuma descrição fornecida.' }}</p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-button color="primary">Open</button>
+              <button mat-button color="primary">Abrir</button>
               @if (authService.currentUser()?.is_super_admin) {
                 <button
                   mat-icon-button
                   [color]="lab.is_active ? 'warn' : 'primary'"
-                  [matTooltip]="lab.is_active ? 'Deactivate lab' : 'Activate lab'"
+                  [matTooltip]="lab.is_active ? 'Desativar laboratório' : 'Ativar laboratório'"
                   (click)="toggleActive(lab, $event)"
                   [disabled]="toggling().has(lab.id)"
                 >

@@ -28,6 +28,18 @@ import { ActivityFormDialog } from '../activity-form-dialog/activity-form-dialog
   styleUrl: './activity-detail.scss',
 })
 export class ActivityDetail implements OnInit {
+  private static readonly STATUS_LABELS: Record<string, string> = {
+    planned: 'Planejada',
+    in_progress: 'Em andamento',
+    on_hold: 'Em espera',
+    under_review: 'Em revisão',
+    accepted: 'Aceita',
+    rejected: 'Rejeitada',
+    completed: 'Concluída',
+    cancelled: 'Cancelada',
+    active: 'Ativo',
+  };
+
   protected readonly activity = signal<ActivityDetailModel | null>(null);
   protected readonly loading = signal(true);
   protected readonly reviewing = signal<'accepted' | 'rejected' | null>(null);
@@ -91,7 +103,7 @@ export class ActivityDetail implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Activity not found', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Atividade não encontrada', 'Dismiss', { duration: 3000 });
         this.router.navigate(['/labs', this.labId]);
       },
     });
@@ -146,7 +158,7 @@ export class ActivityDetail implements OnInit {
       },
       error: err => {
         this.reviewing.set(null);
-        let msg = 'Failed to review activity.';
+        let msg = 'Falha ao revisar a atividade.';
         if (err?.status === 409) {
           msg = 'Atividade não está mais em revisão';
         } else if (err?.status === 403) {
@@ -160,7 +172,10 @@ export class ActivityDetail implements OnInit {
   }
 
   protected statusLabel(status: string): string {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return (
+      ActivityDetail.STATUS_LABELS[status] ??
+      status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    );
   }
 
   protected daysLeft(deadline: string | null): number | null {
@@ -180,9 +195,9 @@ export class ActivityDetail implements OnInit {
   protected deadlineLabel(deadline: string | null): string {
     const days = this.daysLeft(deadline);
     if (days === null) return '—';
-    if (days < 0) return `${Math.abs(days)}d late`;
-    if (days === 0) return 'Due today';
-    return `${days}d left`;
+    if (days < 0) return `${Math.abs(days)}d em atraso`;
+    if (days === 0) return 'Vence hoje';
+    return `${days}d restantes`;
   }
 
   protected personName(p: { first_name: string; last_name: string }): string {

@@ -115,7 +115,7 @@ export class ResearchDetail implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Research group not found', 'Dismiss', { duration: 3000 });
+        this.snackBar.open('Grupo de pesquisa não encontrado', 'Fechar', { duration: 3000 });
         this.router.navigate(['/labs', this.labId]);
       },
     });
@@ -128,10 +128,10 @@ export class ResearchDetail implements OnInit {
       next: r => {
         this.research.set(r);
         this.selectedMemberId.set(null);
-        this.snackBar.open('Member added', 'Dismiss', { duration: 2000 });
+        this.snackBar.open('Membro adicionado', 'Fechar', { duration: 2000 });
       },
       error: err =>
-        this.snackBar.open(err.error?.message ?? 'Failed to add member', 'Dismiss', {
+        this.snackBar.open(err.error?.message ?? 'Falha ao adicionar membro', 'Fechar', {
           duration: 3000,
         }),
     });
@@ -140,8 +140,8 @@ export class ResearchDetail implements OnInit {
   protected removeMember(member: Member): void {
     const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
       data: {
-        title: 'Remove Member',
-        message: `Remove ${member.first_name} ${member.last_name} from this research group?`,
+        title: 'Remover membro',
+        message: `Remover ${member.first_name} ${member.last_name} deste grupo de pesquisa?`,
       },
     });
     ref.afterClosed().subscribe(confirmed => {
