@@ -21,6 +21,24 @@ export const routes: Routes = [
       import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard),
   },
   {
+    path: 'activities',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/activities/activity-list/activity-list').then(m => m.ActivityList),
+  },
+  {
+    path: 'projects',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/projects/project-list/project-list').then(m => m.ProjectList),
+  },
+  {
+    path: 'inventory',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inventory/inventory-list/inventory-list').then(m => m.InventoryList),
+  },
+  {
     path: 'labs',
     canActivate: [authGuard],
     loadComponent: () =>

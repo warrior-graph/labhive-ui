@@ -21,7 +21,7 @@
         <!-- ── Manager view ── -->
         <div class="stat-grid">
           @for (card of statCards(); track card.label) {
-            <a class="stat-card" [routerLink]="card.link">
+            <a class="stat-card" [routerLink]="card.link" [queryParams]="card.queryParams">
               <mat-icon>{{ card.icon }}</mat-icon>
               <span class="stat-value">{{ card.value }}</span>
               <span class="stat-label">{{ card.label }}</span>

@@ -1,0 +1,64 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>rocket_launch</mat-icon>
+      Atividades
+    </h1>
+  </div>
+
+  <div class="filter-bar">
+    <button
+      type="button"
+      class="filter-chip"
+      [class.filter-chip-active]="selectedStatus() === null"
+      (click)="selectStatus(null)"
+    >
+      Todas
+    </button>
+    @for (status of statuses; track status) {
+      <button
+        type="button"
+        class="filter-chip"
+        [class.filter-chip-active]="selectedStatus() === status"
+        (click)="selectStatus(status)"
+      >
+        {{ statusLabel(status) }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (activities().length === 0) {
+    <p class="empty-state">Nada por aqui.</p>
+  } @else {
+    <ul class="list">
+      @for (a of activities(); track a.id) {
+        <li class="list-item">
+          <a class="item-link" [routerLink]="activityLink(a)">
+            <span class="item-title">{{ a.title }}</span>
+            <span class="item-meta">
+              {{ a.lab_name ?? '—' }}
+              @if (a.activity_type) {
+                · {{ a.activity_type }}
+              }
+              @if (a.created_at) {
+                · {{ a.created_at | date:'mediumDate' }}
+              }
+            </span>
+          </a>
+          <span class="item-badges">
+            @if (a.deadline) {
+              <span
+                [class]="'deadline-badge ' + deadlineClass(a.deadline)"
+              >{{ deadlineLabel(a.deadline) }}</span>
+            }
+            <span [class]="'status-chip status-' + a.status">{{ statusLabel(a.status) }}</span>
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</div>

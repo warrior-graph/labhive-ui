@@ -312,3 +312,36 @@ export interface DashboardSummary {
   my_deadlines: DashboardDeadline[];
 }
 
+export interface DashboardActivityItem {
+  id: number;
+  title: string;
+  status: string;
+  activity_type: string | null;
+  deadline: string | null;
+  lab_id: number;
+  lab_name: string | null;
+  created_at: string;
+}
+
+export interface DashboardProjectItem {
+  id: number;
+  name: string;
+  status: string;
+  start_date: string | null;
+  end_date: string | null;
+  lab_id: number;
+  lab_name: string | null;
+}
+
+export interface DashboardInventoryItem {
+  id: number;
+  name: string;
+  category: string;
+  quantity: number;
+  condition: string;
+  lab_id: number;
+  lab_name: string | null;
+  assigned_to_id: number | null;
+  assigned_to_name: string | null;
+}
+

@@ -227,6 +227,54 @@ body.light-theme {
   color: var(--status-under_review-fg);
 }
 
+// ── Inventory condition chips (new/good/fair/poor/broken) ───────────────
+:root {
+  --status-new-bg:     #164e63; // new = ciano
+  --status-new-fg:     #67e8f9;
+  --status-good-bg:    #14532d; // good = verde
+  --status-good-fg:    #86efac;
+  --status-fair-bg:    #451a03; // fair = âmbar
+  --status-fair-fg:    #fcd34d;
+  --status-poor-bg:    #431407; // poor = laranja
+  --status-poor-fg:    #fdba74;
+  --status-broken-bg:  #450a0a; // broken = vermelho
+  --status-broken-fg:  #fca5a5;
+}
+
+body.light-theme {
+  --status-new-bg:     #cffafe;
+  --status-new-fg:     #0e7490;
+  --status-good-bg:    #dcfce7;
+  --status-good-fg:    #15803d;
+  --status-fair-bg:    #fef3c7;
+  --status-fair-fg:    #92400e;
+  --status-poor-bg:    #ffedd5;
+  --status-poor-fg:    #c2410c;
+  --status-broken-bg:  #fee2e2;
+  --status-broken-fg:  #b91c1c;
+}
+
+.status-chip.status-new {
+  background: var(--status-new-bg);
+  color: var(--status-new-fg);
+}
+.status-chip.status-good {
+  background: var(--status-good-bg);
+  color: var(--status-good-fg);
+}
+.status-chip.status-fair {
+  background: var(--status-fair-bg);
+  color: var(--status-fair-fg);
+}
+.status-chip.status-poor {
+  background: var(--status-poor-bg);
+  color: var(--status-poor-fg);
+}
+.status-chip.status-broken {
+  background: var(--status-broken-bg);
+  color: var(--status-broken-fg);
+}
+
 // ── Deadline badges (days left) ─────────────────────────────────────────────
 .deadline-badge {
   display: inline-block;

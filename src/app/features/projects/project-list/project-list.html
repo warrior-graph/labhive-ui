@@ -1,0 +1,59 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>workspaces</mat-icon>
+      Projetos
+    </h1>
+  </div>
+
+  <div class="filter-bar">
+    <button
+      type="button"
+      class="filter-chip"
+      [class.filter-chip-active]="selectedStatus() === null"
+      (click)="selectStatus(null)"
+    >
+      Todas
+    </button>
+    @for (status of statuses; track status) {
+      <button
+        type="button"
+        class="filter-chip"
+        [class.filter-chip-active]="selectedStatus() === status"
+        (click)="selectStatus(status)"
+      >
+        {{ statusLabel(status) }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (projects().length === 0) {
+    <p class="empty-state">Nada por aqui.</p>
+  } @else {
+    <ul class="list">
+      @for (p of projects(); track p.id) {
+        <li class="list-item">
+          <a class="item-link" [routerLink]="projectLink(p)">
+            <span class="item-title">{{ p.name }}</span>
+            <span class="item-meta">
+              {{ p.lab_name ?? '—' }}
+              @if (p.start_date) {
+                · início {{ p.start_date | date:'mediumDate' }}
+              }
+              @if (p.end_date) {
+                · fim {{ p.end_date | date:'mediumDate' }}
+              }
+            </span>
+          </a>
+          <span class="item-badges">
+            <span [class]="'status-chip status-' + p.status">{{ statusLabel(p.status) }}</span>
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</div>

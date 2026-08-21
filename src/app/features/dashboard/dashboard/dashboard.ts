@@ -21,6 +21,7 @@ interface StatCard {
   label: string;
   value: number;
   link: (string | number)[];
+  queryParams?: Record<string, string>;
 }
 
 @Component({
@@ -56,15 +57,16 @@ export class Dashboard implements OnInit {
   protected readonly statCards = computed<StatCard[]>(() => {
     const c = this.summary()?.counts;
     if (!c) return [];
-    return [
-      { icon: 'group', label: 'Membros ativos', value: c.active_members, link: ['/labs'] },
+    const cards: StatCard[] = [
+      { icon: 'group', label: 'Membros ativos', value: c.active_members, link: ['/admin/pending'], queryParams: { tab: 'all' } },
       { icon: 'pending_actions', label: 'Pendentes de aprovação', value: c.pending_members, link: ['/admin/pending'] },
-      { icon: 'rocket_launch', label: 'Atividades em andamento', value: c.activities_in_progress, link: ['/labs'] },
-      { icon: 'rate_review', label: 'Em revisão', value: c.activities_under_review, link: ['/labs'] },
-      { icon: 'task_alt', label: 'Concluídas', value: c.activities_completed, link: ['/labs'] },
-      { icon: 'workspaces', label: 'Projetos ativos', value: c.projects_active, link: ['/labs'] },
-      { icon: 'inventory_2', label: 'Itens de inventário', value: c.inventory_items, link: ['/labs'] },
+      { icon: 'rocket_launch', label: 'Atividades em andamento', value: c.activities_in_progress, link: ['/activities'], queryParams: { status: 'in_progress' } },
+      { icon: 'rate_review', label: 'Em revisão', value: c.activities_under_review, link: ['/activities'], queryParams: { status: 'under_review' } },
+      { icon: 'task_alt', label: 'Concluídas', value: c.activities_completed, link: ['/activities'], queryParams: { status: 'completed' } },
+      { icon: 'workspaces', label: 'Projetos ativos', value: c.projects_active, link: ['/projects'], queryParams: { status: 'active' } },
+      { icon: 'inventory_2', label: 'Itens de inventário', value: c.inventory_items, link: ['/inventory'] },
     ];
+    return cards;
   });
 
   ngOnInit(): void {

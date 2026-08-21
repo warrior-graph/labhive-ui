@@ -1,0 +1,41 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>inventory_2</mat-icon>
+      Inventário
+    </h1>
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (items().length === 0) {
+    <p class="empty-state">Nada por aqui.</p>
+  } @else {
+    <ul class="list">
+      @for (i of items(); track i.id) {
+        <li class="list-item">
+          <a class="item-link" [routerLink]="itemLink(i)">
+            <span class="item-title">{{ i.name }}</span>
+            <span class="item-meta">
+              {{ i.category }}
+              @if (i.quantity > 0) {
+                · Qtd {{ i.quantity }}
+              }
+              @if (i.lab_name) {
+                · {{ i.lab_name }}
+              }
+              @if (i.assigned_to_name) {
+                · responsável: {{ i.assigned_to_name }}
+              }
+            </span>
+          </a>
+          <span class="item-badges">
+            <span [class]="'status-chip status-' + i.condition">{{ conditionLabel(i.condition) }}</span>
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -8,6 +8,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { ActivatedRoute } from '@angular/router';
 import { MatTooltip } from '@angular/material/tooltip';
 import {
   MatCell,
@@ -58,6 +59,7 @@ export class PendingMembers implements OnInit {
   private readonly memberService = inject(MemberService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly isDevMode = !environment.production;
   protected readonly loading = signal(true);
@@ -67,11 +69,16 @@ export class PendingMembers implements OnInit {
   protected readonly approving = signal<Set<number>>(new Set());
   protected readonly toggling = signal<Set<number>>(new Set());
   protected readonly resetting = signal(false);
+  protected readonly selectedTabIndex = signal(0);
 
   protected readonly pendingColumns = ['name', 'email', 'cpf', 'desired_lab', 'registered', 'actions'];
   protected readonly allColumns = ['name', 'email', 'cpf', 'role', 'status', 'registered', 'actions'];
 
   ngOnInit(): void {
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam === 'all') {
+      this.selectedTabIndex.set(1);
+    }
     this.memberService.getPendingMembers().subscribe({
       next: members => { this.pending.set(members); this.loading.set(false); },
       error: () => this.loading.set(false),
