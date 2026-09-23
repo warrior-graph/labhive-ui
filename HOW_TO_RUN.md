@@ -57,6 +57,13 @@ ng serve
 Open **http://localhost:4200** in your browser.
 The app hot-reloads on every source file change.
 
+### Collaborative documents
+
+The LaTeX editor connects to a WebSocket service. By default `environment.ts`
+points to `ws://127.0.0.1:6001`. Make sure the `labhive-collab` service is
+running (see [LabHive/HOW_TO_RUN.md](../labhive/HOW_TO_RUN.md)) before opening
+a document in the editor.
+
 ---
 
 ## 5. First-time setup (register a super-admin)
@@ -82,17 +89,16 @@ ng build
 
 ## Environment configuration
 
-The API base URL is configured in:
+The API and WebSocket base URLs are configured in:
 
 - `src/environments/environment.ts` — development
-- `src/environments/environment.prod.ts` — production build; uses the same-origin `/api` namespace
-
-Edit `apiUrl` in either file to point to a different backend:
+- `src/environments/environment.prod.ts` — production build; uses the same-origin `/api` and `/collab` namespaces
 
 ```typescript
 export const environment = {
   production: false,
   apiUrl: 'http://127.0.0.1:5000',
+  wsUrl: 'ws://127.0.0.1:6001',
 };
 ```
 
@@ -125,7 +131,8 @@ src/
       members/          # MemberProfile
       projects/         # ProjectDetail
       research/         # ResearchDetail
-      articles/         # ArticleDetail, ArticleForm
+      documents/        # DocumentList, DocumentEditor (collaborative LaTeX)
+      articles/         # (legacy redirects to documents)
 ```
 
 ## Key routes
@@ -138,6 +145,8 @@ src/
 | `/labs/:id` | Lab detail (Members / Projects / Research / Articles tabs) | Required |
 | `/labs/:id/projects/:pid` | Project detail + member management | Required |
 | `/labs/:id/research/:rid` | Research group detail + member management | Required |
+| `/labs/:id/documents` | Collaborative LaTeX documents dashboard | Required |
+| `/labs/:id/documents/:did` | Real-time LaTeX editor + PDF preview | Required |
 | `/labs/:id/articles/new` | Create article | Required |
 | `/labs/:id/articles/:aid` | Article detail + authors | Required |
 | `/profile` | Edit own profile / change password | Required |

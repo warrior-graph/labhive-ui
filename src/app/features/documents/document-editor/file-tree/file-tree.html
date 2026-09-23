@@ -1,0 +1,80 @@
+<div class="file-tree">
+  <div class="file-tree-header">
+    <span>Arquivos</span>
+    @if (canEdit()) {
+      <button mat-icon-button [matMenuTriggerFor]="addMenu" matTooltip="Novo">
+        <mat-icon>add</mat-icon>
+      </button>
+      <mat-menu #addMenu="matMenu">
+        <button mat-menu-item (click)="promptCreate(null, 'file')">
+          <mat-icon>description</mat-icon> Novo arquivo
+        </button>
+        <button mat-menu-item (click)="promptCreate(null, 'folder')">
+          <mat-icon>folder</mat-icon> Nova pasta
+        </button>
+        <button mat-menu-item (click)="onUpload(null)">
+          <mat-icon>upload</mat-icon> Enviar arquivo
+        </button>
+      </mat-menu>
+    }
+  </div>
+
+  <ul class="file-list">
+    @for (node of rootNodes(); track node.id) {
+      <ng-container *ngTemplateOutlet="fileNode; context: { $implicit: node, depth: 0 }"></ng-container>
+    }
+  </ul>
+</div>
+
+<ng-template #fileNode let-node let-depth="depth">
+  <li>
+    <div
+      class="file-node"
+      [class.file-selected]="selectedFileId() === node.id"
+      [style.padding-left.px]="8 + depth * 16"
+      (click)="selectFile.emit(node.id)"
+    >
+      @if (node.kind === 'folder') {
+        <button mat-icon-button (click)="toggleExpand(node, $event)">
+          <mat-icon>{{ expanded().has(node.id) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        </button>
+      } @else {
+        <mat-icon class="file-icon">
+          {{ node.is_binary ? 'image' : 'description' }}
+        </mat-icon>
+      }
+      <span class="file-name" [title]="node.name">{{ node.name }}</span>
+      @if (canEdit()) {
+        <button mat-icon-button [matMenuTriggerFor]="itemMenu" (click)="$event.stopPropagation()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #itemMenu="matMenu">
+          @if (node.kind === 'folder') {
+            <button mat-menu-item (click)="promptCreate(node.id, 'file')">
+              <mat-icon>description</mat-icon> Novo arquivo
+            </button>
+            <button mat-menu-item (click)="promptCreate(node.id, 'folder')">
+              <mat-icon>folder</mat-icon> Nova pasta
+            </button>
+            <button mat-menu-item (click)="onUpload(node.id)">
+              <mat-icon>upload</mat-icon> Enviar
+            </button>
+          }
+          <button mat-menu-item (click)="promptRename(node)">
+            <mat-icon>edit</mat-icon> Renomear
+          </button>
+          <button mat-menu-item (click)="deleteFile.emit(node.id)">
+            <mat-icon color="warn">delete</mat-icon> Excluir
+          </button>
+        </mat-menu>
+      }
+    </div>
+    @if (node.kind === 'folder' && expanded().has(node.id)) {
+      <ul class="file-list">
+        @for (child of childrenOf(node.id); track child.id) {
+          <ng-container *ngTemplateOutlet="fileNode; context: { $implicit: child, depth: depth + 1 }"></ng-container>
+        }
+      </ul>
+    }
+  </li>
+</ng-template>

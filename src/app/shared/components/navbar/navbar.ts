@@ -22,7 +22,7 @@ interface NavItem { label: string; icon: string; route: () => unknown[]; capabil
   selector: 'app-navbar',
   imports: [RouterLink, RouterLinkActive, RouterOutlet, MatButton, MatIconButton, MatBadge,
     MatIcon, MatMenu, MatMenuTrigger, MatMenuItem, MatDivider, MatSelectModule,
-    MatListModule],
+    MatListModule, MatTooltip],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
 })
@@ -34,6 +34,7 @@ export class Navbar {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly sidebarOpen = signal(false);
+  protected readonly navCollapsed = signal(false);
   protected readonly commandOpen = signal(false);
   protected readonly commandQuery = signal('');
   protected readonly unreadCount = signal(0);
@@ -48,6 +49,7 @@ export class Navbar {
     { label: 'Frequência', icon: 'monitoring', route: () => ['/labs', this.activeLabId(), 'attendance'], capability: 'attendance.view' },
     { label: 'Projetos', icon: 'workspaces', route: () => ['/projects'] },
     { label: 'Pesquisa', icon: 'biotech', route: () => ['/labs', this.activeLabId()] },
+    { label: 'Documentos', icon: 'description', route: () => ['/labs', this.activeLabId(), 'documents'], capability: 'documents.view' },
     { label: 'Atividades', icon: 'task_alt', route: () => ['/activities'] },
     { label: 'Espaços', icon: 'meeting_room', route: () => ['/labs', this.activeLabId(), 'spaces'] },
     { label: 'Inventário', icon: 'inventory_2', route: () => ['/inventory'] },
@@ -63,6 +65,7 @@ export class Navbar {
       { label: 'Ler comunicados', hint: 'Notícias do laboratório', icon: 'campaign', route: ['/announcements'] },
       ...(labId ? [
         { label: 'Ver pessoas', hint: 'Equipe e organograma', icon: 'group', route: ['/labs', labId, 'org-chart'] },
+        { label: 'Ver documentos', hint: 'Artigos colaborativos', icon: 'description', route: ['/labs', labId, 'documents'] },
         { label: 'Reservar um espaço', hint: 'Salas, bancadas e estações', icon: 'meeting_room', route: ['/labs', labId, 'spaces'] },
       ] : []),
     ];
@@ -137,7 +140,8 @@ export class Navbar {
 
   protected notificationIcon(type: AppNotificationType): string {
     return ({ member_pending: 'person_add', member_approved: 'check_circle', announcement: 'campaign',
-      activity_deadline: 'event' } as Partial<Record<AppNotificationType, string>>)[type] ?? 'notifications';
+      activity_deadline: 'event',
+      document_shared: 'description' } as Partial<Record<AppNotificationType, string>>)[type] ?? 'notifications';
   }
 
   protected relativeTime(iso: string): string {

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Laboratory } from '../models';
+import { LabMembership, Laboratory } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class LaboratoryService {
@@ -43,5 +43,9 @@ export class LaboratoryService {
 
   activate(id: number): Observable<Laboratory> {
     return this.http.post<Laboratory>(`${this.api}/labs/${id}/activate`, {});
+  }
+
+  getMembers(labId: number): Observable<LabMembership[]> {
+    return this.http.get<LabMembership[]>(`${this.api}/labs/${labId}/members`);
   }
 }

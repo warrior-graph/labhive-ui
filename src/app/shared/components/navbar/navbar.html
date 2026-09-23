@@ -3,11 +3,14 @@
 } @else if (!authService.isAuthenticated()) {
   <router-outlet />
 } @else {
-  <div class="app-shell" [class.sidebar-open]="sidebarOpen()">
+  <div class="app-shell" [class.sidebar-open]="sidebarOpen()" [class.nav-collapsed]="navCollapsed()">
     <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
     <header class="topbar">
       <button mat-icon-button class="menu-toggle" (click)="sidebarOpen.set(!sidebarOpen())" aria-label="Abrir navegação"><mat-icon>menu</mat-icon></button>
       <a routerLink="/dashboard" class="brand"><span class="brand-mark"><mat-icon>hub</mat-icon></span><span>LabHive</span></a>
+      <button mat-icon-button class="collapse-toggle" (click)="navCollapsed.set(!navCollapsed())" [matTooltip]="navCollapsed() ? 'Expandir menu' : 'Recolher menu'" aria-label="Recolher navegação">
+        <mat-icon>{{ navCollapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
       <span class="topbar-spacer"></span>
       <button mat-button class="command-trigger" (click)="commandOpen.set(true)" aria-label="Abrir busca rápida"><mat-icon>search</mat-icon><span>Buscar ou ir para…</span><kbd>⌘ K</kbd></button>
       <button mat-icon-button [matMenuTriggerFor]="notificationMenu" (menuOpened)="loadNotifications()" aria-label="Notificações">

@@ -1,0 +1,71 @@
+.log-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.compiling-badge {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+}
+
+.error-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-item {
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(0.95);
+  }
+}
+
+.error-location {
+  display: block;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.error-message {
+  font-size: 0.85rem;
+}
+
+.log-text {
+  flex: 1;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+.log-empty {
+  padding: 16px;
+  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+}

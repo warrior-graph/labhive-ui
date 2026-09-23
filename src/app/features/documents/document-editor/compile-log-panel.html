@@ -1,0 +1,26 @@
+<div class="log-panel">
+  <div class="log-header">
+    <mat-icon>terminal</mat-icon>
+    <span>Log de compilação</span>
+    @if (compiling()) {
+      <span class="compiling-badge">compilando…</span>
+    }
+  </div>
+
+  @if (errors().length > 0) {
+    <ul class="error-list">
+      @for (err of errors(); track err.file + ':' + err.line) {
+        <li class="error-item" (click)="onErrorClick.emit(err)">
+          <span class="error-location">{{ err.file }}:{{ err.line }}</span>
+          <span class="error-message">{{ err.message }}</span>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (log()) {
+    <pre class="log-text">{{ log() }}</pre>
+  } @else {
+    <div class="log-empty">Nenhum log ainda.</div>
+  }
+</div>

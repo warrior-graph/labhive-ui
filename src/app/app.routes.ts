@@ -119,9 +119,23 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/research/research-detail/research-detail').then((m) => m.ResearchDetail),
   },
-  { path: 'labs/:labId/articles', redirectTo: 'activities', pathMatch: 'full' },
-  { path: 'labs/:labId/articles/new', redirectTo: 'activities', pathMatch: 'full' },
-  { path: 'labs/:labId/articles/:articleId', redirectTo: 'labs/:labId/activities/:articleId' },
+  {
+    path: 'labs/:labId/documents',
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'documents.view' },
+    loadComponent: () =>
+      import('./features/documents/document-list/document-list').then((m) => m.DocumentList),
+  },
+  {
+    path: 'labs/:labId/documents/:docId',
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'documents.view' },
+    loadComponent: () =>
+      import('./features/documents/document-editor/document-editor').then((m) => m.DocumentEditor),
+  },
+  { path: 'labs/:labId/articles', redirectTo: 'labs/:labId/documents', pathMatch: 'full' },
+  { path: 'labs/:labId/articles/new', redirectTo: 'labs/:labId/documents', pathMatch: 'full' },
+  { path: 'labs/:labId/articles/:articleId', redirectTo: 'labs/:labId/documents/:articleId' },
   {
     path: 'profile',
     canActivate: [authGuard],

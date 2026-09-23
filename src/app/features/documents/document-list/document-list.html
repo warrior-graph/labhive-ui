@@ -1,0 +1,60 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <mat-icon>description</mat-icon>
+      Documentos
+    </h1>
+    @if (activeLabId()) {
+      <button mat-raised-button color="primary" (click)="openCreate()">
+        <mat-icon>add</mat-icon>
+        Novo documento
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" />
+    </div>
+  } @else if (documents().length === 0) {
+    <p class="empty-state">Nenhum documento ainda. Crie o primeiro artigo colaborativo.</p>
+  } @else {
+    <ul class="list">
+      @for (doc of documents(); track doc.id) {
+        <li class="list-item">
+          <a class="item-link" [routerLink]="docLink(doc)">
+            <span class="item-title">{{ doc.name }}</span>
+            <span class="item-meta">
+              Papel: {{ roleLabel(doc.my_role) }}
+              @if (doc.member_count > 1) {
+                · {{ doc.member_count - 1 }} colaborador{{ doc.member_count - 1 > 1 ? 'es' : '' }}
+              }
+              · atualizado {{ doc.updated_at | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </a>
+          <span class="item-badges">
+            <span class="role-chip">{{ roleLabel(doc.my_role) }}</span>
+            @if (doc.my_role === 'owner') {
+              <button mat-icon-button [matTooltip]="'Renomear'" (click)="openRename(doc); $event.stopPropagation()">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                [matTooltip]="'Excluir'"
+                (click)="deleteDocument(doc); $event.stopPropagation()"
+                [disabled]="deleting().has(doc.id)"
+              >
+                @if (deleting().has(doc.id)) {
+                  <mat-progress-spinner diameter="18" mode="indeterminate" />
+                } @else {
+                  <mat-icon>delete</mat-icon>
+                }
+              </button>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</div>

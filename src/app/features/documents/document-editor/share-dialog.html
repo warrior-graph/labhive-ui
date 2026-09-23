@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>Compartilhar documento</h2>
+<mat-dialog-content>
+  @if (loading()) {
+    <div class="spinner-center">
+      <mat-progress-spinner mode="indeterminate" diameter="32" />
+    </div>
+  } @else {
+    <div class="share-add-row">
+      <mat-form-field appearance="outline" class="share-member-field">
+        <mat-label>Membro</mat-label>
+        <mat-select [(ngModel)]="selectedMemberId">
+          @for (m of availableMembers(); track m.id) {
+            <mat-option [value]="m.id">{{ m.first_name }} {{ m.last_name }} ({{ m.email }})</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="share-role-field">
+        <mat-label>Papel</mat-label>
+        <mat-select [(ngModel)]="selectedRole">
+          <mat-option value="editor">Editor</mat-option>
+          <mat-option value="viewer">Visualizador</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addMember()" [disabled]="selectedMemberId() === null">
+        Adicionar
+      </button>
+    </div>
+
+    <ul class="share-list">
+      @for (m of members(); track m.member_id) {
+        <li class="share-item">
+          <span class="share-name">{{ m.member.first_name }} {{ m.member.last_name }}</span>
+          <span class="share-email">{{ m.member.email }}</span>
+          <mat-form-field appearance="outline" class="share-role-small">
+            <mat-select
+              [ngModel]="m.role"
+              (selectionChange)="changeRole(m.member_id, $event.value)"
+              [disabled]="m.role === 'owner'"
+            >
+              <mat-option value="owner">Proprietário</mat-option>
+              <mat-option value="editor">Editor</mat-option>
+              <mat-option value="viewer">Visualizador</mat-option>
+            </mat-select>
+          </mat-form-field>
+          @if (m.role !== 'owner') {
+            <button mat-icon-button color="warn" (click)="removeMember(m.member_id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </li>
+      }
+    </ul>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Fechar</button>
+</mat-dialog-actions>

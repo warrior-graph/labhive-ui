@@ -1,0 +1,117 @@
+.editor-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-low);
+  flex-shrink: 0;
+}
+
+.toolbar-left,
+.toolbar-center,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doc-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.connection-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.peer-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: #333;
+  border: 2px solid transparent;
+}
+
+.editor-body {
+  display: grid;
+  grid-template-columns: 260px 1fr 420px;
+  flex: 1;
+  overflow: hidden;
+
+  &.sidebar-collapsed {
+    grid-template-columns: 0 1fr 420px;
+
+    .file-tree-pane {
+      display: none;
+    }
+  }
+}
+
+.file-tree-pane {
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  overflow: hidden;
+}
+
+.editor-pane {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-pane {
+  border-left: 1px solid var(--mat-sys-outline-variant);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  app-pdf-preview {
+    flex: 2;
+    min-height: 0;
+  }
+
+  .log-pane-wrapper {
+    flex: 1;
+    min-height: 0;
+    border-top: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.spinner-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-editor {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 24px;
+  text-align: center;
+}
+
+@media (max-width: 1200px) {
+  .editor-body {
+    grid-template-columns: 220px 1fr 320px;
+  }
+}

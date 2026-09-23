@@ -214,7 +214,8 @@ export type LabCapability =
   | 'announcements.view' | 'announcements.manage'
   | 'spaces.view' | 'spaces.reserve' | 'spaces.manage'
   | 'reservations.review'
-  | 'analytics.view' | 'audit.view';
+  | 'analytics.view' | 'audit.view'
+  | 'documents.view' | 'documents.manage';
 
 export type AttendanceGranularity = 'week' | 'month';
 
@@ -263,6 +264,66 @@ export interface AppContext {
   memberships: WorkspaceMembership[];
   suggested_lab_id: number | null;
   global_capabilities: string[];
+}
+
+// ─── Collaborative documents ─────────────────────────────────────────────────
+
+export type DocumentRole = 'owner' | 'editor' | 'viewer';
+
+export interface LabDocument {
+  id: number;
+  lab_id: number;
+  project_id: number | null;
+  name: string;
+  owner_id: number;
+  owner?: { id: number; first_name: string; last_name: string };
+  main_file_id: number | null;
+  my_role: DocumentRole;
+  member_count: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DocumentMemberEntry {
+  member_id: number;
+  role: DocumentRole;
+  added_at: string;
+  member: { id: number; first_name: string; last_name: string; email: string };
+}
+
+export interface DocumentFileNode {
+  id: number;
+  parent_id: number | null;
+  name: string;
+  kind: 'folder' | 'file';
+  is_binary: boolean;
+  size_bytes: number;
+  updated_at: string;
+  children?: DocumentFileNode[];
+}
+
+export interface CompileError {
+  file: string;
+  line: number;
+  message: string;
+}
+
+export interface CompileJob {
+  id: number;
+  status: 'queued' | 'running' | 'success' | 'error' | 'timeout';
+  log: string;
+  errors_json: CompileError[] | null;
+  has_pdf: boolean;
+  queued_at: string;
+  finished_at: string | null;
+}
+
+export interface PeerPresence {
+  memberId: number;
+  name: string;
+  color: string;
+  fileId: number | null;
 }
 
 export interface LoginRequest {
@@ -518,7 +579,8 @@ export type AppNotificationType =
   | 'member_pending'
   | 'member_approved'
   | 'announcement'
-  | 'activity_deadline';
+  | 'activity_deadline'
+  | 'document_shared';
 
 export interface AppNotification {
   id: number;

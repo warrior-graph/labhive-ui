@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Renomear documento' : 'Novo documento' }}</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Nome</mat-label>
+    <input matInput [(ngModel)]="name" cdkFocusInitial />
+  </mat-form-field>
+
+  @if (!isEdit) {
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Template</mat-label>
+      <mat-select [(ngModel)]="template">
+        <mat-option value="article">Artigo</mat-option>
+        <mat-option value="blank">Em branco</mat-option>
+      </mat-select>
+    </mat-form-field>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="saving">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="saving || !name.trim()">
+    {{ isEdit ? 'Salvar' : 'Criar' }}
+  </button>
+</mat-dialog-actions>

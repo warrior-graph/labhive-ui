@@ -1,0 +1,108 @@
+<div class="editor-layout">
+  <header class="editor-toolbar">
+    <div class="toolbar-left">
+      <a mat-icon-button [routerLink]="['/labs', labId(), 'documents']" matTooltip="Voltar">
+        <mat-icon>arrow_back</mat-icon>
+      </a>
+      <button mat-icon-button (click)="toggleSidebar()" [matTooltip]="sidebarCollapsed() ? 'Mostrar arquivos' : 'Ocultar arquivos'">
+        <mat-icon>{{ sidebarCollapsed() ? 'panel_open' : 'menu_open' }}</mat-icon>
+      </button>
+      <span class="doc-name">{{ document()?.name ?? 'Documento' }}</span>
+      <span class="connection-dot" [style.background-color]="statusColor()" [matTooltip]="'Conexão: ' + connectionStatus()"></span>
+    </div>
+
+    <div class="toolbar-center">
+      @for (peer of peers(); track peer.memberId) {
+        <div class="peer-avatar" [style.border-color]="peer.color" [matTooltip]="peer.name">
+          {{ peerInitials(peer) }}
+        </div>
+      }
+    </div>
+
+    <div class="toolbar-right">
+      <button mat-stroked-button (click)="saveCurrentFile()" [disabled]="!currentOpenFile() || currentOpenFile()?.is_binary">
+        <mat-icon>save</mat-icon>
+        Salvar
+      </button>
+      <button mat-raised-button color="primary" (click)="compile()" [disabled]="compiling()">
+        @if (compiling()) {
+          <mat-progress-spinner diameter="16" mode="indeterminate" />
+        } @else {
+          <mat-icon>play_arrow</mat-icon>
+        }
+        Recompile
+      </button>
+
+      @if (document()?.my_role === 'owner') {
+        <button mat-stroked-button (click)="openShare()">
+          <mat-icon>share</mat-icon>
+          Compartilhar
+        </button>
+      }
+
+      <button mat-icon-button [matMenuTriggerFor]="downloadMenu" matTooltip="Download">
+        <mat-icon>download</mat-icon>
+      </button>
+      <mat-menu #downloadMenu="matMenu">
+        <button mat-menu-item (click)="downloadTex()" [disabled]="!currentOpenFile()">
+          <mat-icon>description</mat-icon> Baixar .tex atual
+        </button>
+        <button mat-menu-item (click)="downloadPdf()" [disabled]="!pdfUrl()">
+          <mat-icon>picture_as_pdf</mat-icon> Baixar PDF
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <div class="editor-body" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <aside class="file-tree-pane">
+      <app-file-tree
+        [files]="files()"
+        [selectedFileId]="selectedFileId()"
+        [canEdit]="canEdit()"
+        (selectFile)="onSelectFile($event)"
+        (createFile)="createFile($event.parentId, $event.name)"
+        (createFolder)="createFolder($event.parentId, $event.name)"
+        (uploadFile)="onUpload($event.parentId)"
+        (deleteFile)="deleteFile($event)"
+        (renameFile)="renameFile($event.fileId, $event.name)"
+      />
+    </aside>
+
+    <main class="editor-pane">
+      @if (loading()) {
+        <div class="spinner-center">
+          <mat-progress-spinner mode="indeterminate" />
+        </div>
+      } @else if (ytext() && awareness()) {
+        <app-latex-editor
+          [fileId]="selectedFileId()!"
+          [ytext]="ytext()!"
+          [awareness]="awareness()!"
+          [readOnly]="!canEdit()"
+          [goToLine]="goToLine()"
+        />
+      } @else {
+        <div class="empty-editor">
+          @if (currentOpenFile()?.is_binary) {
+            <span>Arquivo binário selecionado. Use o download para visualizá-lo.</span>
+          } @else {
+            <span>Selecione um arquivo .tex para começar a editar.</span>
+          }
+        </div>
+      }
+    </main>
+
+    <aside class="preview-pane">
+      <app-pdf-preview [src]="pdfUrl()" />
+      <div class="log-pane-wrapper">
+        <app-compile-log-panel
+          [log]="compileLog()"
+          [errors]="compileErrors()"
+          [compiling]="compiling()"
+          (onErrorClick)="onErrorClick($event)"
+        />
+      </div>
+    </aside>
+  </div>
+</div>

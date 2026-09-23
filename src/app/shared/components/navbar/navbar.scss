@@ -11,6 +11,7 @@
 .brand-mark mat-icon { width: 21px; height: 21px; font-size: 21px; }
 .topbar-spacer { flex: 1; }
 .menu-toggle { display: none; }
+.collapse-toggle { display: inline-flex; margin-left: 8px; }
 .user-trigger { min-width: 0; }
 .avatar { width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent-strong); font-weight: 750; font-size: 12px; }
 .sidebar { position: fixed; z-index: 30; inset: 64px auto 0 0; width: 260px; padding: var(--space-5) var(--space-3); overflow-y: auto; background: var(--color-surface); border-right: 1px solid var(--color-border); }
@@ -22,8 +23,13 @@
 .nav-item mat-icon { width: 20px; height: 20px; font-size: 20px; }
 .nav-item:hover { color: var(--color-text); background: var(--color-hover); }
 .nav-item.active { color: var(--color-accent-strong); background: var(--color-accent-soft); }
-.main-content { min-height: calc(100vh - 64px); margin-left: 260px; padding: calc(64px + var(--space-7)) clamp(var(--space-4), 4vw, var(--space-9)) var(--space-9); }
+.main-content { min-height: calc(100vh - 64px); margin-left: 260px; padding: calc(64px + var(--space-7)) clamp(var(--space-4), 4vw, var(--space-9)) var(--space-9); transition: margin-left var(--motion-standard); }
 .scrim { display: none; }
+
+@media (min-width: 901px) {
+  .app-shell.nav-collapsed .sidebar { transform: translateX(-100%); transition: transform var(--motion-standard); }
+  .app-shell.nav-collapsed .main-content { margin-left: 0; }
+}
 .skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; transform: translateY(-160%); padding: 10px 14px; color: var(--color-on-accent); background: var(--color-accent); border-radius: var(--radius-md); }
 .skip-link:focus { transform: none; }
 .app-loading { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-4); color: var(--color-text-muted); background: var(--color-canvas); }
@@ -39,6 +45,7 @@
 @media (max-width: 900px) {
   .topbar { padding: 0 var(--space-3); }
   .menu-toggle { display: inline-flex; }
+  .collapse-toggle { display: none; }
   .sidebar { transform: translateX(-102%); transition: transform var(--motion-standard); box-shadow: var(--shadow-lg); }
   .sidebar-open .sidebar { transform: none; }
   .main-content { margin-left: 0; padding: calc(64px + var(--space-5)) var(--space-4) var(--space-7); }
