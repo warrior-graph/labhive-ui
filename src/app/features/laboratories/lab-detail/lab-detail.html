@@ -102,7 +102,7 @@
                 @if (m.left_at) {
                   <span
                     class="status-chip status-inactive"
-                    matTooltip="Saiu em {{ m.left_at | date: 'mediumDate' }}"
+                    matTooltip="Saiu em {{ m.left_at | date:'dd/MM/yyyy' }}"
                   >
                     Inativo
                   </span>
@@ -184,14 +184,14 @@
             <ng-container matColumnDef="start_date">
               <th mat-header-cell *matHeaderCellDef>Início</th>
               <td mat-cell *matCellDef="let p">
-                {{ p.start_date ? (p.start_date | date: 'mediumDate') : '—' }}
+                {{ p.start_date ? (p.start_date | date:'dd/MM/yyyy') : '—' }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="end_date">
               <th mat-header-cell *matHeaderCellDef>Fim</th>
               <td mat-cell *matCellDef="let p">
-                {{ p.end_date ? (p.end_date | date: 'mediumDate') : '—' }}
+                {{ p.end_date ? (p.end_date | date:'dd/MM/yyyy') : '—' }}
               </td>
             </ng-container>
 

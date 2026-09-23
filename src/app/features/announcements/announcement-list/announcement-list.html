@@ -43,12 +43,12 @@
                 <p class="announcement-body">{{ a.body }}</p>
               }
               @if (a.kind === 'event' && a.starts_at) {
-                <p class="announcement-event"><mat-icon>event</mat-icon>{{ a.starts_at | date:'short' }} — {{ a.ends_at | date:'short' }} @if (a.session_mode && a.session_mode !== 'normal') { <span> · {{ a.session_mode }}</span> }</p>
+                <p class="announcement-event"><mat-icon>event</mat-icon>{{ a.starts_at | date:'dd/MM/yyyy HH:mm' }} — {{ a.ends_at | date:'dd/MM/yyyy HH:mm' }} @if (a.session_mode && a.session_mode !== 'normal') { <span> · {{ a.session_mode }}</span> }</p>
               }
               <span class="announcement-meta">
                 {{ a.author_name ?? '—' }}
                 · {{ a.lab_name ?? '—' }}
-                · {{ a.created_at | date:'mediumDate' }}
+                · {{ a.created_at | date:'dd/MM/yyyy' }}
               </span>
             </div>
             <div class="announcement-actions">
@@ -95,12 +95,12 @@
                 <p class="announcement-body">{{ a.body }}</p>
               }
               @if (a.kind === 'event' && a.starts_at) {
-                <p class="announcement-event"><mat-icon>event</mat-icon>{{ a.starts_at | date:'short' }} — {{ a.ends_at | date:'short' }} @if (a.session_mode && a.session_mode !== 'normal') { <span> · {{ a.session_mode }}</span> }</p>
+                <p class="announcement-event"><mat-icon>event</mat-icon>{{ a.starts_at | date:'dd/MM/yyyy HH:mm' }} — {{ a.ends_at | date:'dd/MM/yyyy HH:mm' }} @if (a.session_mode && a.session_mode !== 'normal') { <span> · {{ a.session_mode }}</span> }</p>
               }
               <span class="announcement-meta">
                 {{ a.author_name ?? '—' }}
                 · {{ a.lab_name ?? '—' }}
-                · {{ a.created_at | date:'mediumDate' }}
+                · {{ a.created_at | date:'dd/MM/yyyy' }}
               </span>
             </div>
             <div class="announcement-actions">

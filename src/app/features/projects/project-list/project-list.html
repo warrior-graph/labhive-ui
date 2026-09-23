@@ -53,10 +53,10 @@
             <span class="item-meta">
               {{ p.lab_name ?? '—' }}
               @if (p.start_date) {
-                · início {{ p.start_date | date:'mediumDate' }}
+                · início {{ p.start_date | date:'dd/MM/yyyy' }}
               }
               @if (p.end_date) {
-                · fim {{ p.end_date | date:'mediumDate' }}
+                · fim {{ p.end_date | date:'dd/MM/yyyy' }}
               }
             </span>
           </a>

@@ -114,7 +114,7 @@
                     <li class="list-item deadline-item">
                       <a class="item-link" [routerLink]="deadlineLink(d)">
                         <span class="item-title">{{ d.title }}</span>
-                        <span class="item-meta">{{ d.lab_name }} · {{ d.due_on | date:'mediumDate' }}</span>
+                        <span class="item-meta">{{ d.lab_name }} · {{ d.due_on | date:'dd/MM/yyyy' }}</span>
                       </a>
                       <span [class]="'status-chip status-' + d.status">{{ statusLabel(d.status) }}</span>
                       <span [class]="'deadline-badge ' + deadlineClass(d)">{{ deadlineLabel(d) }}</span>
@@ -139,7 +139,7 @@
                     <li class="list-item">
                       <a class="item-link" [routerLink]="activityLink(a)">
                         <span class="item-title">{{ a.title }}</span>
-                        <span class="item-meta">{{ a.lab_name }} · {{ a.created_at | date:'mediumDate' }}</span>
+                        <span class="item-meta">{{ a.lab_name }} · {{ a.created_at | date:'dd/MM/yyyy' }}</span>
                       </a>
                       <span [class]="'status-chip status-' + a.status">{{ statusLabel(a.status) }}</span>
                     </li>
@@ -166,7 +166,7 @@
                     <li class="list-item deadline-item">
                       <a class="item-link" [routerLink]="deadlineLink(d)">
                         <span class="item-title">{{ d.title }}</span>
-                        <span class="item-meta">{{ d.lab_name }} · {{ d.due_on | date:'mediumDate' }}</span>
+                        <span class="item-meta">{{ d.lab_name }} · {{ d.due_on | date:'dd/MM/yyyy' }}</span>
                       </a>
                       <span [class]="'status-chip status-' + d.status">{{ statusLabel(d.status) }}</span>
                       <span [class]="'deadline-badge ' + deadlineClass(d)">{{ deadlineLabel(d) }}</span>
@@ -194,7 +194,7 @@
                         <span class="item-meta">
                           {{ a.lab_name }}
                           @if (a.deadline) {
-                            · {{ a.deadline | date:'mediumDate' }}
+                            · {{ a.deadline | date:'dd/MM/yyyy' }}
                           }
                         </span>
                       </a>
@@ -223,7 +223,7 @@
                         <span class="item-meta">
                           {{ p.lab_name }}
                           @if (p.end_date) {
-                            · {{ p.end_date | date:'mediumDate' }}
+                            · {{ p.end_date | date:'dd/MM/yyyy' }}
                           }
                         </span>
                       </a>

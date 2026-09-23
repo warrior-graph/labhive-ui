@@ -283,7 +283,7 @@ export class FloorPlan implements OnInit, OnDestroy {
     if (name === space.name) return;
     this.spacesApi.updateSpace(this.labId, space.id, { name }).subscribe({
       next: (updated) => {
-        this.spaces.update((items) => items.map((item) => item.id === updated.id ? updated : item));
+        this.mergeUpdatedSpace(updated);
         this.snackBar.open('Nome atualizado.', 'Fechar', { duration: 2200 });
       },
       error: (error) => {
@@ -538,7 +538,7 @@ export class FloorPlan implements OnInit, OnDestroy {
     this.spacesApi.updateSpace(this.labId, space.id, { is_locked: !space.is_locked }).subscribe({
       next: (updated) => {
         this.saving.set(false);
-        this.spaces.update((items) => items.map((item) => item.id === updated.id ? updated : item));
+        this.mergeUpdatedSpace(updated);
         this.snackBar.open(updated.is_locked ? 'Espaço fixado.' : 'Espaço liberado para mover.', 'Fechar', { duration: 2500 });
       },
       error: (error) => this.showError(error, 'Não foi possível alterar a fixação.'),
@@ -715,6 +715,19 @@ export class FloorPlan implements OnInit, OnDestroy {
     if (!space.available) return 'Reservado';
     if (space.preallocation) return `Pré-alocado para ${space.preallocation.member_name}`;
     return 'Disponível';
+  }
+
+  private mergeUpdatedSpace(updated: Space): void {
+    this.spaces.update((items) => items.map((item) => {
+      if (item.id !== updated.id) return item;
+      return {
+        ...updated,
+        // Mutation endpoints do not receive the selected availability window,
+        // so their response cannot recalculate these contextual fields.
+        available: updated.available ?? item.available,
+        preallocation: updated.preallocation ?? item.preallocation,
+      };
+    }));
   }
 
   protected spaceName(id: number): string {

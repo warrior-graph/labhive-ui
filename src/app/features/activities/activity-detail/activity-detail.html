@@ -73,7 +73,7 @@
             <span [class]="'deadline-badge ' + deadlineClass(a.deadline)">
               {{ deadlineLabel(a.deadline) }}
             </span>
-            <span class="deadline-date">{{ a.deadline | date:'mediumDate' }}</span>
+            <span class="deadline-date">{{ a.deadline | date:'dd/MM/yyyy' }}</span>
           } @else {
             —
           }
@@ -81,11 +81,11 @@
       </div>
       <div class="meta-item">
         <span class="label">Concluída em</span>
-        <span>{{ a.completed_at ? (a.completed_at | date:'mediumDate') : '—' }}</span>
+        <span>{{ a.completed_at ? (a.completed_at | date:'dd/MM/yyyy') : '—' }}</span>
       </div>
       <div class="meta-item">
         <span class="label">Criada em</span>
-        <span>{{ a.created_at | date:'mediumDate' }}</span>
+        <span>{{ a.created_at | date:'dd/MM/yyyy' }}</span>
       </div>
     </div>
 

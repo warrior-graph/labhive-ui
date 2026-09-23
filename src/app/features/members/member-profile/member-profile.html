@@ -96,9 +96,9 @@
               <div class="history-entry-header">
                 <span class="lab-name">{{ entry.lab_name }}</span>
                 <span class="history-dates">
-                  {{ entry.joined_at | date: 'mediumDate' }}
+                  {{ entry.joined_at | date:'dd/MM/yyyy' }}
                   @if (entry.left_at) {
-                    — {{ entry.left_at | date: 'mediumDate' }}
+                    — {{ entry.left_at | date:'dd/MM/yyyy' }}
                   }
                 </span>
               </div>

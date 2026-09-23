@@ -48,12 +48,7 @@ export class Calendar implements OnInit {
     const key = this.selectedDate();
     if (!key) return '';
     const [y, m, d] = key.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
+    return new Date(y, m - 1, d).toLocaleDateString('pt-BR');
   });
 
   protected readonly weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];

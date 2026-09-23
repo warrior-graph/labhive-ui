@@ -70,7 +70,7 @@ export interface InviteDialogData {
       } @else {
         <div class="invite-result">
           <p class="expiry-label">
-            Expira em {{ invite()!.expires_at | date: 'medium' }}
+            Expira em {{ invite()!.expires_at | date:'dd/MM/yyyy HH:mm' }}
           </p>
           <div class="invite-url-row">
             <input
