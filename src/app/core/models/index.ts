@@ -52,10 +52,7 @@ export const MANAGER_ROLES: LabRole[] = [
   LabRole.CHIEF_SCIENTIST,
 ];
 
-export const TECH_LEAD_AND_ABOVE: LabRole[] = [
-  ...MANAGER_ROLES,
-  LabRole.TECH_LEAD,
-];
+export const TECH_LEAD_AND_ABOVE: LabRole[] = [...MANAGER_ROLES, LabRole.TECH_LEAD];
 
 export const RESEARCHER_AND_ABOVE: LabRole[] = [
   ...TECH_LEAD_AND_ABOVE,
@@ -231,14 +228,74 @@ export interface InventoryItem {
 // ─── Auth DTOs ────────────────────────────────────────────────────────────────
 
 export interface AuthResponse {
-  member: Member;
+  member?: Member;
   access_token?: string;
   refresh_token?: string;
+  mfa_required?: boolean;
+  mfa_token?: string;
+  mfa_enrollment_required?: boolean;
+  enrollment_token?: string;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+}
+
+// ─── Spaces and reservations ────────────────────────────────────────────────
+
+export type SpaceType = 'room' | 'desk' | 'workstation' | 'bench' | 'shared_area';
+export type SessionMode = 'normal' | 'quiet' | 'meeting' | 'presentation' | 'recording' | 'exam';
+export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'rejected' | 'completed';
+
+export interface LabLocation {
+  id: number;
+  name: string;
+  address: string | null;
+  timezone: string;
+}
+
+export interface Floor {
+  id: number;
+  location_id: number;
+  name: string;
+  level: number | null;
+  layout_width: number;
+  layout_height: number;
+  layout_version: number;
+}
+
+export interface Space {
+  id: number;
+  floor_id: number;
+  parent_space_id: number | null;
+  name: string;
+  type: SpaceType;
+  capacity: number;
+  is_active: boolean;
+  requires_approval: boolean;
+  layout: { x: number; y: number; width: number; height: number; rotation: number };
+  amenities: string[];
+  quiet_neighbor_ids: number[];
+  available: boolean | null;
+}
+
+export interface FloorSpacesResponse {
+  floor: Floor;
+  spaces: Space[];
+}
+
+export interface Reservation {
+  id: number;
+  space_id: number;
+  organizer_id?: number;
+  starts_at: string;
+  ends_at: string;
+  status: ReservationStatus;
+  purpose?: string | null;
+  session_mode: SessionMode;
+  checked_in_at: string | null;
+  checked_out_at: string | null;
 }
 
 export interface RegisterRequest {
@@ -388,7 +445,6 @@ export interface CalendarEvent {
   date: string;
 }
 
-
 // ─── Announcements & Notifications DTOs (GET /announcements, /notifications) ─
 
 export interface Announcement {
@@ -489,10 +545,7 @@ export const ACTIVITY_EDIT_ROLES: LabRole[] = [
 ];
 
 /** Papéis que podem excluir atividades. */
-export const ACTIVITY_DELETE_ROLES: LabRole[] = [
-  LabRole.LAB_COORDINATOR,
-  LabRole.CHIEF_SCIENTIST,
-];
+export const ACTIVITY_DELETE_ROLES: LabRole[] = [LabRole.LAB_COORDINATOR, LabRole.CHIEF_SCIENTIST];
 
 export interface CreateActivityPayload {
   title: string;
@@ -507,4 +560,3 @@ export interface CreateActivityPayload {
 }
 
 export type UpdateActivityPayload = Partial<CreateActivityPayload>;
-

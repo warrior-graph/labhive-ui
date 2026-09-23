@@ -1,4 +1,9 @@
-import { HttpBackend, HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import {
+  HttpBackend,
+  HttpClient,
+  HttpErrorResponse,
+  HttpInterceptorFn,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
@@ -10,13 +15,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const backend = inject(HttpBackend);
 
   const isRefreshUrl = req.url.includes('/auth/refresh');
+  const hasExplicitAuthorization = req.headers.has('Authorization');
   const token = isRefreshUrl
     ? localStorage.getItem('refresh_token')
     : localStorage.getItem('access_token');
 
-  const authReq = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  const authReq =
+    token && !hasExplicitAuthorization
+      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : req;
 
   return next(authReq).pipe(
     catchError((err: HttpErrorResponse) => {
@@ -26,11 +33,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           // Use HttpBackend to bypass interceptors for the refresh call
           const http = new HttpClient(backend);
           return http
-            .post<{ access_token: string }>(
-              `${environment.apiUrl}/auth/refresh`,
-              {},
-              { headers: { Authorization: `Bearer ${refreshToken}` } },
-            )
+            .post<{
+              access_token: string;
+            }>(`${environment.apiUrl}/auth/refresh`, {}, { headers: { Authorization: `Bearer ${refreshToken}` } })
             .pipe(
               switchMap(({ access_token }) => {
                 localStorage.setItem('access_token', access_token);
@@ -39,7 +44,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                 });
                 return next(retried);
               }),
-              catchError(refreshErr => {
+              catchError((refreshErr) => {
                 clearTokens();
                 router.navigate(['/login']);
                 return throwError(() => refreshErr);

@@ -6,122 +6,122 @@ export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/auth/login/login').then(m => m.Login),
+    loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },
   {
     path: 'register',
-    loadComponent: () =>
-      import('./features/auth/register/register').then(m => m.Register),
+    loadComponent: () => import('./features/auth/register/register').then((m) => m.Register),
   },
   {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/dashboard/dashboard/dashboard').then(m => m.Dashboard),
+      import('./features/dashboard/dashboard/dashboard').then((m) => m.Dashboard),
   },
   {
     path: 'calendar',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/calendar/calendar/calendar').then(m => m.Calendar),
+    loadComponent: () => import('./features/calendar/calendar/calendar').then((m) => m.Calendar),
   },
   {
     path: 'announcements',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/announcements/announcement-list/announcement-list').then(
-        m => m.AnnouncementList,
+        (m) => m.AnnouncementList,
       ),
   },
   {
     path: 'activities',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/activities/activity-list/activity-list').then(m => m.ActivityList),
+      import('./features/activities/activity-list/activity-list').then((m) => m.ActivityList),
   },
   {
     path: 'projects',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/projects/project-list/project-list').then(m => m.ProjectList),
+      import('./features/projects/project-list/project-list').then((m) => m.ProjectList),
   },
   {
     path: 'inventory',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/inventory/inventory-list/inventory-list').then(m => m.InventoryList),
+      import('./features/inventory/inventory-list/inventory-list').then((m) => m.InventoryList),
   },
   {
     path: 'labs',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/laboratories/lab-list/lab-list').then(m => m.LabList),
+    loadComponent: () => import('./features/laboratories/lab-list/lab-list').then((m) => m.LabList),
   },
   {
     path: 'labs/:labId',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/laboratories/lab-detail/lab-detail').then(m => m.LabDetail),
+      import('./features/laboratories/lab-detail/lab-detail').then((m) => m.LabDetail),
   },
   {
     path: 'labs/:labId/org-chart',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/laboratories/org-chart/org-chart').then(m => m.OrgChart),
+      import('./features/laboratories/org-chart/org-chart').then((m) => m.OrgChart),
+  },
+  {
+    path: 'labs/:labId/spaces',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/spaces/floor-plan/floor-plan').then((m) => m.FloorPlan),
   },
   {
     path: 'labs/:labId/projects/:projectId',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/projects/project-detail/project-detail').then(m => m.ProjectDetail),
+      import('./features/projects/project-detail/project-detail').then((m) => m.ProjectDetail),
   },
   {
     path: 'labs/:labId/activities/:activityId',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/activities/activity-detail/activity-detail').then(m => m.ActivityDetail),
+      import('./features/activities/activity-detail/activity-detail').then((m) => m.ActivityDetail),
   },
   {
     path: 'labs/:labId/research/:researchId',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/research/research-detail/research-detail').then(m => m.ResearchDetail),
+      import('./features/research/research-detail/research-detail').then((m) => m.ResearchDetail),
   },
   {
     path: 'labs/:labId/articles',
     loadComponent: () =>
-      import('./features/articles/articles-public/articles-public').then(m => m.ArticlesPublic),
+      import('./features/articles/articles-public/articles-public').then((m) => m.ArticlesPublic),
   },
   {
     path: 'labs/:labId/articles/new',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/articles/article-form/article-form').then(m => m.ArticleForm),
+      import('./features/articles/article-form/article-form').then((m) => m.ArticleForm),
   },
   {
     path: 'labs/:labId/articles/:articleId',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/articles/article-detail/article-detail').then(m => m.ArticleDetail),
+      import('./features/articles/article-detail/article-detail').then((m) => m.ArticleDetail),
   },
   {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/members/member-profile/member-profile').then(m => m.MemberProfile),
+      import('./features/members/member-profile/member-profile').then((m) => m.MemberProfile),
   },
   {
     path: 'admin/pending',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/admin/pending-members/pending-members').then(m => m.PendingMembers),
+      import('./features/admin/pending-members/pending-members').then((m) => m.PendingMembers),
   },
   {
     path: 'admin/roles',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/admin/roles/roles-admin').then(m => m.RolesAdmin),
+    loadComponent: () => import('./features/admin/roles/roles-admin').then((m) => m.RolesAdmin),
   },
   { path: '**', redirectTo: '/labs' },
 ];

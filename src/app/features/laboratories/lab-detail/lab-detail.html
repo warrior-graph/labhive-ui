@@ -11,6 +11,10 @@
         <p class="description">{{ lab()!.description }}</p>
       </div>
       <div class="lab-header-actions">
+        <button mat-raised-button color="primary" [routerLink]="['/labs', lab()!.id, 'spaces']">
+          <mat-icon>map</mat-icon>
+          Espaços e reservas
+        </button>
         <button mat-stroked-button [routerLink]="['/labs', lab()!.id, 'org-chart']">
           <mat-icon>account_tree</mat-icon>
           Organograma
@@ -90,7 +94,10 @@
               <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let m">
                 @if (m.left_at) {
-                  <span class="status-chip status-inactive" matTooltip="Saiu em {{ m.left_at | date: 'mediumDate' }}">
+                  <span
+                    class="status-chip status-inactive"
+                    matTooltip="Saiu em {{ m.left_at | date: 'mediumDate' }}"
+                  >
                     Inativo
                   </span>
                 } @else {
@@ -103,11 +110,7 @@
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let m">
                 @if (canManage(m)) {
-                  <button
-                    mat-icon-button
-                    matTooltip="Editar membro"
-                    (click)="openEditMember(m)"
-                  >
+                  <button mat-icon-button matTooltip="Editar membro" (click)="openEditMember(m)">
                     <mat-icon>edit</mat-icon>
                   </button>
                 }
@@ -124,7 +127,9 @@
                     mat-icon-button
                     color="warn"
                     matTooltip="Remover membro"
-                    (click)="removeMember(m.member_id, m.member?.first_name + ' ' + m.member?.last_name)"
+                    (click)="
+                      removeMember(m.member_id, m.member?.first_name + ' ' + m.member?.last_name)
+                    "
                   >
                     <mat-icon>person_remove</mat-icon>
                   </button>
@@ -268,7 +273,9 @@
                   <button
                     mat-icon-button
                     [color]="r.is_active ? 'warn' : 'primary'"
-                    [matTooltip]="r.is_active ? 'Desativar grupo de pesquisa' : 'Ativar grupo de pesquisa'"
+                    [matTooltip]="
+                      r.is_active ? 'Desativar grupo de pesquisa' : 'Ativar grupo de pesquisa'
+                    "
                     (click)="toggleResearch(r)"
                   >
                     <mat-icon>{{ r.is_active ? 'block' : 'check_circle' }}</mat-icon>
@@ -301,14 +308,24 @@
         <div class="tab-content">
           @if (isResearcher()) {
             <div class="tab-actions">
-              <a mat-raised-button color="primary" [routerLink]="['/labs', labId, 'articles', 'new']">
+              <a
+                mat-raised-button
+                color="primary"
+                [routerLink]="['/labs', labId, 'articles', 'new']"
+              >
                 <mat-icon>add</mat-icon>
                 Novo Artigo
               </a>
             </div>
           }
 
-          <table mat-table [dataSource]="articlesDataSource" matSort #articleSort="matSort" class="full-width">
+          <table
+            mat-table
+            [dataSource]="articlesDataSource"
+            matSort
+            #articleSort="matSort"
+            class="full-width"
+          >
             <ng-container matColumnDef="title">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Título</th>
               <td mat-cell *matCellDef="let a">{{ a.title }}</td>
@@ -492,7 +509,6 @@
           </table>
         </div>
       </mat-tab>
-
     </mat-tab-group>
   }
 </div>

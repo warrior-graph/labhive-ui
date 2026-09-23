@@ -4,8 +4,11 @@
   justify-content: center;
   align-items: center;
   background-color: var(--mat-sys-surface);
-  background-image:
-    radial-gradient(circle, color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent) 1px,
+    transparent 1px
+  );
   background-size: 28px 28px;
   padding: 24px;
 }
@@ -37,9 +40,15 @@
     height: 12px;
     border-radius: 50%;
 
-    &.red    { background: #ff5f57; }
-    &.yellow { background: #febc2e; }
-    &.green  { background: #28c840; }
+    &.red {
+      background: #ff5f57;
+    }
+    &.yellow {
+      background: #febc2e;
+    }
+    &.green {
+      background: #28c840;
+    }
   }
 
   .title-text {
@@ -62,7 +71,10 @@ h2 {
   color: #00e5ff;
   font-family: var(--font-mono);
 
-  .prompt { color: #28c840; margin-right: 6px; }
+  .prompt {
+    color: #28c840;
+    margin-right: 6px;
+  }
   .cursor {
     display: inline-block;
     width: 8px;
@@ -75,8 +87,13 @@ h2 {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .full-width {
@@ -104,6 +121,38 @@ h2 {
   letter-spacing: 0.05em;
 }
 
+.auth-guidance {
+  color: var(--mat-sys-on-surface-variant);
+  line-height: 1.5;
+}
+.secondary-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+.mfa-qr {
+  display: block;
+  width: 220px;
+  height: 220px;
+  margin: 16px auto;
+  border-radius: 8px;
+}
+.manual-secret {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.recovery-codes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 20px 0;
+  code {
+    padding: 8px;
+    text-align: center;
+    background: var(--mat-sys-surface-container-high);
+    border-radius: 6px;
+  }
+}
+
 mat-card-actions {
   padding: 12px 32px 20px;
   display: flex;
@@ -115,6 +164,8 @@ mat-card-actions {
     color: #6e7681;
     text-decoration: none;
 
-    &:hover { color: #00e5ff; }
+    &:hover {
+      color: #00e5ff;
+    }
   }
 }

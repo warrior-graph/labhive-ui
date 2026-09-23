@@ -8,54 +8,146 @@
     </div>
 
     <div class="window-body">
-      <h2><span class="prompt">$</span> autenticar<span class="cursor"></span></h2>
+      <h2>
+        <span class="prompt">$</span>
+        {{ stage() === 'credentials' ? 'autenticar' : 'verificar identidade' }}
+        <span class="cursor"></span>
+      </h2>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email" autocomplete="email" />
-          @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
-            <mat-error>Email é obrigatório</mat-error>
-          } @else if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
-            <mat-error>Digite um email válido</mat-error>
+      @if (stage() === 'credentials') {
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" />
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <mat-error>Email é obrigatório</mat-error>
+            } @else if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+              <mat-error>Digite um email válido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Senha</mat-label>
+            <input
+              matInput
+              type="password"
+              formControlName="password"
+              autocomplete="current-password"
+            />
+            @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+              <mat-error>Senha é obrigatória</mat-error>
+            }
+          </mat-form-field>
+
+          @if (error()) {
+            <p class="error-text">{{ error() }}</p>
           }
-        </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Senha</mat-label>
-          <input
-            matInput
-            type="password"
-            formControlName="password"
-            autocomplete="current-password"
-          />
-          @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
-            <mat-error>Senha é obrigatória</mat-error>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="submit-btn"
+            [disabled]="loading()"
+          >
+            @if (loading()) {
+              <mat-progress-spinner diameter="20" mode="indeterminate" />
+            } @else {
+              Entrar
+            }
+          </button>
+        </form>
+      } @else if (stage() === 'verify') {
+        <p class="auth-guidance">
+          Digite o código do Google Authenticator ou um código de recuperação.
+        </p>
+        <form [formGroup]="codeForm" (ngSubmit)="submitCode()" novalidate>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Código de verificação</mat-label>
+            <input
+              matInput
+              formControlName="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+            />
+            @if (codeForm.get('code')?.invalid && codeForm.get('code')?.touched) {
+              <mat-error>Digite um código válido</mat-error>
+            }
+          </mat-form-field>
+          @if (error()) {
+            <p class="error-text">{{ error() }}</p>
           }
-        </mat-form-field>
-
-        @if (error()) {
-          <p class="error-text">{{ error() }}</p>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="submit-btn"
+            [disabled]="loading()"
+          >
+            @if (loading()) {
+              <mat-progress-spinner diameter="20" mode="indeterminate" />
+            } @else {
+              Verificar
+            }
+          </button>
+          <button mat-button type="button" class="secondary-btn" (click)="backToLogin()">
+            Voltar
+          </button>
+        </form>
+      } @else if (stage() === 'enroll') {
+        <p class="auth-guidance">
+          Escaneie o QR code com o Google Authenticator e confirme com o código gerado.
+        </p>
+        @if (loading()) {
+          <mat-progress-spinner diameter="32" mode="indeterminate" />
+        } @else {
+          <img class="mfa-qr" [src]="qrCode()" alt="QR code para configurar o autenticador" />
+          <p class="manual-secret">
+            Código manual: <code>{{ manualSecret() }}</code>
+          </p>
+          <form [formGroup]="codeForm" (ngSubmit)="submitCode()" novalidate>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Código de 6 dígitos</mat-label>
+              <input
+                matInput
+                formControlName="code"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+              />
+            </mat-form-field>
+            @if (error()) {
+              <p class="error-text">{{ error() }}</p>
+            }
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="submit-btn"
+              [disabled]="loading()"
+            >
+              Ativar verificação
+            </button>
+          </form>
         }
-
-        <button
-          mat-raised-button
-          color="primary"
-          type="submit"
-          class="submit-btn"
-          [disabled]="loading()"
-        >
-          @if (loading()) {
-            <mat-progress-spinner diameter="20" mode="indeterminate" />
-          } @else {
-            Entrar
+      } @else {
+        <p class="auth-guidance">
+          Guarde estes códigos em local seguro. Cada código pode ser usado uma vez.
+        </p>
+        <div class="recovery-codes" aria-label="Códigos de recuperação">
+          @for (code of recoveryCodes(); track code) {
+            <code>{{ code }}</code>
           }
+        </div>
+        <button mat-raised-button color="primary" class="submit-btn" (click)="finishEnrollment()">
+          Já salvei os códigos
         </button>
-      </form>
+      }
     </div>
 
-    <mat-card-actions>
-      <a routerLink="/register">Não tem uma conta? Cadastre-se</a>
-    </mat-card-actions>
+    @if (stage() === 'credentials') {
+      <mat-card-actions>
+        <a routerLink="/register">Não tem uma conta? Cadastre-se</a>
+      </mat-card-actions>
+    }
   </div>
 </div>

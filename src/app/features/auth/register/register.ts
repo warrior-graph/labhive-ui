@@ -4,7 +4,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatButton } from '@angular/material/button';
 import { MatCardActions } from '@angular/material/card';
-import { MatCheckbox } from '@angular/material/checkbox';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
@@ -24,7 +23,6 @@ import { extractApiError } from '../../../core/utils/api-error';
     ReactiveFormsModule,
     RouterLink,
     MatCardActions,
-    MatCheckbox,
     MatFormField,
     MatLabel,
     MatError,
@@ -68,14 +66,13 @@ export class Register implements OnInit {
     cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/)]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     desired_lab_id: [null as number | null],
-    is_professor: [false],
   });
 
   ngOnInit(): void {
     // Load public lab list for self-registration lab picker
     if (!this.isLoggedIn()) {
       this.labService.getDirectory().subscribe({
-        next: labs => this.labs.set(labs),
+        next: (labs) => this.labs.set(labs),
         error: () => {},
       });
     }
@@ -86,7 +83,7 @@ export class Register implements OnInit {
       this.inviteToken.set(token);
       this.inviteLoading.set(true);
       this.memberService.getInvite(token).subscribe({
-        next: info => {
+        next: (info) => {
           this.inviteInfo.set(info);
           this.inviteLoading.set(false);
         },
@@ -119,7 +116,7 @@ export class Register implements OnInit {
     this.error.set(null);
     this.successEmail.set(null);
 
-    const { cpf: rawCpf, is_professor, desired_lab_id, ...rest } = this.form.getRawValue();
+    const { cpf: rawCpf, desired_lab_id, ...rest } = this.form.getRawValue();
     const cpfDigits = rawCpf ? rawCpf.replace(/\D/g, '') : '';
 
     const payload: Record<string, unknown> = { ...rest, cpf: cpfDigits };
@@ -127,21 +124,18 @@ export class Register implements OnInit {
     if (!this.isLoggedIn() && desired_lab_id && !this.inviteToken()) {
       payload['desired_lab_id'] = desired_lab_id;
     }
-    if (is_professor) {
-      payload['is_professor'] = true;
-    }
     // Invite-based registration: backend auto-approves and adds to the lab
     if (this.inviteToken()) {
       payload['invite_token'] = this.inviteToken();
     }
 
     this.authService.register(payload as never).subscribe({
-      next: res => {
-        if (res.access_token) {
+      next: (res) => {
+        if (res.access_token && res.member) {
           if (this.isLoggedIn()) {
             // Professor/admin created a member — stay on page
             this.successEmail.set(res.member.email);
-            this.form.reset({ is_professor: false });
+            this.form.reset();
           } else {
             // Bootstrap — navigate to labs
             this.router.navigate(['/labs']);

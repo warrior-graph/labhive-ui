@@ -1,0 +1,295 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Espaços e reservas</h1>
+      <p>Escolha um horário para ver quais espaços estão disponíveis.</p>
+    </div>
+    @if (isManager() && selectedFloor()) {
+      <button mat-stroked-button (click)="editing.set(!editing())">
+        <mat-icon>{{ editing() ? 'done' : 'edit_location' }}</mat-icon>
+        {{ editing() ? 'Concluir edição' : 'Editar mapa' }}
+      </button>
+    }
+  </div>
+
+  <section class="filters" [formGroup]="availabilityForm">
+    <mat-form-field appearance="outline">
+      <mat-label>Local</mat-label>
+      <mat-select [value]="selectedLocationId()" (selectionChange)="selectLocation($event)">
+        @for (location of locations(); track location.id) {
+          <mat-option [value]="location.id">{{ location.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Andar</mat-label>
+      <mat-select [value]="selectedFloor()?.id" (selectionChange)="selectFloor($event)">
+        @for (floor of floors(); track floor.id) {
+          <mat-option [value]="floor.id">{{ floor.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline"
+      ><mat-label>Início</mat-label
+      ><input matInput type="datetime-local" formControlName="startsAt"
+    /></mat-form-field>
+    <mat-form-field appearance="outline"
+      ><mat-label>Fim</mat-label><input matInput type="datetime-local" formControlName="endsAt"
+    /></mat-form-field>
+    <button mat-raised-button color="primary" (click)="refreshFloor()">Ver disponibilidade</button>
+  </section>
+
+  @if (liveSessions().length) {
+    <div class="quiet-banner" role="status">
+      <mat-icon>volume_off</mat-icon>
+      <div>
+        <strong>Silêncio solicitado</strong><br />
+        @for (session of liveSessions(); track session.id) {
+          <span
+            >{{ spaceName(session.space_id) }}: {{ modeLabel(session.session_mode) }} até
+            {{ session.ends_at | date: 'shortTime' }}.
+          </span>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="spinner-center"><mat-progress-spinner mode="indeterminate" /></div>
+  } @else if (!locations().length) {
+    <div class="empty-state">Nenhum local foi configurado para este laboratório.</div>
+  } @else if (selectedFloor()) {
+    <div class="workspace">
+      <div class="map-column">
+        <div class="legend" aria-label="Legenda do mapa">
+          <span><i class="available"></i>Disponível</span
+          ><span><i class="reserved"></i>Reservado</span><span><i class="live"></i>Silêncio</span
+          ><span><i class="unavailable"></i>Indisponível</span>
+        </div>
+        <div class="map-scroll">
+          <svg
+            #floorSvg
+            class="floor-map"
+            [attr.viewBox]="
+              '0 0 ' + selectedFloor()!.layout_width + ' ' + selectedFloor()!.layout_height
+            "
+            (pointermove)="dragMove($event)"
+            (pointerup)="dragEnd()"
+            (pointerleave)="dragEnd()"
+            aria-label="Mapa de espaços do andar"
+          >
+            <rect
+              class="floor-background"
+              x="0"
+              y="0"
+              [attr.width]="selectedFloor()!.layout_width"
+              [attr.height]="selectedFloor()!.layout_height"
+            />
+            @for (space of spaces(); track space.id) {
+              <g
+                [class]="spaceClass(space)"
+                [class.selected]="selectedSpaceId() === space.id"
+                [class.editable]="editing()"
+                tabindex="0"
+                role="button"
+                [attr.aria-label]="space.name + ', ' + spaceStatus(space)"
+                (click)="selectSpace(space)"
+                (keydown.enter)="selectSpace(space)"
+                (pointerdown)="dragStart($event, space)"
+                [attr.transform]="
+                  'rotate(' +
+                  space.layout.rotation +
+                  ' ' +
+                  (space.layout.x + space.layout.width / 2) +
+                  ' ' +
+                  (space.layout.y + space.layout.height / 2) +
+                  ')'
+                "
+              >
+                <rect
+                  [attr.x]="space.layout.x"
+                  [attr.y]="space.layout.y"
+                  [attr.width]="space.layout.width"
+                  [attr.height]="space.layout.height"
+                  rx="8"
+                />
+                <text
+                  [attr.x]="space.layout.x + space.layout.width / 2"
+                  [attr.y]="space.layout.y + space.layout.height / 2 - 5"
+                >
+                  {{ space.name }}
+                </text>
+                <text
+                  class="status-text"
+                  [attr.x]="space.layout.x + space.layout.width / 2"
+                  [attr.y]="space.layout.y + space.layout.height / 2 + 18"
+                >
+                  {{ spaceStatus(space) }}
+                </text>
+              </g>
+            }
+          </svg>
+        </div>
+
+        <div class="space-list" aria-label="Lista acessível dos espaços">
+          @for (space of spaces(); track space.id) {
+            <button
+              mat-stroked-button
+              [disabled]="!space.available || editing()"
+              (click)="selectSpace(space)"
+            >
+              {{ space.name }} · {{ spaceStatus(space) }} · {{ space.capacity }} pessoa(s)
+            </button>
+          } @empty {
+            <p>Nenhum espaço neste andar.</p>
+          }
+        </div>
+      </div>
+
+      <aside>
+        @if (editing() && isManager()) {
+          <mat-card>
+            <mat-card-header><mat-card-title>Novo espaço</mat-card-title></mat-card-header>
+            <mat-card-content
+              ><form class="side-form" [formGroup]="spaceForm" (ngSubmit)="createSpace()">
+                <mat-form-field appearance="outline"
+                  ><mat-label>Nome</mat-label><input matInput formControlName="name"
+                /></mat-form-field>
+                <mat-form-field appearance="outline"
+                  ><mat-label>Tipo</mat-label
+                  ><mat-select formControlName="type">
+                    @for (type of spaceTypes; track type.value) {
+                      <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                    }
+                  </mat-select></mat-form-field
+                >
+                <div class="form-row">
+                  <mat-form-field appearance="outline"
+                    ><mat-label>Capacidade</mat-label
+                    ><input matInput type="number" formControlName="capacity" /></mat-form-field
+                  ><mat-form-field appearance="outline"
+                    ><mat-label>Largura</mat-label
+                    ><input matInput type="number" formControlName="width" /></mat-form-field
+                  ><mat-form-field appearance="outline"
+                    ><mat-label>Altura</mat-label
+                    ><input matInput type="number" formControlName="height"
+                  /></mat-form-field>
+                </div>
+                <mat-checkbox formControlName="requiresApproval">Exige aprovação</mat-checkbox>
+                <button mat-raised-button color="primary" type="submit">Adicionar ao mapa</button>
+                <p class="hint">Arraste os espaços no mapa para posicioná-los.</p>
+              </form></mat-card-content
+            >
+          </mat-card>
+        } @else if (selectedSpace(); as space) {
+          <mat-card>
+            <mat-card-header
+              ><mat-card-title>{{ space.name }}</mat-card-title></mat-card-header
+            >
+            <mat-card-content>
+              <p>{{ spaceStatus(space) }} · Capacidade: {{ space.capacity }}</p>
+              @if (space.requires_approval) {
+                <p class="hint">Esta reserva precisa de aprovação.</p>
+              }
+              <form class="side-form" [formGroup]="bookingForm" (ngSubmit)="reserve()">
+                <mat-form-field appearance="outline"
+                  ><mat-label>Finalidade</mat-label
+                  ><textarea matInput formControlName="purpose" rows="3"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline"
+                  ><mat-label>Tipo de sessão</mat-label
+                  ><mat-select formControlName="sessionMode">
+                    @for (mode of sessionModes; track mode.value) {
+                      <mat-option [value]="mode.value">{{ mode.label }}</mat-option>
+                    }
+                  </mat-select></mat-form-field
+                >
+                <button
+                  mat-raised-button
+                  color="primary"
+                  type="submit"
+                  [disabled]="!space.available || saving()"
+                >
+                  Reservar
+                </button>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        } @else {
+          <mat-card
+            ><mat-card-content
+              ><p>Selecione um espaço disponível no mapa para reservar.</p></mat-card-content
+            ></mat-card
+          >
+        }
+      </aside>
+    </div>
+
+    <section class="reservations">
+      <h2>Reservas no período</h2>
+      @for (reservation of reservations(); track reservation.id) {
+        <div class="reservation-row">
+          <div>
+            <strong>{{ spaceName(reservation.space_id) }}</strong
+            ><br /><span
+              >{{ reservation.starts_at | date: 'short' }} —
+              {{ reservation.ends_at | date: 'short' }} · {{ reservation.status }}</span
+            >
+          </div>
+          <div class="row-actions">
+            @if (reservation.status === 'confirmed' && !reservation.checked_in_at) {
+              <button mat-button (click)="checkIn(reservation)">Check-in</button>
+            }
+            @if (reservation.checked_in_at && !reservation.checked_out_at) {
+              <button mat-button (click)="checkOut(reservation)">Encerrar</button>
+            }
+            @if (canAct(reservation)) {
+              <button
+                mat-icon-button
+                color="warn"
+                aria-label="Cancelar reserva"
+                (click)="cancel(reservation)"
+              >
+                <mat-icon>cancel</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p>Nenhuma reserva encontrada neste período.</p>
+      }
+    </section>
+  }
+
+  @if (isManager()) {
+    <details class="setup-panel">
+      <summary>Configurar locais e andares</summary>
+      <div class="setup-grid">
+        <form class="side-form" [formGroup]="locationForm" (ngSubmit)="createLocation()">
+          <h3>Novo local</h3>
+          <mat-form-field appearance="outline"
+            ><mat-label>Nome</mat-label><input matInput formControlName="name" /></mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Endereço</mat-label
+            ><input matInput formControlName="address" /></mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Fuso horário</mat-label
+            ><input matInput formControlName="timezone" /></mat-form-field
+          ><button mat-raised-button type="submit">Criar local</button>
+        </form>
+        <form class="side-form" [formGroup]="floorForm" (ngSubmit)="createFloor()">
+          <h3>Novo andar</h3>
+          <p class="hint">Local selecionado: {{ selectedLocationId() || 'nenhum' }}</p>
+          <mat-form-field appearance="outline"
+            ><mat-label>Nome</mat-label><input matInput formControlName="name" /></mat-form-field
+          ><mat-form-field appearance="outline"
+            ><mat-label>Nível</mat-label
+            ><input matInput type="number" formControlName="level" /></mat-form-field
+          ><button mat-raised-button type="submit" [disabled]="!selectedLocationId()">
+            Criar andar
+          </button>
+        </form>
+      </div>
+    </details>
+  }
+</div>

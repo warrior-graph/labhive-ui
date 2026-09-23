@@ -13,16 +13,19 @@
           <mat-icon class="pending-icon">hourglass_top</mat-icon>
           <h3>Conta criada — aguardando aprovação</h3>
           <p>
-            Seu cadastro foi recebido. Um professor do laboratório selecionado
-            revisará e aprovará sua conta. Você poderá entrar assim que for
-            aprovado(a).
+            Seu cadastro foi recebido. Um professor do laboratório selecionado revisará e aprovará
+            sua conta. Você poderá entrar assim que for aprovado(a).
           </p>
           <a mat-raised-button color="primary" routerLink="/login">Ir para o login</a>
         </div>
       } @else {
         <h2>
           <span class="prompt">$</span>
-          @if (isLoggedIn()) { criar-membro } @else { registrar }
+          @if (isLoggedIn()) {
+            criar-membro
+          } @else {
+            registrar
+          }
           <span class="cursor"></span>
         </h2>
 
@@ -41,8 +44,8 @@
             <mat-icon>mark_email_read</mat-icon>
             <span>
               Você foi convidado(a) a entrar no laboratório
-              <strong>{{ inviteInfo()!.lab_name }}</strong>. Sua conta será
-              aprovada automaticamente.
+              <strong>{{ inviteInfo()!.lab_name }}</strong
+              >. Sua conta será aprovada automaticamente.
             </span>
           </div>
         }
@@ -58,7 +61,9 @@
             <mat-form-field appearance="outline">
               <mat-label>Nome</mat-label>
               <input matInput formControlName="first_name" autocomplete="given-name" />
-              @if (form.get('first_name')?.hasError('required') && form.get('first_name')?.touched) {
+              @if (
+                form.get('first_name')?.hasError('required') && form.get('first_name')?.touched
+              ) {
                 <mat-error>Obrigatório</mat-error>
               }
             </mat-form-field>
@@ -84,7 +89,13 @@
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>CPF</mat-label>
-            <input matInput formControlName="cpf" placeholder="000.000.000-00" autocomplete="off" (input)="onCpfInput($event)" />
+            <input
+              matInput
+              formControlName="cpf"
+              placeholder="000.000.000-00"
+              autocomplete="off"
+              (input)="onCpfInput($event)"
+            />
             @if (form.get('cpf')?.hasError('required') && form.get('cpf')?.touched) {
               <mat-error>CPF é obrigatório</mat-error>
             } @else if (form.get('cpf')?.hasError('pattern') && form.get('cpf')?.touched) {
@@ -102,7 +113,9 @@
             />
             @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
               <mat-error>Senha é obrigatória</mat-error>
-            } @else if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+            } @else if (
+              form.get('password')?.hasError('minlength') && form.get('password')?.touched
+            ) {
               <mat-error>A senha deve ter pelo menos 8 caracteres</mat-error>
             }
           </mat-form-field>
@@ -118,10 +131,6 @@
               </mat-select>
             </mat-form-field>
           }
-
-          <mat-checkbox formControlName="is_professor" class="professor-check">
-            Sou professor(a)
-          </mat-checkbox>
 
           @if (error()) {
             <p class="error-text">{{ error() }}</p>
