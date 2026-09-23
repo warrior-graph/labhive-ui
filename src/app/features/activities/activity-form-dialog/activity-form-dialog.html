@@ -49,7 +49,9 @@
 
       <mat-form-field appearance="outline">
         <mat-label>Prazo (deadline)</mat-label>
-        <input matInput formControlName="deadline" type="date" />
+        <input matInput [matDatepicker]="deadlinePicker" formControlName="deadline" />
+        <mat-datepicker-toggle matIconSuffix [for]="deadlinePicker" />
+        <mat-datepicker #deadlinePicker />
       </mat-form-field>
     </div>
 

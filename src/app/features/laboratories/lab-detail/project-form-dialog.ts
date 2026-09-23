@@ -10,9 +10,10 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { MatError, MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
+import { MatError, MatFormField, MatHint, MatLabel, MatSuffix } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
-import { MatOption } from '@angular/material/core';
+import { MatOption, provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatSelect } from '@angular/material/select';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
@@ -27,6 +28,7 @@ import {
 import { MemberService } from '../../../core/services/member.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { ResearchService } from '../../../core/services/research.service';
+import { parseDate, toIsoDate } from '../../../core/utils/date';
 
 export interface ProjectFormData {
   labId: number | null;
@@ -47,12 +49,17 @@ export interface ProjectFormData {
     MatFormField,
     MatLabel,
     MatHint,
+    MatSuffix,
     MatError,
     MatInput,
     MatSelect,
     MatOption,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
     MatProgressSpinner,
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './project-form-dialog.html',
 })
 export class ProjectFormDialog implements OnInit {
@@ -78,16 +85,12 @@ export class ProjectFormDialog implements OnInit {
     { value: ProjectStatus.CANCELLED, label: 'Cancelado' },
   ];
 
-  protected readonly form = this.fb.nonNullable.group({
+  protected readonly form = this.fb.group({
     name: [this.data.project?.name ?? '', Validators.required],
     description: [this.data.project?.description ?? ''],
     status: [this.data.project?.status ?? (ProjectStatus.PLANNED as string)],
-    start_date: [
-      this.data.project?.start_date ? this.data.project.start_date.slice(0, 10) : '',
-    ],
-    end_date: [
-      this.data.project?.end_date ? this.data.project.end_date.slice(0, 10) : '',
-    ],
+    start_date: [parseDate(this.data.project?.start_date)],
+    end_date: [parseDate(this.data.project?.end_date)],
     research_id: [this.data.project?.research_id ?? (null as number | null)],
     tech_lead_id: [this.data.project?.tech_lead_id ?? (null as number | null)],
     lab_id: [this.data.labId ?? (null as number | null), Validators.required],
@@ -181,13 +184,15 @@ export class ProjectFormDialog implements OnInit {
       this.loading.set(false);
       return;
     }
+    const startIso = toIsoDate(start_date);
+    const endIso = toIsoDate(end_date);
     const payload = {
-      name,
+      name: name ?? '',
       ...(tech_lead_id && { tech_lead_id }),
       ...(description && { description }),
       ...(status && { status }),
-      ...(start_date && { start_date }),
-      ...(end_date && { end_date }),
+      ...(startIso && { start_date: startIso }),
+      ...(endIso && { end_date: endIso }),
       ...(research_id && { research_id }),
     };
 

@@ -4,10 +4,12 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
+  ImportReport,
   InviteInfo,
   InviteResponse,
   LabMembership,
   Member,
+  MemberUsage,
   MembershipHistory,
 } from '../models';
 
@@ -84,6 +86,7 @@ export class MemberService {
       lattes_url?: string | null;
       orcid?: string | null;
       github_url?: string | null;
+      email_notifications?: boolean;
     }>,
   ): Observable<Member> {
     return this.http.put<Member>(`${this.api}/members/${memberId}`, data);
@@ -92,6 +95,37 @@ export class MemberService {
   /** Histórico de lab membership do próprio usuário (ou de qualquer membro p/ super-admin). */
   getHistory(memberId: number): Observable<MembershipHistory[]> {
     return this.http.get<MembershipHistory[]>(`${this.api}/members/${memberId}/history`);
+  }
+
+  /** Histórico de uso (reservas, presença, atividades, projetos) — self ou super-admin. */
+  getUsage(
+    memberId: number,
+    params: { since?: string; until?: string; limit?: number } = {},
+  ): Observable<MemberUsage> {
+    return this.http.get<MemberUsage>(`${this.api}/members/${memberId}/usage`, { params });
+  }
+
+  /** Pré-visualiza uma importação CSV de membros sem gravar nada (MANAGER_ROLES). */
+  previewImport(labId: number, file: File): Observable<ImportReport> {
+    return this.http.post<ImportReport>(
+      `${this.api}/labs/${labId}/members/import`,
+      this.#importForm(file),
+      { params: { dry_run: 'true' } },
+    );
+  }
+
+  /** Importa membros a partir de um CSV (MANAGER_ROLES). */
+  importMembers(labId: number, file: File): Observable<ImportReport> {
+    return this.http.post<ImportReport>(
+      `${this.api}/labs/${labId}/members/import`,
+      this.#importForm(file),
+    );
+  }
+
+  #importForm(file: File): FormData {
+    const form = new FormData();
+    form.append('file', file);
+    return form;
   }
 
   /** Desliga (soft-leave) um membro de um lab (MANAGER_ROLES). */

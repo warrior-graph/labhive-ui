@@ -1,0 +1,80 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Auditoria</h1>
+      <p>Registro imutável das operações administrativas deste laboratório.</p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button type="button" (click)="exportCsv()">
+        <mat-icon>download</mat-icon>Exportar CSV
+      </button>
+      <a mat-stroked-button [routerLink]="['/labs', labId]">
+        <mat-icon>arrow_back</mat-icon>Voltar
+      </a>
+    </div>
+  </div>
+
+  <section class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Ação</mat-label>
+      <mat-select [value]="actionFilter()" (selectionChange)="setAction($event.value)">
+        <mat-option value="">Todas</mat-option>
+        @for (action of page()?.actions ?? []; track action) {
+          <mat-option [value]="action">{{ actionLabel(action) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Limite</mat-label>
+      <mat-select [value]="limit()" (selectionChange)="setLimit($event.value)">
+        <mat-option [value]="50">50</mat-option>
+        <mat-option [value]="100">100</mat-option>
+        <mat-option [value]="250">250</mat-option>
+        <mat-option [value]="500">500</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="load()">Atualizar</button>
+  </section>
+
+  @if (loading()) {
+    <div class="spinner-center"><mat-progress-spinner mode="indeterminate" /></div>
+  } @else if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  } @else if (page(); as data) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ data.total }} registro(s)</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (!data.entries.length) {
+          <p class="empty">Nenhuma operação registrada com os filtros atuais.</p>
+        } @else {
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Quando</th>
+                <th>Ator</th>
+                <th>Ação</th>
+                <th>Descrição</th>
+                <th>Alvo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of data.entries; track entry.id) {
+                <tr>
+                  <td class="nowrap">{{ entry.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ entry.actor_name ?? '—' }}</td>
+                  <td>
+                    <span class="action-chip">{{ actionLabel(entry.action) }}</span>
+                  </td>
+                  <td>{{ entry.description }}</td>
+                  <td class="nowrap">{{ targetLabel(entry) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

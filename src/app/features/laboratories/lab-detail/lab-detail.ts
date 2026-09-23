@@ -49,6 +49,7 @@ import {
 } from '../../../shared/components/confirm-dialog/confirm-dialog';
 import { RoleBadge } from '../../../shared/components/role-badge/role-badge';
 import { EditMemberDialog, EditMemberData } from './edit-member-dialog';
+import { ImportMembersDialog, ImportMembersDialogData } from './import-members-dialog';
 import { InviteDialog } from './invite-dialog';
 import { MemberFormDialog } from './member-form-dialog';
 import { ProjectFormDialog } from './project-form-dialog';
@@ -112,6 +113,26 @@ export class LabDetail implements OnInit {
   protected readonly itemConditionLabels = ITEM_CONDITION_LABELS;
   protected exportData(dataset: ExportDataset): void {
     this.exportService.download(this.labId, dataset);
+  }
+
+  /** Opens the CSV bulk-import dialog and reloads members when something was imported. */
+  protected openImportMembers(): void {
+    const ref = this.dialog.open<ImportMembersDialog, ImportMembersDialogData, boolean>(
+      ImportMembersDialog,
+      {
+        data: { labId: this.labId, labName: this.lab()?.name ?? '' },
+        width: '620px',
+      },
+    );
+    ref.afterClosed().subscribe(imported => {
+      if (imported) this.loadMembers();
+    });
+  }
+
+  private loadMembers(): void {
+    this.memberService.getLabMembers(this.labId).subscribe({
+      next: members => this.members.set(members),
+    });
   }
 
   protected itemConditionLabel(condition: string): string {
@@ -219,11 +240,7 @@ export class LabDetail implements OnInit {
       },
     });
 
-    this.memberService.getLabMembers(this.labId).subscribe({
-      next: members => {
-        this.members.set(members);
-      },
-    });
+    this.loadMembers();
 
     this.projectService.getAll(this.labId).subscribe({
       next: projects => this.projects.set(projects),

@@ -16,6 +16,14 @@
           <button mat-stroked-button (click)="exportData('activities')"><mat-icon>download</mat-icon> Atividades CSV</button>
           <button mat-stroked-button (click)="exportData('projects')"><mat-icon>download</mat-icon> Projetos CSV</button>
           <button mat-stroked-button (click)="exportData('attendance')"><mat-icon>schedule</mat-icon> Frequência CSV</button>
+          <button mat-stroked-button [routerLink]="['/labs', lab()!.id, 'audit']">
+            <mat-icon>history</mat-icon> Auditoria
+          </button>
+        }
+        @if (isManager()) {
+          <button mat-stroked-button [routerLink]="['/labs', lab()!.id, 'occupancy']">
+            <mat-icon>insights</mat-icon> Ocupação
+          </button>
         }
         <button mat-raised-button color="primary" [routerLink]="['/labs', lab()!.id, 'spaces']">
           <mat-icon>map</mat-icon>
@@ -53,6 +61,10 @@
                 <button mat-stroked-button (click)="openInviteDialog()">
                   <mat-icon>link</mat-icon>
                   Gerar Convite
+                </button>
+                <button mat-stroked-button (click)="openImportMembers()">
+                  <mat-icon>upload_file</mat-icon>
+                  Importar CSV
                 </button>
               }
             </div>

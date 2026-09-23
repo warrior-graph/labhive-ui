@@ -44,12 +44,16 @@
     <div class="date-row">
       <mat-form-field appearance="outline">
         <mat-label>Data de início (opcional)</mat-label>
-        <input matInput type="date" formControlName="start_date" />
+        <input matInput [matDatepicker]="startPicker" formControlName="start_date" />
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+        <mat-datepicker #startPicker />
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Data de término (opcional)</mat-label>
-        <input matInput type="date" formControlName="end_date" />
+        <input matInput [matDatepicker]="endPicker" formControlName="end_date" />
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+        <mat-datepicker #endPicker />
       </mat-form-field>
     </div>
 

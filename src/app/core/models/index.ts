@@ -108,6 +108,7 @@ export interface Member {
   is_professor: boolean;
   is_approved: boolean;
   is_active: boolean;
+  email_notifications?: boolean;
   desired_lab_id?: number | null;
   created_at: string;
   lab_memberships?: LabMembership[];
@@ -212,7 +213,8 @@ export type LabCapability =
   | 'inventory.view' | 'inventory.manage'
   | 'announcements.view' | 'announcements.manage'
   | 'spaces.view' | 'spaces.reserve' | 'spaces.manage'
-  | 'reservations.review';
+  | 'reservations.review'
+  | 'analytics.view' | 'audit.view';
 
 export type AttendanceGranularity = 'week' | 'month';
 
@@ -610,3 +612,162 @@ export interface CreateActivityPayload {
 }
 
 export type UpdateActivityPayload = Partial<CreateActivityPayload>;
+
+// ─── Personal usage history (GET /members/{id}/usage) ─────────────────────────
+
+export type UsageAttendanceStatus = 'completed' | 'present' | 'no_show' | 'scheduled';
+
+export interface UsageReservation {
+  id: number;
+  space_id: number;
+  space_name: string | null;
+  lab_id: number | null;
+  starts_at: string;
+  ends_at: string;
+  status: ReservationStatus;
+  session_mode: SessionMode;
+  purpose: string | null;
+  checked_in_at: string | null;
+  checked_out_at: string | null;
+  attendance_status: UsageAttendanceStatus;
+}
+
+export interface MemberUsage {
+  member_id: number;
+  range: { since: string | null; until: string | null };
+  totals: {
+    reservations: number;
+    completed: number;
+    attended: number;
+    no_shows: number;
+    attended_minutes: number;
+    attended_hours: number;
+    attendance_rate: number;
+  };
+  reservations: UsageReservation[];
+  activities: {
+    participating: ActivityDetail[];
+    in_charge: ActivityDetail[];
+  };
+  projects: { id: number; name: string; lab_id: number; status: ProjectStatus }[];
+}
+
+// ─── Occupancy analytics (GET /labs/{id}/analytics/occupancy) ─────────────────
+
+export interface OccupancySpace {
+  space_id: number;
+  name: string;
+  type: SpaceType;
+  capacity: number;
+  effective_slots: number;
+  floor_id: number;
+  booked_minutes: number;
+  booked_hours: number;
+  capacity_minutes: number;
+  preallocated_minutes: number;
+  occupancy_rate: number;
+  sessions: number;
+  attended: number;
+  no_shows: number;
+  attended_minutes: number;
+}
+
+export interface OccupancyReport {
+  lab_id: number;
+  lab_name?: string;
+  range: { since: string; until: string; days: number };
+  totals: {
+    spaces: number;
+    sessions: number;
+    attended: number;
+    no_shows: number;
+    booked_minutes: number;
+    booked_hours: number;
+    capacity_minutes: number;
+    occupancy_rate: number;
+  };
+  spaces: OccupancySpace[];
+  days: { date: string; booked_minutes: number; booked_hours: number }[];
+}
+
+// ─── Bulk member import (POST /labs/{id}/members/import) ──────────────────────
+
+export interface ImportPreviewRow {
+  line: number;
+  email: string;
+  name: string;
+  roles: string[];
+  existing_member: boolean;
+  reactivates: boolean;
+}
+
+export interface ImportRowError {
+  line: number;
+  email: string;
+  errors: string[];
+}
+
+export interface ImportReport {
+  dry_run: boolean;
+  lab_id: number;
+  total_rows: number;
+  valid: number;
+  invalid: number;
+  created_members: number;
+  added_to_lab: number;
+  reactivated: number;
+  errors: ImportRowError[];
+  preview: ImportPreviewRow[];
+  temporary_credentials: { email: string; name: string; temporary_password: string }[];
+}
+
+// ─── Audit trail (GET /labs/{id}/audit, GET /audit) ───────────────────────────
+
+export interface AuditEntry {
+  id: number;
+  actor_id: number | null;
+  actor_name: string | null;
+  lab_id: number | null;
+  action: string;
+  description: string;
+  target_type: string | null;
+  target_id: number | null;
+  details: Record<string, unknown>;
+  created_at: string | null;
+}
+
+export interface AuditPage {
+  total: number;
+  entries: AuditEntry[];
+  actions: string[];
+  scope?: number[];
+}
+
+// ─── Space waitlist (/labs/{id}/waitlist) ─────────────────────────────────────
+
+export type WaitlistStatus = 'waiting' | 'offered' | 'fulfilled' | 'expired' | 'cancelled';
+
+export interface WaitlistEntry {
+  id: number;
+  space_id: number;
+  space_name: string | null;
+  member_id: number;
+  member_name: string | null;
+  desired_starts_at: string;
+  desired_ends_at: string;
+  session_mode: SessionMode;
+  purpose: string | null;
+  status: WaitlistStatus;
+  created_at: string | null;
+  offered_at: string | null;
+  offer_expires_at: string | null;
+  position: number | null;
+}
+
+// ─── Personal calendar feed (/calendar/feed) ──────────────────────────────────
+
+export interface CalendarFeedInfo {
+  token: string;
+  feed_url: string;
+  webcal_url: string;
+}

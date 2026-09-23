@@ -9,9 +9,10 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { MatError, MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
+import { MatError, MatFormField, MatHint, MatLabel, MatSuffix } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
-import { MatOption } from '@angular/material/core';
+import { MatOption, provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelect } from '@angular/material/select';
 
@@ -27,6 +28,7 @@ import {
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { MemberService } from '../../../core/services/member.service';
 import { extractApiError } from '../../../core/utils/api-error';
+import { parseDate, toIsoDate } from '../../../core/utils/date';
 
 export interface ActivityFormData {
   labId: number | null;
@@ -45,12 +47,17 @@ export interface ActivityFormData {
     MatFormField,
     MatLabel,
     MatHint,
+    MatSuffix,
     MatError,
     MatInput,
     MatOption,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
     MatProgressSpinner,
     MatSelect,
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './activity-form-dialog.html',
   styles: [
     `
@@ -104,16 +111,14 @@ export class ActivityFormDialog implements OnInit {
 
   protected readonly statuses = ACTIVITY_STATUSES;
 
-  protected readonly form = this.fb.nonNullable.group({
+  protected readonly form = this.fb.group({
     title: [this.data.activity?.title ?? '', Validators.required],
     activity_type: [this.data.activity?.activity_type ?? ''],
     description: [this.data.activity?.description ?? ''],
     venue: [this.data.activity?.venue ?? ''],
     reference_link: [this.data.activity?.reference_link ?? ''],
     status: [this.data.activity?.status ?? 'planned'],
-    deadline: [
-      this.data.activity?.deadline ? this.data.activity.deadline.slice(0, 10) : '',
-    ],
+    deadline: [parseDate(this.data.activity?.deadline)],
     lab_id: [
       this.data.activity?.lab_id ?? this.data.labId ?? (null as number | null),
       Validators.required,
@@ -186,15 +191,15 @@ export class ActivityFormDialog implements OnInit {
     }
 
     const payload: CreateActivityPayload = {
-      title: raw.title.trim(),
+      title: raw.title?.trim() ?? '',
       activity_type: raw.activity_type?.trim() || null,
       description: raw.description?.trim() || null,
       venue: raw.venue?.trim() || null,
       reference_link: raw.reference_link?.trim() || null,
-      status: raw.status,
-      deadline: raw.deadline || null,
-      in_charge: raw.in_charge,
-      participants: raw.participants,
+      status: raw.status ?? 'planned',
+      deadline: toIsoDate(raw.deadline),
+      in_charge: raw.in_charge ?? [],
+      participants: raw.participants ?? [],
     };
 
     if (this.data.activity) {

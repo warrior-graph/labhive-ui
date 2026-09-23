@@ -10,6 +10,7 @@ import {
   SessionMode,
   Space,
   SpaceType,
+  WaitlistEntry,
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -162,5 +163,37 @@ export class SpaceService {
 
   getLiveStatus(labId: number, floorId: number) {
     return this.http.get<Reservation[]>(`${this.api}/labs/${labId}/floors/${floorId}/live-status`);
+  }
+
+  // ── Waitlist ──────────────────────────────────────────────────────────────
+
+  joinWaitlist(
+    labId: number,
+    spaceId: number,
+    data: { starts_at: string; ends_at: string; purpose?: string; session_mode?: SessionMode },
+  ) {
+    return this.http.post<WaitlistEntry>(
+      `${this.api}/labs/${labId}/spaces/${spaceId}/waitlist`,
+      data,
+    );
+  }
+
+  getWaitlist(labId: number, activeOnly = true) {
+    const params = activeOnly ? new HttpParams().set('active_only', 'true') : undefined;
+    return this.http.get<WaitlistEntry[]>(`${this.api}/labs/${labId}/waitlist`, { params });
+  }
+
+  acceptWaitlistOffer(labId: number, entryId: number) {
+    return this.http.post<Reservation>(
+      `${this.api}/labs/${labId}/waitlist/${entryId}/accept`,
+      {},
+    );
+  }
+
+  cancelWaitlistEntry(labId: number, entryId: number) {
+    return this.http.post<WaitlistEntry>(
+      `${this.api}/labs/${labId}/waitlist/${entryId}/cancel`,
+      {},
+    );
   }
 }

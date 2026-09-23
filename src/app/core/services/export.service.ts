@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
-export type ExportDataset = 'members' | 'activities' | 'projects' | 'attendance';
+export type ExportDataset = 'members' | 'activities' | 'projects' | 'attendance' | 'audit';
 
 @Injectable({ providedIn: 'root' })
 export class ExportService {

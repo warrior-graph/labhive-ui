@@ -117,6 +117,146 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- Personal usage -->
+  <mat-card class="usage-card">
+    <mat-card-title>Meu uso</mat-card-title>
+    <mat-card-content>
+      @if (usageLoading()) {
+        <mat-progress-spinner mode="indeterminate" diameter="32" />
+      } @else if (!usage()) {
+        <p class="empty-text">Não foi possível carregar o histórico de uso.</p>
+      } @else if (usage(); as u) {
+        <div class="usage-totals">
+          <div class="usage-stat">
+            <span class="label">Reservas</span>
+            <strong>{{ u.totals.reservations }}</strong>
+          </div>
+          <div class="usage-stat">
+            <span class="label">Presenças</span>
+            <strong>{{ u.totals.attended }}</strong>
+          </div>
+          <div class="usage-stat">
+            <span class="label">Ausências</span>
+            <strong>{{ u.totals.no_shows }}</strong>
+          </div>
+          <div class="usage-stat">
+            <span class="label">Tempo presente</span>
+            <strong>{{ formatDuration(u.totals.attended_minutes) }}</strong>
+          </div>
+          <div class="usage-stat">
+            <span class="label">Comparecimento</span>
+            <strong>{{ u.totals.attendance_rate }}%</strong>
+          </div>
+        </div>
+
+        @if (u.reservations.length === 0) {
+          <p class="empty-text">Você ainda não fez reservas.</p>
+        } @else {
+          <table class="usage-table">
+            <thead>
+              <tr>
+                <th>Espaço</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (reservation of u.reservations.slice(0, 10); track reservation.id) {
+                <tr>
+                  <td>{{ reservation.space_name ?? '—' }}</td>
+                  <td>{{ reservation.starts_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ reservation.ends_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>
+                    <span class="usage-status" [class]="reservation.attendance_status">
+                      {{ attendanceLabel(reservation.attendance_status) }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        @if (u.activities.participating.length || u.activities.in_charge.length) {
+          <h3 class="usage-subtitle">Atividades</h3>
+          <div class="usage-activities">
+            @for (activity of u.activities.in_charge; track activity.id) {
+              <a class="usage-activity" [routerLink]="['/labs', activity.lab_id, 'activities', activity.id]">
+                <mat-icon>star</mat-icon>{{ activity.title }}
+              </a>
+            }
+            @for (activity of u.activities.participating; track activity.id) {
+              <a class="usage-activity" [routerLink]="['/labs', activity.lab_id, 'activities', activity.id]">
+                <mat-icon>task_alt</mat-icon>{{ activity.title }}
+              </a>
+            }
+          </div>
+        }
+
+        @if (u.projects.length) {
+          <h3 class="usage-subtitle">Projetos</h3>
+          <div class="usage-activities">
+            @for (project of u.projects; track project.id) {
+              <a class="usage-activity" [routerLink]="['/labs', project.lab_id, 'projects', project.id]">
+                <mat-icon>science</mat-icon>{{ project.name }}
+              </a>
+            }
+          </div>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Preferences & calendar subscription -->
+  <mat-card class="preferences-card">
+    <mat-card-title>Preferências e calendário</mat-card-title>
+    <mat-card-content>
+      <div class="preference-row">
+        <mat-checkbox
+          [checked]="emailNotifications()"
+          [disabled]="savingPreference()"
+          (change)="toggleEmailNotifications($event.checked)"
+        >
+          Receber notificações por e-mail
+        </mat-checkbox>
+        <p class="preference-hint">
+          Avisos importantes (aprovações, prazos e vagas da lista de espera) também chegam por e-mail.
+        </p>
+      </div>
+
+      <h3 class="pref-subtitle">Assinar meu calendário</h3>
+      @if (!feed()) {
+        <button mat-stroked-button type="button" [disabled]="feedLoading()" (click)="loadFeed()">
+          <mat-icon>event</mat-icon>
+          {{ feedLoading() ? 'Gerando…' : 'Gerar link de assinatura' }}
+        </button>
+        <p class="preference-hint">
+          Adicione suas reservas, prazos e eventos ao Google Calendar, Outlook ou Apple Calendar.
+        </p>
+      } @else if (feed(); as info) {
+        <div class="feed-url-row">
+          <input class="feed-url" [value]="info.webcal_url" readonly (focus)="selectUrl($event)" />
+          <button mat-icon-button color="primary" aria-label="Copiar link" (click)="copyFeedUrl()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+        </div>
+        <div class="feed-actions">
+          <button mat-stroked-button type="button" (click)="downloadIcs()">
+            <mat-icon>download</mat-icon>Baixar .ics
+          </button>
+          <button mat-stroked-button color="warn" type="button" (click)="rotateFeed()">
+            <mat-icon>autorenew</mat-icon>Gerar novo link
+          </button>
+        </div>
+        <p class="preference-hint">
+          O link é pessoal e secreto: quem o tiver consegue ler sua agenda. Gerar um novo link
+          invalida o anterior.
+        </p>
+      }
+    </mat-card-content>
+  </mat-card>
+
   <!-- Reporting Structure -->
   <mat-card class="hierarchy-card">
     <mat-card-title>Estrutura hierárquica</mat-card-title>

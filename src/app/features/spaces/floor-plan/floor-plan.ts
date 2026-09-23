@@ -16,10 +16,12 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatOption } from '@angular/material/core';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepicker, MatDatepickerInput, MatDatepickerToggle } from '@angular/material/datepicker';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSelect, MatSelectChange } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -36,10 +38,12 @@ import {
   SessionMode,
   Space,
   SpaceType,
+  WaitlistEntry,
 } from '../../../core/models';
 import { SpaceService } from '../../../core/services/space.service';
 import { MemberService } from '../../../core/services/member.service';
 import { extractApiError } from '../../../core/utils/api-error';
+import { combineDateTime, parseDate, toIsoDate, toLocalTime } from '../../../core/utils/date';
 import { NameEditDialog, NameEditDialogData } from './name-edit-dialog';
 import {
   ConfirmDialog,
@@ -60,12 +64,17 @@ import {
     MatCheckbox,
     MatFormField,
     MatLabel,
+    MatSuffix,
     MatIcon,
     MatInput,
     MatOption,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
     MatProgressSpinner,
     MatSelect,
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './floor-plan.html',
   styleUrl: './floor-plan.scss',
 })
@@ -86,6 +95,7 @@ export class FloorPlan implements OnInit, OnDestroy {
   protected readonly floors = signal<Floor[]>([]);
   protected readonly spaces = signal<Space[]>([]);
   protected readonly reservations = signal<Reservation[]>([]);
+  protected readonly waitlist = signal<WaitlistEntry[]>([]);
   protected readonly liveSessions = signal<Reservation[]>([]);
   protected readonly members = signal<LabMembership[]>([]);
   protected readonly floorImageUrl = signal<string | null>(null);
@@ -117,8 +127,10 @@ export class FloorPlan implements OnInit, OnDestroy {
   });
 
   protected readonly availabilityForm = this.fb.nonNullable.group({
-    startsAt: [this.localDateTime(new Date(Date.now() + 60 * 60 * 1000)), Validators.required],
-    endsAt: [this.localDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000)), Validators.required],
+    startDate: [this.localDate(new Date(Date.now() + 60 * 60 * 1000)), Validators.required],
+    startTime: [this.localTime(new Date(Date.now() + 60 * 60 * 1000)), Validators.required],
+    endDate: [this.localDate(new Date(Date.now() + 2 * 60 * 60 * 1000)), Validators.required],
+    endTime: [this.localTime(new Date(Date.now() + 2 * 60 * 60 * 1000)), Validators.required],
   });
   protected readonly bookingForm = this.fb.nonNullable.group({
     purpose: ['', [Validators.required, Validators.maxLength(256)]],
@@ -135,8 +147,9 @@ export class FloorPlan implements OnInit, OnDestroy {
   });
   protected readonly assignmentForm = this.fb.nonNullable.group({
     memberId: [null as number | null, Validators.required],
-    validFrom: [new Date().toISOString().slice(0, 10), Validators.required],
-    validUntil: [new Date(Date.now() + 28 * 86400000).toISOString().slice(0, 10), Validators.required],
+    // Datepickers bind to Date objects — a string here makes the calendar unusable.
+    validFrom: [parseDate(new Date()) as Date, Validators.required],
+    validUntil: [parseDate(new Date(Date.now() + 28 * 86400000)) as Date, Validators.required],
     startsAt: ['08:00', Validators.required],
     endsAt: ['17:00', Validators.required],
     weekdays: [[0, 1, 2, 3, 4] as number[], Validators.required],
@@ -177,6 +190,7 @@ export class FloorPlan implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadSettings();
     this.loadLocations();
+    this.loadWaitlist();
     if (this.isManager()) this.membersApi.getLabMembers(this.labId).subscribe(items => this.members.set(items));
   }
 
@@ -330,9 +344,13 @@ export class FloorPlan implements OnInit, OnDestroy {
   protected refreshFloor(): void {
     const floor = this.selectedFloor();
     if (!floor || this.availabilityForm.invalid) return;
-    const { startsAt, endsAt } = this.availabilityForm.getRawValue();
-    const start = new Date(startsAt);
-    const end = new Date(endsAt);
+    const { startDate, startTime, endDate, endTime } = this.availabilityForm.getRawValue();
+    const start = this.combineDateTime(startDate, startTime);
+    const end = this.combineDateTime(endDate, endTime);
+    if (!start || !end) {
+      this.snackBar.open('Selecione a data de início e fim.', 'Fechar', { duration: 3500 });
+      return;
+    }
     if (end <= start) {
       this.snackBar.open('O horário final deve ser posterior ao inicial.', 'Fechar', {
         duration: 3500,
@@ -366,9 +384,9 @@ export class FloorPlan implements OnInit, OnDestroy {
     const space = this.selectedSpace();
     if (!space?.available || this.bookingForm.invalid) return;
     const availability = this.availabilityForm.getRawValue();
-    const start = new Date(availability.startsAt);
-    const end = new Date(availability.endsAt);
-    if (end <= start || end.getTime() - start.getTime() > this.maxReservationHours() * 60 * 60 * 1000) {
+    const start = this.combineDateTime(availability.startDate, availability.startTime);
+    const end = this.combineDateTime(availability.endDate, availability.endTime);
+    if (!start || !end || end <= start || end.getTime() - start.getTime() > this.maxReservationHours() * 60 * 60 * 1000) {
       this.snackBar.open(`A reserva deve durar no máximo ${this.maxReservationHours()} hora(s).`, 'Fechar', { duration: 4000 });
       return;
     }
@@ -492,9 +510,19 @@ export class FloorPlan implements OnInit, OnDestroy {
   protected assignSchedule(): void {
     const space = this.selectedSpace(); const value = this.assignmentForm.getRawValue();
     if (!space || this.assignmentForm.invalid || value.memberId == null) return;
+    const validFrom = toIsoDate(value.validFrom);
+    const validUntil = toIsoDate(value.validUntil);
+    if (!validFrom || !validUntil) {
+      this.snackBar.open('Selecione o período da escala.', 'Fechar', { duration: 3500 });
+      return;
+    }
+    if (validUntil < validFrom) {
+      this.snackBar.open('A data final deve ser posterior à inicial.', 'Fechar', { duration: 3500 });
+      return;
+    }
     this.saving.set(true);
     this.spacesApi.assignSchedule(this.labId, space.id, {
-      member_id: value.memberId, valid_from: value.validFrom, valid_until: value.validUntil,
+      member_id: value.memberId, valid_from: validFrom, valid_until: validUntil,
       starts_at: value.startsAt, ends_at: value.endsAt, weekdays: value.weekdays,
     }).subscribe({
       next: result => {
@@ -518,6 +546,88 @@ export class FloorPlan implements OnInit, OnDestroy {
     return reservation.status === 'confirmed' && !reservation.checked_in_at &&
       now >= new Date(reservation.check_in_opens_at).getTime() &&
       now <= new Date(reservation.check_in_closes_at).getTime();
+  }
+
+  // ── Waitlist ──────────────────────────────────────────────────────────────
+
+  protected joinWaitlist(): void {
+    const space = this.selectedSpace();
+    if (!space || this.availabilityForm.invalid) return;
+    const availability = this.availabilityForm.getRawValue();
+    const start = this.combineDateTime(availability.startDate, availability.startTime);
+    const end = this.combineDateTime(availability.endDate, availability.endTime);
+    if (!start || !end || end <= start) {
+      this.snackBar.open('Selecione um intervalo válido para entrar na lista.', 'Fechar', { duration: 3500 });
+      return;
+    }
+    this.saving.set(true);
+    this.spacesApi.joinWaitlist(this.labId, space.id, {
+      starts_at: start.toISOString(),
+      ends_at: end.toISOString(),
+      purpose: this.bookingForm.getRawValue().purpose || undefined,
+      session_mode: this.bookingForm.getRawValue().sessionMode,
+    }).subscribe({
+      next: entry => {
+        this.saving.set(false);
+        this.snackBar.open(
+          entry.position
+            ? `Você entrou na lista de espera (posição ${entry.position}).`
+            : 'Você entrou na lista de espera.',
+          'Fechar',
+          { duration: 4000 },
+        );
+        this.loadWaitlist();
+      },
+      error: error => this.showError(error, 'Não foi possível entrar na lista de espera.'),
+    });
+  }
+
+  protected acceptOffer(entry: WaitlistEntry): void {
+    this.saving.set(true);
+    this.spacesApi.acceptWaitlistOffer(this.labId, entry.id).subscribe({
+      next: reservation => {
+        this.saving.set(false);
+        this.snackBar.open(
+          reservation.status === 'pending'
+            ? 'Vaga confirmada; a reserva aguarda aprovação.'
+            : 'Vaga confirmada! Reserva criada.',
+          'Fechar',
+          { duration: 4000 },
+        );
+        this.loadWaitlist();
+        this.loadReservations();
+        this.refreshFloor();
+      },
+      error: error => this.showError(error, 'Não foi possível aceitar a vaga.'),
+    });
+  }
+
+  protected cancelWaitlist(entry: WaitlistEntry): void {
+    this.spacesApi.cancelWaitlistEntry(this.labId, entry.id).subscribe({
+      next: () => {
+        this.snackBar.open('Entrada removida da lista de espera.', 'Fechar', { duration: 3000 });
+        this.loadWaitlist();
+      },
+      error: error => this.showError(error, 'Não foi possível sair da lista de espera.'),
+    });
+  }
+
+  protected waitlistStatusLabel(entry: WaitlistEntry): string {
+    const labels: Record<string, string> = {
+      waiting: entry.position ? `Aguardando (posição ${entry.position})` : 'Aguardando',
+      offered: 'Vaga oferecida — confirme!',
+      fulfilled: 'Convertida em reserva',
+      expired: 'Oferta expirada',
+      cancelled: 'Cancelada',
+    };
+    return labels[entry.status] ?? entry.status;
+  }
+
+  private loadWaitlist(): void {
+    this.spacesApi.getWaitlist(this.labId).subscribe({
+      next: entries => this.waitlist.set(entries),
+      error: () => this.waitlist.set([]),
+    });
   }
 
   protected duplicateSpace(space: Space): void {
@@ -805,11 +915,14 @@ export class FloorPlan implements OnInit, OnDestroy {
 
   private loadReservations(): void {
     const values = this.availabilityForm.getRawValue();
+    const start = this.combineDateTime(values.startDate, values.startTime);
+    const end = this.combineDateTime(values.endDate, values.endTime);
+    if (!start || !end) return;
     this.spacesApi
       .getReservations(
         this.labId,
-        new Date(values.startsAt).toISOString(),
-        new Date(values.endsAt).toISOString(),
+        start.toISOString(),
+        end.toISOString(),
       )
       .subscribe({
         next: (items) => this.reservations.set(items),
@@ -841,9 +954,20 @@ export class FloorPlan implements OnInit, OnDestroy {
     };
   }
 
-  private localDateTime(date: Date): string {
-    const offset = date.getTimezoneOffset() * 60_000;
-    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+  private localDate(date: Date): Date {
+    const parsed = parseDate(date);
+    if (!parsed) return new Date();
+    // Datepickers display the calendar day only; drop any time component.
+    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+  }
+
+  private localTime(date: Date): string {
+    return toLocalTime(date);
+  }
+
+  /** Combine a datepicker value with an "HH:mm" time into a local Date. */
+  private combineDateTime(date: Date | null | undefined, time: string | null | undefined): Date | null {
+    return combineDateTime(date, time);
   }
 
   private showError(error: HttpErrorResponse, fallback: string): void {

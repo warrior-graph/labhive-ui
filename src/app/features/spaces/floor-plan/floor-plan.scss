@@ -18,9 +18,22 @@
 }
 .filters {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1.2fr 1.2fr auto;
+  grid-template-columns: 1.2fr 1fr auto;
   gap: 12px;
   align-items: center;
+}
+.datetime-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.datetime-field {
+  flex: 1 1 auto;
+  min-width: 170px;
+}
+.time-field {
+  flex: 0 0 auto;
+  width: 120px;
 }
 .selector-field {
   display: grid;
@@ -120,6 +133,13 @@
     fill: var(--sem-success-bg);
     stroke: var(--sem-success-fg);
   }
+}
+.space-label {
+  font-size: 13px;
+  font-weight: 600;
+  fill: currentColor;
+  pointer-events: none;
+  user-select: none;
 }
 
 .space.preallocated {
@@ -312,4 +332,15 @@
 
   mat-icon { flex: 0 0 auto; color: var(--sem-warning-fg); }
   strong { display: block; margin-bottom: 2px; }
+}
+
+// ── Waitlist ──────────────────────────────────────────────────────────────────
+.waitlist {
+  margin-top: 20px;
+
+  .reservation-row.offer {
+    border-left: 4px solid var(--sem-warning-fg);
+    background: var(--sem-warning-bg);
+  }
+  small { color: var(--mat-sys-on-surface-variant); }
 }

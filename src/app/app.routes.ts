@@ -79,6 +79,20 @@ export const routes: Routes = [
       import('./features/laboratories/org-chart/org-chart').then((m) => m.OrgChart),
   },
   {
+    path: 'labs/:labId/occupancy',
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'analytics.view' },
+    loadComponent: () =>
+      import('./features/analytics/occupancy/occupancy').then((m) => m.Occupancy),
+  },
+  {
+    path: 'labs/:labId/audit',
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'audit.view' },
+    loadComponent: () =>
+      import('./features/audit/audit-log/audit-log').then((m) => m.AuditLog),
+  },
+  {
     path: 'labs/:labId/spaces',
     canActivate: [authGuard, labContextGuard, capabilityGuard],
     data: { capability: 'spaces.view' },

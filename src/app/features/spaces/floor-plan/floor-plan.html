@@ -49,13 +49,30 @@
         </div>
       }
     </div>
-    <mat-form-field appearance="outline"
-      ><mat-label>Início</mat-label
-      ><input matInput type="datetime-local" formControlName="startsAt"
-    /></mat-form-field>
-    <mat-form-field appearance="outline"
-      ><mat-label>Fim</mat-label><input matInput type="datetime-local" formControlName="endsAt"
-    /></mat-form-field>
+    <div class="datetime-group">
+      <mat-form-field appearance="outline" class="datetime-field">
+        <mat-label>Início</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+        <mat-datepicker #startPicker />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="time-field">
+        <mat-label>Hora</mat-label>
+        <input matInput type="time" formControlName="startTime" />
+      </mat-form-field>
+    </div>
+    <div class="datetime-group">
+      <mat-form-field appearance="outline" class="datetime-field">
+        <mat-label>Fim</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+        <mat-datepicker #endPicker />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="time-field">
+        <mat-label>Hora</mat-label>
+        <input matInput type="time" formControlName="endTime" />
+      </mat-form-field>
+    </div>
     <button mat-raised-button color="primary" (click)="refreshFloor()">Ver disponibilidade</button>
   </section>
 
@@ -141,6 +158,7 @@
                   ')'
                 "
               >
+                <title>{{ space.name }} — {{ spaceStatus(space) }} · {{ space.capacity }} pessoa(s)</title>
                 <rect
                   [attr.x]="space.layout.x"
                   [attr.y]="space.layout.y"
@@ -148,6 +166,13 @@
                   [attr.height]="space.layout.height"
                   rx="8"
                 />
+                <text
+                  class="space-label"
+                  [attr.x]="space.layout.x + space.layout.width / 2"
+                  [attr.y]="space.layout.y + space.layout.height / 2"
+                  text-anchor="middle"
+                  dominant-baseline="middle"
+                >{{ space.name }}</text>
               </g>
             }
             @if (draftRect(); as draft) {
@@ -254,14 +279,30 @@
                     }
                   </mat-select></mat-form-field
                 >
-                <button
-                  mat-raised-button
-                  color="primary"
-                  type="submit"
-                  [disabled]="!space.available || saving()"
-                >
-                  Reservar
-                </button>
+                @if (space.available) {
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="saving()"
+                  >
+                    Reservar
+                  </button>
+                } @else {
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    [disabled]="saving()"
+                    (click)="joinWaitlist()"
+                  >
+                    <mat-icon>hourglass_empty</mat-icon>
+                    Entrar na lista de espera
+                  </button>
+                  <p class="hint">
+                    Este espaço está ocupado no horário selecionado. Avisaremos quando vagar.
+                  </p>
+                }
               </form>
               @if (isManager()) {
                 <hr />
@@ -281,7 +322,7 @@
                 <form class="side-form" [formGroup]="assignmentForm" (ngSubmit)="assignSchedule()">
                   <h3>Pré-alocar membro</h3>
                   <mat-form-field appearance="outline"><mat-label>Membro</mat-label><mat-select formControlName="memberId">@for(membership of members();track membership.member_id){<mat-option [value]="membership.member_id">{{ membership.member?.first_name }} {{ membership.member?.last_name }}</mat-option>}</mat-select></mat-form-field>
-                  <div class="date-pair"><mat-form-field appearance="outline"><mat-label>De</mat-label><input matInput type="date" formControlName="validFrom" /></mat-form-field><mat-form-field appearance="outline"><mat-label>Até</mat-label><input matInput type="date" formControlName="validUntil" /></mat-form-field></div>
+                  <div class="date-pair"><mat-form-field appearance="outline"><mat-label>De</mat-label><input matInput [matDatepicker]="validFromPicker" formControlName="validFrom" /><mat-datepicker-toggle matIconSuffix [for]="validFromPicker" /><mat-datepicker #validFromPicker /></mat-form-field><mat-form-field appearance="outline"><mat-label>Até</mat-label><input matInput [matDatepicker]="validUntilPicker" formControlName="validUntil" /><mat-datepicker-toggle matIconSuffix [for]="validUntilPicker" /><mat-datepicker #validUntilPicker /></mat-form-field></div>
                   <div class="date-pair"><mat-form-field appearance="outline"><mat-label>Entrada</mat-label><input matInput type="time" formControlName="startsAt" /></mat-form-field><mat-form-field appearance="outline"><mat-label>Saída</mat-label><input matInput type="time" formControlName="endsAt" /></mat-form-field></div>
                   <mat-form-field appearance="outline"><mat-label>Dias</mat-label><mat-select formControlName="weekdays" multiple><mat-option [value]="0">Seg</mat-option><mat-option [value]="1">Ter</mat-option><mat-option [value]="2">Qua</mat-option><mat-option [value]="3">Qui</mat-option><mat-option [value]="4">Sex</mat-option><mat-option [value]="5">Sáb</mat-option><mat-option [value]="6">Dom</mat-option></mat-select></mat-form-field>
                   <button mat-stroked-button type="submit" [disabled]="assignmentForm.invalid || saving()">Criar escala</button>
@@ -348,6 +389,37 @@
         <p>Crie um andar na seção de configuração para começar a desenhar a planta.</p>
       </div>
     </div>
+  }
+
+  @if (waitlist().length) {
+    <section class="reservations waitlist">
+      <h2>Minha lista de espera</h2>
+      @for (entry of waitlist(); track entry.id) {
+        <div class="reservation-row" [class.offer]="entry.status === 'offered'">
+          <div>
+            <strong>{{ entry.space_name }}</strong><br />
+            <span>
+              {{ entry.desired_starts_at | date: 'dd/MM/yyyy HH:mm' }} —
+              {{ entry.desired_ends_at | date: 'dd/MM/yyyy HH:mm' }} ·
+              {{ waitlistStatusLabel(entry) }}
+            </span>
+            @if (entry.status === 'offered' && entry.offer_expires_at) {
+              <br /><small>Confirme até {{ entry.offer_expires_at | date: 'HH:mm' }}.</small>
+            }
+          </div>
+          <div class="row-actions">
+            @if (entry.status === 'offered') {
+              <button mat-raised-button color="primary" [disabled]="saving()" (click)="acceptOffer(entry)">
+                Aceitar vaga
+              </button>
+            }
+            @if (entry.status === 'waiting' || entry.status === 'offered') {
+              <button mat-button color="warn" (click)="cancelWaitlist(entry)">Sair da lista</button>
+            }
+          </div>
+        </div>
+      }
+    </section>
   }
 
   @if (isManager()) {

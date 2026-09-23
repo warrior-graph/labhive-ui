@@ -6,6 +6,7 @@ import { forkJoin, of } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { MatButton } from '@angular/material/button';
 import { MatCard, MatCardContent, MatCardTitle } from '@angular/material/card';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
@@ -13,13 +14,16 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
+  CalendarFeedInfo,
   LAB_ROLE_LABELS,
   LabMembership,
   LabRole,
+  MemberUsage,
   MembershipHistory,
   ROLE_LEVEL,
 } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { CalendarService } from '../../../core/services/calendar.service';
 import { MemberService } from '../../../core/services/member.service';
 
 interface LabReportingInfo {
@@ -37,6 +41,7 @@ interface LabReportingInfo {
     MatCard,
     MatCardTitle,
     MatCardContent,
+    MatCheckbox,
     MatFormField,
     MatLabel,
     MatError,
@@ -51,6 +56,7 @@ interface LabReportingInfo {
 export class MemberProfile implements OnInit {
   protected readonly authService = inject(AuthService);
   private readonly memberService = inject(MemberService);
+  private readonly calendarService = inject(CalendarService);
   private readonly fb = inject(FormBuilder);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -59,6 +65,12 @@ export class MemberProfile implements OnInit {
   protected readonly reportingInfo = signal<LabReportingInfo[]>([]);
   protected readonly history = signal<MembershipHistory[]>([]);
   protected readonly historyLoading = signal(true);
+  protected readonly usage = signal<MemberUsage | null>(null);
+  protected readonly usageLoading = signal(true);
+  protected readonly emailNotifications = signal(true);
+  protected readonly savingPreference = signal(false);
+  protected readonly feed = signal<CalendarFeedInfo | null>(null);
+  protected readonly feedLoading = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
     first_name: ['', Validators.required],
@@ -92,6 +104,7 @@ export class MemberProfile implements OnInit {
         orcid: user.orcid ?? '',
         github_url: user.github_url ?? '',
       });
+      this.emailNotifications.set(user.email_notifications ?? true);
     }
 
     const memberships = user?.lab_memberships ?? [];
@@ -148,9 +161,117 @@ export class MemberProfile implements OnInit {
         error: () => this.historyLoading.set(false),
         complete: () => this.historyLoading.set(false),
       });
+      this.memberService.getUsage(userId, { limit: 20 }).subscribe({
+        next: usage => {
+          this.usage.set(usage);
+          this.usageLoading.set(false);
+        },
+        error: () => this.usageLoading.set(false),
+      });
     } else {
       this.historyLoading.set(false);
+      this.usageLoading.set(false);
     }
+  }
+
+  protected toggleEmailNotifications(enabled: boolean): void {
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) return;
+    const previous = this.emailNotifications();
+    this.emailNotifications.set(enabled);
+    this.savingPreference.set(true);
+    this.memberService.updateProfile(userId, { email_notifications: enabled }).subscribe({
+      next: updated => {
+        this.authService.currentUser.set(updated);
+        this.savingPreference.set(false);
+        this.snackBar.open(
+          enabled ? 'E-mails de notificação ativados.' : 'E-mails de notificação desativados.',
+          'Fechar',
+          { duration: 2500 },
+        );
+      },
+      error: () => {
+        this.emailNotifications.set(previous);
+        this.savingPreference.set(false);
+        this.snackBar.open('Não foi possível salvar a preferência.', 'Fechar', { duration: 3500 });
+      },
+    });
+  }
+
+  protected loadFeed(): void {
+    if (this.feed() || this.feedLoading()) return;
+    this.feedLoading.set(true);
+    this.calendarService.getFeed().subscribe({
+      next: info => {
+        this.feed.set(info);
+        this.feedLoading.set(false);
+      },
+      error: () => {
+        this.feedLoading.set(false);
+        this.snackBar.open('Não foi possível gerar o link do calendário.', 'Fechar', { duration: 3500 });
+      },
+    });
+  }
+
+  protected selectUrl(event: Event): void {
+    (event.target as HTMLInputElement).select();
+  }
+
+  protected async copyFeedUrl(): Promise<void> {    const url = this.feed()?.webcal_url;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      this.snackBar.open('Link do calendário copiado.', 'Fechar', { duration: 2500 });
+    } catch {
+      this.snackBar.open('Não foi possível copiar automaticamente.', 'Fechar', { duration: 3000 });
+    }
+  }
+
+  protected rotateFeed(): void {
+    this.calendarService.rotateFeed().subscribe({
+      next: info => {
+        this.feed.set(info);
+        this.snackBar.open(
+          'Novo link gerado. Assinaturas antigas deixarão de funcionar.',
+          'Fechar',
+          { duration: 5000 },
+        );
+      },
+      error: () => this.snackBar.open('Não foi possível gerar um novo link.', 'Fechar', { duration: 3500 }),
+    });
+  }
+
+  protected downloadIcs(): void {
+    this.calendarService.downloadIcs().subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'labhive.ics';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url));
+      },
+      error: () => this.snackBar.open('Não foi possível baixar o arquivo.', 'Fechar', { duration: 3500 }),
+    });
+  }
+
+  protected formatDuration(minutes: number): string {
+    const rounded = Math.max(0, Math.round(minutes));
+    const hours = Math.floor(rounded / 60);
+    const rest = rounded % 60;
+    if (hours === 0) return `${rest} min`;
+    if (rest === 0) return `${hours} h`;
+    return `${hours} h ${rest} min`;
+  }
+
+  protected attendanceLabel(status: string): string {
+    const labels: Record<string, string> = {
+      completed: 'Concluída',
+      present: 'Presente',
+      no_show: 'Ausência',
+      scheduled: 'Agendada',
+    };
+    return labels[status] ?? status;
   }
 
   protected submit(): void {

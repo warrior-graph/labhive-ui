@@ -1,0 +1,162 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Taxa de ocupação</h1>
+      <p>Quanto do tempo disponível de cada espaço está sendo efetivamente reservado.</p>
+    </div>
+    <a mat-stroked-button [routerLink]="['/labs', labId, 'spaces']">
+      <mat-icon>map</mat-icon>Ver espaços
+    </a>
+  </div>
+
+  <section class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>De</mat-label>
+      <input matInput [matDatepicker]="sincePicker" [formControl]="sinceControl" />
+      <mat-datepicker-toggle matIconSuffix [for]="sincePicker" />
+      <mat-datepicker #sincePicker />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Até</mat-label>
+      <input matInput [matDatepicker]="untilPicker" [formControl]="untilControl" />
+      <mat-datepicker-toggle matIconSuffix [for]="untilPicker" />
+      <mat-datepicker #untilPicker />
+    </mat-form-field>
+    <div class="presets">
+      <button mat-button type="button" (click)="preset(7)">7 dias</button>
+      <button mat-button type="button" (click)="preset(30)">30 dias</button>
+      <button mat-button type="button" (click)="preset(90)">90 dias</button>
+    </div>
+    <button mat-raised-button color="primary" (click)="load()">Atualizar</button>
+    <mat-checkbox [checked]="includeInactive()" (change)="toggleInactive()">Incluir inativos</mat-checkbox>
+  </section>
+
+  @if (loading()) {
+    <div class="spinner-center"><mat-progress-spinner mode="indeterminate" /></div>
+  } @else if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  } @else if (report(); as data) {
+    <div class="summary-grid">
+      <mat-card>
+        <mat-card-content>
+          <span class="label">Ocupação média</span>
+          <strong [class]="rateClass(data.totals.occupancy_rate)">{{ formatRate(data.totals.occupancy_rate) }}</strong>
+        </mat-card-content>
+      </mat-card>
+      <mat-card>
+        <mat-card-content>
+          <span class="label">Horas reservadas</span>
+          <strong>{{ formatHours(data.totals.booked_minutes) }}</strong>
+        </mat-card-content>
+      </mat-card>
+      <mat-card>
+        <mat-card-content>
+          <span class="label">Sessões</span>
+          <strong>{{ data.totals.sessions }}</strong>
+        </mat-card-content>
+      </mat-card>
+      <mat-card>
+        <mat-card-content>
+          <span class="label">Presenças / ausências</span>
+          <strong>{{ data.totals.attended }} / {{ data.totals.no_shows }}</strong>
+        </mat-card-content>
+      </mat-card>
+      <mat-card>
+        <mat-card-content>
+          <span class="label">Espaços avaliados</span>
+          <strong>{{ data.totals.spaces }}</strong>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <mat-card class="section-card">
+      <mat-card-header><mat-card-title>Ocupação por espaço</mat-card-title></mat-card-header>
+      <mat-card-content>
+        @if (!data.spaces.length) {
+          <p class="empty">Nenhum espaço ativo neste laboratório.</p>
+        } @else {
+          <table class="occupancy-table">
+            <thead>
+              <tr>
+                <th>Espaço</th>
+                <th>Tipo</th>
+                <th class="num">Slots</th>
+                <th class="num">Horas</th>
+                <th class="num">Sessões</th>
+                <th class="num">Ausências</th>
+                <th>Ocupação</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (space of data.spaces; track space.space_id) {
+                <tr>
+                  <td>{{ space.name }}</td>
+                  <td>{{ typeLabel(space.type) }}</td>
+                  <td class="num">{{ space.effective_slots }}</td>
+                  <td class="num">{{ formatHours(space.booked_minutes) }}</td>
+                  <td class="num">{{ space.sessions }}</td>
+                  <td class="num">{{ space.no_shows }}</td>
+                  <td class="bar-cell">
+                    <div class="bar" [class]="rateClass(space.occupancy_rate)">
+                      <span [style.width.%]="barWidth(space)"></span>
+                    </div>
+                    <small>{{ formatRate(space.occupancy_rate) }}</small>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <div class="insights">
+      @if (busiest(); as top) {
+        <mat-card>
+          <mat-card-header><mat-card-title>Mais utilizados</mat-card-title></mat-card-header>
+          <mat-card-content>
+            <ul>
+              @for (space of data.spaces.slice(0, 5); track space.space_id) {
+                <li>
+                  <span>{{ space.name }}</span>
+                  <strong>{{ formatRate(space.occupancy_rate) }}</strong>
+                </li>
+              }
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
+      <mat-card>
+        <mat-card-header><mat-card-title>Possível subutilização</mat-card-title></mat-card-header>
+        <mat-card-content>
+          @if (!underused().length) {
+            <p class="empty">Sem dados no período.</p>
+          } @else {
+            <ul>
+              @for (space of underused(); track space.space_id) {
+                <li>
+                  <span>{{ space.name }}</span>
+                  <strong>{{ formatRate(space.occupancy_rate) }}</strong>
+                </li>
+              }
+            </ul>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <mat-card class="section-card">
+      <mat-card-header><mat-card-title>Reservas por dia</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="day-chart">
+          @for (day of data.days; track day.date) {
+            <div class="day-column" [title]="day.date + ': ' + formatHours(day.booked_minutes)">
+              <div class="day-bar" [style.height.%]="dayBar(day.booked_minutes)"></div>
+              <small>{{ dayLabel(day.date) }}</small>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
