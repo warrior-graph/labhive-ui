@@ -25,15 +25,6 @@ export enum ProjectStatus {
   CANCELLED = 'cancelled',
 }
 
-export enum ArticleStatus {
-  IN_PROGRESS = 'in_progress',
-  UNDER_REVIEW = 'under_review',
-  SUBMITTED = 'submitted',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-  WITHDRAWN = 'withdrawn',
-  PUBLISHED = 'published',
-}
 
 export enum ItemCondition {
   NEW = 'new',
@@ -85,15 +76,6 @@ export const ROLE_LEVEL: Record<LabRole, number> = {
   [LabRole.STAFF]: 4,
 };
 
-export const ARTICLE_STATUS_LABELS: Record<ArticleStatus, string> = {
-  [ArticleStatus.IN_PROGRESS]: 'Em andamento',
-  [ArticleStatus.UNDER_REVIEW]: 'Em revisão',
-  [ArticleStatus.SUBMITTED]: 'Submetido',
-  [ArticleStatus.ACCEPTED]: 'Aceito',
-  [ArticleStatus.REJECTED]: 'Rejeitado',
-  [ArticleStatus.WITHDRAWN]: 'Retirado',
-  [ArticleStatus.PUBLISHED]: 'Publicado',
-};
 
 export const ITEM_CONDITION_LABELS: Record<ItemCondition, string> = {
   [ItemCondition.NEW]: 'Novo',
@@ -194,22 +176,6 @@ export interface Research {
   laboratory?: Laboratory;
 }
 
-export interface Article {
-  id: number;
-  title: string;
-  abstract: string | null;
-  conference: string | null;
-  doi: string | null;
-  status: ArticleStatus;
-  submission_deadline: string | null;
-  published_at: string | null;
-  authors: string[];
-  in_charge: string[];
-  is_active: boolean;
-  lab_id: number;
-  created_at: string;
-  laboratory?: Laboratory;
-}
 
 export interface InventoryItem {
   id: number;
@@ -235,6 +201,66 @@ export interface AuthResponse {
   mfa_token?: string;
   mfa_enrollment_required?: boolean;
   enrollment_token?: string;
+}
+
+export type LabCapability =
+  | 'lab.view' | 'members.view' | 'members.manage' | 'members.approve'
+  | 'attendance.view' | 'attendance.manage'
+  | 'projects.view' | 'projects.manage'
+  | 'research.view' | 'research.manage'
+  | 'activities.view' | 'activities.manage' | 'activities.review'
+  | 'inventory.view' | 'inventory.manage'
+  | 'announcements.view' | 'announcements.manage'
+  | 'spaces.view' | 'spaces.reserve' | 'spaces.manage'
+  | 'reservations.review';
+
+export type AttendanceGranularity = 'week' | 'month';
+
+export interface AttendancePoint {
+  starts_on: string;
+  ends_on: string;
+  actual_minutes: number;
+  expected_minutes: number | null;
+  expected_to_date_minutes: number | null;
+  achievement_percent: number | null;
+  is_complete: boolean;
+  below_expected?: boolean;
+}
+
+export interface AttendanceMember {
+  member_id: number;
+  name: string;
+  email: string;
+  roles: LabRole[];
+  weekly_target_minutes: number | null;
+  current: AttendancePoint;
+  series: AttendancePoint[];
+}
+
+export interface AttendanceDashboardData {
+  granularity: AttendanceGranularity;
+  generated_at: string;
+  summary: {
+    active_members: number;
+    configured_members: number;
+    below_expected_members: number;
+    average_achievement_percent: number | null;
+    average_actual_minutes: number;
+  };
+  lab_series: AttendancePoint[];
+  members: AttendanceMember[];
+}
+
+export interface WorkspaceMembership extends LabMembership {
+  capabilities: LabCapability[];
+  laboratory: Laboratory;
+}
+
+export interface AppContext {
+  member: Member;
+  memberships: WorkspaceMembership[];
+  suggested_lab_id: number | null;
+  global_capabilities: string[];
 }
 
 export interface LoginRequest {
@@ -263,6 +289,7 @@ export interface Floor {
   layout_width: number;
   layout_height: number;
   layout_version: number;
+  layout_image_url?: string | null;
 }
 
 export interface Space {
@@ -273,11 +300,19 @@ export interface Space {
   type: SpaceType;
   capacity: number;
   is_active: boolean;
+  is_locked: boolean;
   requires_approval: boolean;
   layout: { x: number; y: number; width: number; height: number; rotation: number };
   amenities: string[];
   quiet_neighbor_ids: number[];
   available: boolean | null;
+  preallocation: {
+    reservation_id: number;
+    member_id: number;
+    member_name: string;
+    starts_at: string;
+    ends_at: string;
+  } | null;
 }
 
 export interface FloorSpacesResponse {
@@ -296,6 +331,17 @@ export interface Reservation {
   session_mode: SessionMode;
   checked_in_at: string | null;
   checked_out_at: string | null;
+  is_assignment: boolean;
+  organizer_name?: string | null;
+  check_in_opens_at: string;
+  check_in_closes_at: string;
+  attendance_status: 'scheduled' | 'present' | 'completed' | 'no_show';
+  warnings?: Array<{
+    code: 'space_preallocated';
+    message: string;
+    assigned_member_id: number;
+    assigned_member_name: string;
+  }>;
 }
 
 export interface RegisterRequest {
@@ -433,7 +479,7 @@ export interface DashboardInventoryItem {
 
 // ─── Calendar DTOs (GET /calendar) ────────────────────────────────────────────
 
-export type CalendarEventType = 'activity' | 'project';
+export type CalendarEventType = 'activity' | 'project' | 'event';
 
 export interface CalendarEvent {
   type: CalendarEventType;
@@ -454,6 +500,10 @@ export interface Announcement {
   lab_id: number;
   lab_name: string | null;
   audience: string[];
+  kind: 'notice' | 'event';
+  starts_at: string | null;
+  ends_at: string | null;
+  session_mode: SessionMode | null;
   is_pinned: boolean;
   is_active: boolean;
   created_at: string;

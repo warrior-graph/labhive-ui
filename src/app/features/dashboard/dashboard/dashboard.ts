@@ -62,9 +62,12 @@ export class Dashboard implements OnInit {
   protected readonly statCards = computed<StatCard[]>(() => {
     const c = this.summary()?.counts;
     if (!c) return [];
+    const labId = this.authService.activeLabId();
     const cards: StatCard[] = [
-      { icon: 'group', label: 'Membros ativos', value: c.active_members, link: ['/admin/pending'], queryParams: { tab: 'all' } },
-      { icon: 'pending_actions', label: 'Pendentes de aprovação', value: c.pending_members, link: ['/admin/pending'] },
+      { icon: 'group', label: 'Membros ativos', value: c.active_members, link: labId ? ['/labs', labId] : ['/labs'], queryParams: { tab: '0' } },
+      ...(this.authService.hasCapability('members.approve')
+        ? [{ icon: 'pending_actions', label: 'Pendentes de aprovação', value: c.pending_members, link: ['/admin/pending'] }]
+        : []),
       { icon: 'rocket_launch', label: 'Atividades em andamento', value: c.activities_in_progress, link: ['/activities'], queryParams: { status: 'in_progress' } },
       { icon: 'rate_review', label: 'Em revisão', value: c.activities_under_review, link: ['/activities'], queryParams: { status: 'under_review' } },
       { icon: 'task_alt', label: 'Concluídas', value: c.activities_completed, link: ['/activities'], queryParams: { status: 'completed' } },

@@ -1,0 +1,193 @@
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <a class="back-link" [routerLink]="['/labs', labId]"><mat-icon>arrow_back</mat-icon> Visão geral</a>
+      <h1><mat-icon>monitoring</mat-icon> Frequência</h1>
+      <p>Presença confirmada por check-in e check-out, comparada à meta de cada membro.</p>
+    </div>
+    <div class="period-toggle" role="group" aria-label="Agrupamento da frequência">
+      <button type="button" [class.active]="granularity() === 'week'" (click)="changeGranularity('week')">Semanal</button>
+      <button type="button" [class.active]="granularity() === 'month'" (click)="changeGranularity('month')">Mensal</button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="state" role="status"><mat-progress-spinner diameter="44" /><span>Calculando frequência…</span></div>
+  } @else if (error()) {
+    <div class="state error-state" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <strong>{{ error() }}</strong>
+      <button mat-stroked-button type="button" (click)="load()"><mat-icon>refresh</mat-icon>Tentar novamente</button>
+    </div>
+  } @else if (data(); as dashboard) {
+    <section class="summary-grid" aria-label="Resumo de frequência">
+      <article class="summary-card emphasis">
+        <span class="summary-label">Média do laboratório</span>
+        <strong>{{ achievementLabel(dashboard.summary.average_achievement_percent) }}</strong>
+        <small>atingimento da meta no período atual</small>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Média de presença</span>
+        <strong>{{ formatHours(dashboard.summary.average_actual_minutes) }}</strong>
+        <small>por membro com meta configurada</small>
+      </article>
+      <article class="summary-card" [class.attention]="dashboard.summary.below_expected_members > 0">
+        <span class="summary-label">Abaixo do esperado</span>
+        <strong>{{ dashboard.summary.below_expected_members }}</strong>
+        <small>de {{ dashboard.summary.configured_members }} membros com meta</small>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Metas configuradas</span>
+        <strong>{{ dashboard.summary.configured_members }}/{{ dashboard.summary.active_members }}</strong>
+        <small>membros ativos</small>
+      </article>
+    </section>
+
+    <section class="panel attendance-chart" aria-labelledby="chart-title">
+      <div class="panel-header chart-header">
+        <div>
+          <span class="eyebrow">Série temporal</span>
+          <h2 id="chart-title">{{ chartTitle() }}</h2>
+        </div>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Visualizar</mat-label>
+          <mat-select [value]="selectedSeries()" (selectionChange)="selectSeries($event.value)">
+            <mat-option value="lab">Média do laboratório</mat-option>
+            @for (member of dashboard.members; track member.member_id) {
+              <mat-option [value]="member.member_id.toString()">{{ member.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="chart-legend" aria-hidden="true">
+        <span><i class="actual-key"></i> Presença registrada</span>
+        <span><i class="target-key"></i> Meta do período</span>
+      </div>
+
+      <div class="chart-scroll">
+        <div class="chart-canvas">
+          <div class="y-axis" aria-hidden="true">
+            @for (tick of chartTicks(); track tick.minutes) {
+              <span>{{ tick.label }}</span>
+            }
+          </div>
+          <div class="chart-plot">
+            <div class="grid-lines" aria-hidden="true"></div>
+            <div class="bar-chart" role="group" [attr.aria-label]="'Gráfico de frequência em horas de ' + chartTitle()">
+              @for (point of chartSeries(); track point.starts_on) {
+                <div class="bar-group" [class.current]="!point.is_complete">
+                  <div class="bars">
+                    <div
+                      class="bar-slot"
+                      tabindex="0"
+                      [attr.aria-label]="periodLabel(point) + ', presença registrada: ' + formatExactDuration(point.actual_minutes)"
+                    >
+                      <div class="bar-tooltip" role="tooltip">
+                        <span>{{ periodLabel(point) }}</span>
+                        <strong>Presença: {{ formatExactDuration(point.actual_minutes) }}</strong>
+                      </div>
+                      <div class="bar actual-bar" [style.height.%]="barHeight(point.actual_minutes)"></div>
+                    </div>
+                    <div
+                      class="bar-slot"
+                      tabindex="0"
+                      [attr.aria-label]="periodLabel(point) + ', meta: ' + formatExactDuration(point.expected_minutes)"
+                    >
+                      <div class="bar-tooltip" role="tooltip">
+                        <span>{{ periodLabel(point) }}</span>
+                        <strong>Meta: {{ formatExactDuration(point.expected_minutes) }}</strong>
+                      </div>
+                      <div class="bar target-bar" [style.height.%]="barHeight(point.expected_minutes)"></div>
+                    </div>
+                  </div>
+                  <span>{{ periodLabel(point) }}</span>
+                  @if (!point.is_complete) { <small>atual</small> }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="chart-note">No período atual, o indicador considera a parcela da meta esperada até hoje. As barras mantêm a meta integral do período.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="members-title">
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">Acompanhamento individual</span>
+          <h2 id="members-title">Metas e frequência dos membros</h2>
+        </div>
+        <span class="checkin-note"><mat-icon>verified</mat-icon> Somente check-ins contam</span>
+      </div>
+
+      <div class="table-scroll">
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th>Membro</th>
+              <th>Meta semanal</th>
+              <th>Realizado no período</th>
+              <th>Atingimento</th>
+              <th>Status</th>
+              <th><span class="visually-hidden">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (member of dashboard.members; track member.member_id) {
+              <tr [class.below]="member.current.below_expected">
+                <td>
+                  <strong>{{ member.name }}</strong>
+                  <span>{{ member.email }}</span>
+                </td>
+                <td>
+                  <div class="target-editor">
+                    <input
+                      type="number"
+                      min="0"
+                      max="168"
+                      step="0.5"
+                      inputmode="decimal"
+                      [value]="targetDrafts()[member.member_id]"
+                      (input)="updateDraft(member.member_id, $event)"
+                      [attr.aria-label]="'Meta semanal em horas de ' + member.name"
+                      placeholder="Sem meta"
+                    />
+                    <span>h/sem</span>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      (click)="saveTarget(member)"
+                      [disabled]="saving().has(member.member_id)"
+                      [attr.aria-label]="'Salvar meta de ' + member.name"
+                    >
+                      @if (saving().has(member.member_id)) {
+                        <mat-progress-spinner diameter="18" />
+                      } @else {
+                        <mat-icon>save</mat-icon>
+                      }
+                    </button>
+                  </div>
+                </td>
+                <td>{{ formatHours(member.current.actual_minutes) }}</td>
+                <td>{{ achievementLabel(member.current.achievement_percent) }}</td>
+                <td>
+                  @if (member.weekly_target_minutes === null) {
+                    <span class="status neutral">Configurar meta</span>
+                  } @else if (member.current.below_expected) {
+                    <span class="status warning">Abaixo do esperado</span>
+                  } @else {
+                    <span class="status success">Dentro do esperado</span>
+                  }
+                </td>
+                <td><button mat-stroked-button type="button" (click)="showMember(member)"><mat-icon>bar_chart</mat-icon>Ver série</button></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty">Nenhum membro ativo neste laboratório.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>

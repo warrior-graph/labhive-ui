@@ -1,14 +1,11 @@
 import { DatePipe, DecimalPipe, TitleCasePipe } from '@angular/common';
-import { AfterViewInit, Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatOption } from '@angular/material/core';
-import { MatSelect, MatSelectTrigger } from '@angular/material/select';
-import { MatSort, MatSortHeader } from '@angular/material/sort';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import {
   MatCellDef,
@@ -27,9 +24,6 @@ import {
 import { MatTooltip } from '@angular/material/tooltip';
 
 import {
-  Article,
-  ARTICLE_STATUS_LABELS,
-  ArticleStatus,
   InventoryItem,
   ItemCondition,
   ITEM_CONDITION_LABELS,
@@ -43,8 +37,8 @@ import {
   TECH_LEAD_AND_ABOVE,
 } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ArticleService } from '../../../core/services/article.service';
 import { InventoryService } from '../../../core/services/inventory.service';
+import { ExportDataset, ExportService } from '../../../core/services/export.service';
 import { LaboratoryService } from '../../../core/services/laboratory.service';
 import { MemberService } from '../../../core/services/member.service';
 import { ProjectService } from '../../../core/services/project.service';
@@ -82,11 +76,6 @@ import { Laboratory } from '../../../core/models';
     MatRow,
     MatRowDef,
     MatNoDataRow,
-    MatSort,
-    MatSortHeader,
-    MatOption,
-    MatSelect,
-    MatSelectTrigger,
     MatButton,
     MatIconButton,
     MatIcon,
@@ -97,14 +86,12 @@ import { Laboratory } from '../../../core/models';
   templateUrl: './lab-detail.html',
   styleUrl: './lab-detail.scss',
 })
-export class LabDetail implements OnInit, AfterViewInit {
-  @ViewChild('articleSort') articleSort!: MatSort;
+export class LabDetail implements OnInit {
 
   protected readonly lab = signal<Laboratory | null>(null);
   protected readonly members = signal<LabMembership[]>([]);
   protected readonly projects = signal<Project[]>([]);
   protected readonly research = signal<Research[]>([]);
-  protected readonly articlesDataSource = new MatTableDataSource<Article>([]);
   protected readonly inventory = signal<InventoryItem[]>([]);
   protected readonly loading = signal(true);
   protected selectedTabIndex = 0;
@@ -115,19 +102,16 @@ export class LabDetail implements OnInit, AfterViewInit {
   private readonly memberService = inject(MemberService);
   private readonly projectService = inject(ProjectService);
   private readonly researchService = inject(ResearchService);
-  private readonly articleService = inject(ArticleService);
   private readonly inventoryService = inject(InventoryService);
+  private readonly exportService = inject(ExportService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
   protected labId = 0;
 
-  protected readonly articleStatusLabels = ARTICLE_STATUS_LABELS;
   protected readonly itemConditionLabels = ITEM_CONDITION_LABELS;
-  protected readonly articleStatuses = Object.values(ArticleStatus);
-
-  protected articleStatusLabel(status: string): string {
-    return ARTICLE_STATUS_LABELS[status as ArticleStatus] ?? status;
+  protected exportData(dataset: ExportDataset): void {
+    this.exportService.download(this.labId, dataset);
   }
 
   protected itemConditionLabel(condition: string): string {
@@ -196,11 +180,7 @@ export class LabDetail implements OnInit, AfterViewInit {
   readonly memberColumns = ['name', 'email', 'role', 'specialization', 'compensation', 'status', 'actions'];
   readonly projectColumns = ['name', 'status', 'start_date', 'end_date', 'actions'];
   readonly researchColumns = ['name', 'description', 'members', 'actions'];
-  readonly articleColumns = ['title', 'status', 'conference', 'submission_deadline', 'in_charge', 'authors', 'actions'];
   readonly inventoryColumns = ['name', 'category', 'quantity', 'condition', 'serial_number', 'assigned_to', 'actions'];
-
-  // Tab index constants
-  static readonly TAB_ARTICLES = 3;
 
   ngOnInit(): void {
     this.labId = Number(this.route.snapshot.paramMap.get('labId'));
@@ -212,21 +192,6 @@ export class LabDetail implements OnInit, AfterViewInit {
     this.loadAll();
   }
 
-  ngAfterViewInit(): void {
-    // FIX 1: If the articles tab is already selected on load (e.g. via ?tab=3),
-    // attach sort after the tab content has had time to render.
-    if (this.selectedTabIndex === LabDetail.TAB_ARTICLES) {
-      this.attachSortWithRetry();
-    }
-  }
-
-  private attachSortWithRetry(attempts = 0): void {
-    if (this.articleSort) {
-      this.articlesDataSource.sort = this.articleSort;
-    } else if (attempts < 10) {
-      setTimeout(() => this.attachSortWithRetry(attempts + 1), 50);
-    }
-  }
 
   // FIX 1 + FIX 3: Called by (selectedTabChange) on MatTabGroup
   protected onTabChange(index: number): void {
@@ -238,10 +203,6 @@ export class LabDetail implements OnInit, AfterViewInit {
       queryParamsHandling: 'merge',
       replaceUrl: true,
     });
-    // Re-attach sort when articles tab (index 3) becomes active
-    if (index === LabDetail.TAB_ARTICLES) {
-      this.attachSortWithRetry();
-    }
   }
 
   protected loadAll(): void {
@@ -272,11 +233,6 @@ export class LabDetail implements OnInit, AfterViewInit {
       next: research => this.research.set(research),
     });
 
-    this.articleService.getAll(this.labId).subscribe({
-      next: articles => {
-        this.articlesDataSource.data = articles;
-      },
-    });
 
     this.inventoryService.getAll(this.labId).subscribe({
       next: items => this.inventory.set(items),
@@ -473,50 +429,6 @@ export class LabDetail implements OnInit, AfterViewInit {
         this.snackBar.open(`Grupo de pesquisa ${updated.is_active ? 'ativado' : 'desativado'}.`, 'Fechar', { duration: 2000 });
       },
       error: () => this.snackBar.open('Falha ao atualizar o status do grupo de pesquisa.', 'Fechar', { duration: 3000 }),
-    });
-  }
-
-  // ─── Articles ──────────────────────────────────────────────────────────────
-
-  protected changeArticleStatus(article: Article, newStatus: ArticleStatus): void {
-    this.articleService.update(this.labId, article.id, { status: newStatus }).subscribe({
-      next: updated => {
-        this.articlesDataSource.data = this.articlesDataSource.data.map(a =>
-          a.id === updated.id ? updated : a
-        );
-      },
-      error: () => this.snackBar.open('Falha ao atualizar o status', 'Fechar', { duration: 3000 }),
-    });
-  }
-
-  protected deleteArticle(articleId: number, title: string): void {
-    const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
-      data: { title: 'Excluir Artigo', message: `Excluir "${title}"?` },
-    });
-    ref.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-      this.articleService.delete(this.labId, articleId).subscribe({
-        next: () => {
-          this.articlesDataSource.data = this.articlesDataSource.data.filter(a => a.id !== articleId);
-          this.snackBar.open('Artigo excluído', 'Fechar', { duration: 2000 });
-        },
-        error: () => this.snackBar.open('Falha ao excluir artigo', 'Fechar', { duration: 3000 }),
-      });
-    });
-  }
-
-  protected toggleArticle(article: Article): void {
-    const call = article.is_active
-      ? this.articleService.deactivate(this.labId, article.id)
-      : this.articleService.activate(this.labId, article.id);
-    call.subscribe({
-      next: updated => {
-        this.articlesDataSource.data = this.articlesDataSource.data.map(a =>
-          a.id === article.id ? updated : a
-        );
-        this.snackBar.open(`Artigo ${updated.is_active ? 'ativado' : 'desativado'}.`, 'Fechar', { duration: 2000 });
-      },
-      error: () => this.snackBar.open('Falha ao atualizar o status do artigo.', 'Fechar', { duration: 3000 }),
     });
   }
 

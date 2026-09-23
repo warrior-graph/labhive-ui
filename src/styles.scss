@@ -15,23 +15,78 @@ html {
 }
 
 body {
-  color-scheme: dark;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--color-canvas);
+  color: var(--color-text);
   font: var(--mat-sys-body-medium);
   font-family: 'Inter', 'Roboto', sans-serif;
   margin: 0;
   height: 100%;
 
-  &.light-theme {
-    color-scheme: light;
-  }
 }
 
+
+// LabHive semantic design system
+:root {
+  --font-display: 'Inter', system-ui, sans-serif;
+  --color-canvas: #f5f7f8;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f8fafb;
+  --color-text: #172126;
+  --color-text-muted: #5d6b72;
+  --color-border: #dce3e6;
+  --color-hover: #edf2f3;
+  --color-accent: #087f73;
+  --color-accent-strong: #05675f;
+  --color-accent-soft: #d8f3ee;
+  --color-on-accent: #ffffff;
+  --color-focus: #0b78d0;
+  --color-activity: #1676c4;
+  --color-project: #278a56;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-7: 32px; --space-8: 40px; --space-9: 48px;
+  --shadow-sm: 0 1px 2px rgb(16 35 40 / .08), 0 3px 10px rgb(16 35 40 / .05);
+  --shadow-lg: 0 18px 50px rgb(8 25 31 / .18);
+  --motion-fast: 140ms ease;
+  --motion-standard: 220ms ease;
+}
+
+:root[data-theme='dark'] {
+  --color-canvas: #0d1518;
+  --color-surface: #131e22;
+  --color-surface-raised: #19262b;
+  --color-text: #edf5f4;
+  --color-text-muted: #9fb0b3;
+  --color-border: #2a3a3f;
+  --color-hover: #1d2c31;
+  --color-accent: #56d2c1;
+  --color-accent-strong: #77e1d2;
+  --color-accent-soft: #153c39;
+  --color-on-accent: #062f2b;
+  --color-focus: #7bc2ff;
+  --color-activity: #66b5ff;
+  --color-project: #62d28e;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / .3), 0 4px 16px rgb(0 0 0 / .18);
+  --shadow-lg: 0 22px 60px rgb(0 0 0 / .45);
+}
+
+*:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+* { box-sizing: border-box; }
+a { color: var(--color-accent-strong); }
+.page-container { width: min(100%, 1200px); margin: 0 auto; }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-7); }
+.page-title { display: flex; align-items: center; gap: var(--space-3); margin: 0; font: 700 clamp(1.55rem, 3vw, 2rem)/1.2 var(--font-display); letter-spacing: -.035em; }
+mat-card, .mat-mdc-card { border-color: var(--color-border) !important; border-radius: var(--radius-lg) !important; box-shadow: var(--shadow-sm) !important; }
+.table-container, .table-wrapper { overflow-x: auto; border-radius: var(--radius-lg); }
+.empty-state { color: var(--color-text-muted); text-align: center; padding: var(--space-7); }
+@media (max-width: 600px) { .page-header { align-items: flex-start; flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 :root {
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 
-  // ── Article status chip colours — dark theme (default) ─────────────────
+  // ── Status chip colours — dark palette ─────────────────
   --status-in-progress-bg:  #1e3a5f;
   --status-in-progress-fg:  #93c5fd;
 
@@ -54,8 +109,8 @@ body {
   --status-published-fg:    #5eead4;
 }
 
-// ── Article status chip colours — light theme override ──────────────────
-body.light-theme {
+// ── Status chip colours — light palette ──────────────────
+:root[data-theme='light'] {
   --status-in-progress-bg:  #dbeafe;
   --status-in-progress-fg:  #1d4ed8;
 
@@ -78,7 +133,7 @@ body.light-theme {
   --status-published-fg:    #0f766e;
 }
 
-// ── Article status chip — global styles (works across all components) ────
+// ── Status chip — shared styles ────
 .status-chip {
   display: inline-block;
   padding: 2px 10px;
@@ -160,7 +215,7 @@ mat-dialog-content {
 }
 
 // ── Semantic tokens — light theme override ──────────────────────────────────
-body.light-theme {
+:root[data-theme='light'] {
   --sem-success-bg:  #dcfce7;
   --sem-success-fg:  #15803d;
   --sem-warning-bg:  #fef3c7;
@@ -191,9 +246,9 @@ body.light-theme {
 }
 
 // ── Dashboard activity/project status chips (global) ────────────────────────
-// accepted/rejected reuse the article chip colours above (verde/vermelho,
+// accepted/rejected reuse the shared semantic colours above (verde/vermelho,
 // identical per the activity map). in_progress/under_review collide with the
-// article statuses, so their dashboard colours are scoped to .dashboard below
+// shared statuses, so their dashboard colours are scoped to .dashboard below
 // to keep the article pages untouched.
 .status-chip.status-planned {
   background: var(--status-planned-bg);
@@ -216,8 +271,8 @@ body.light-theme {
   color: var(--status-active-fg);
 }
 
-// Activity statuses sharing a name with article statuses — scoped to the
-// dashboard so the article pages keep their existing palette.
+// Activity statuses sharing a name with shared statuses — scoped to the
+// dashboard to keep each domain palette explicit.
 .dashboard .status-chip.status-in_progress {
   background: var(--status-in_progress-bg);
   color: var(--status-in_progress-fg);
@@ -241,7 +296,7 @@ body.light-theme {
   --status-broken-fg:  #fca5a5;
 }
 
-body.light-theme {
+:root[data-theme='light'] {
   --status-new-bg:     #cffafe;
   --status-new-fg:     #0e7490;
   --status-good-bg:    #dcfce7;

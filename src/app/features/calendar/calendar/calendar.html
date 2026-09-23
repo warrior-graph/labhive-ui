@@ -64,6 +64,7 @@
                     class="cal-event"
                     [class.cal-event-activity]="ev.type === 'activity'"
                     [class.cal-event-project]="ev.type === 'project'"
+                    [class.cal-event-event]="ev.type === 'event'"
                   >
                     <span class="cal-event-dot"></span>
                     <span class="cal-event-title">{{ ev.title }}</span>

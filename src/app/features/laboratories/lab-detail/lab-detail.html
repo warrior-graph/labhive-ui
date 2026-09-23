@@ -11,6 +11,12 @@
         <p class="description">{{ lab()!.description }}</p>
       </div>
       <div class="lab-header-actions">
+        @if (isCeo()) {
+          <button mat-stroked-button (click)="exportData('members')"><mat-icon>download</mat-icon> Pessoas CSV</button>
+          <button mat-stroked-button (click)="exportData('activities')"><mat-icon>download</mat-icon> Atividades CSV</button>
+          <button mat-stroked-button (click)="exportData('projects')"><mat-icon>download</mat-icon> Projetos CSV</button>
+          <button mat-stroked-button (click)="exportData('attendance')"><mat-icon>schedule</mat-icon> Frequência CSV</button>
+        }
         <button mat-raised-button color="primary" [routerLink]="['/labs', lab()!.id, 'spaces']">
           <mat-icon>map</mat-icon>
           Espaços e reservas
@@ -297,126 +303,6 @@
             <tr class="mat-row" *matNoDataRow>
               <td class="mat-cell empty-cell" [attr.colspan]="researchColumns.length">
                 Nenhum grupo de pesquisa ainda.
-              </td>
-            </tr>
-          </table>
-        </div>
-      </mat-tab>
-
-      <!-- ── Articles ── -->
-      <mat-tab label="Artigos">
-        <div class="tab-content">
-          @if (isResearcher()) {
-            <div class="tab-actions">
-              <a
-                mat-raised-button
-                color="primary"
-                [routerLink]="['/labs', labId, 'articles', 'new']"
-              >
-                <mat-icon>add</mat-icon>
-                Novo Artigo
-              </a>
-            </div>
-          }
-
-          <table
-            mat-table
-            [dataSource]="articlesDataSource"
-            matSort
-            #articleSort="matSort"
-            class="full-width"
-          >
-            <ng-container matColumnDef="title">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Título</th>
-              <td mat-cell *matCellDef="let a">{{ a.title }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-              <td mat-cell *matCellDef="let a">
-                @if (isResearcher()) {
-                  <mat-select
-                    [value]="a.status"
-                    (selectionChange)="changeArticleStatus(a, $event.value)"
-                    class="status-select"
-                  >
-                    <mat-select-trigger>
-                      <span [class]="'status-chip status-' + a.status">
-                        {{ articleStatusLabel(a.status) }}
-                      </span>
-                    </mat-select-trigger>
-                    @for (s of articleStatuses; track s) {
-                      <mat-option [value]="s">
-                        <span [class]="'status-chip status-' + s">{{ articleStatusLabel(s) }}</span>
-                      </mat-option>
-                    }
-                  </mat-select>
-                } @else {
-                  <span [class]="'status-chip status-' + a.status">
-                    {{ articleStatusLabel(a.status) }}
-                  </span>
-                }
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="conference">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Conferência / Periódico</th>
-              <td mat-cell *matCellDef="let a">{{ a.conference || '—' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="submission_deadline">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Prazo</th>
-              <td mat-cell *matCellDef="let a">
-                {{ a.submission_deadline ? (a.submission_deadline | date: 'mediumDate') : '—' }}
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="in_charge">
-              <th mat-header-cell *matHeaderCellDef>Responsáveis</th>
-              <td mat-cell *matCellDef="let a">{{ a.in_charge?.join(', ') || '—' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="authors">
-              <th mat-header-cell *matHeaderCellDef>Autores</th>
-              <td mat-cell *matCellDef="let a">{{ a.authors?.join(', ') || '—' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let a">
-                <a
-                  mat-icon-button
-                  [routerLink]="['/labs', labId, 'articles', a.id]"
-                  matTooltip="Ver artigo"
-                >
-                  <mat-icon>open_in_new</mat-icon>
-                </a>
-                @if (isChiefScientist()) {
-                  <button
-                    mat-icon-button
-                    [color]="a.is_active ? 'warn' : 'primary'"
-                    [matTooltip]="a.is_active ? 'Desativar artigo' : 'Ativar artigo'"
-                    (click)="toggleArticle(a)"
-                  >
-                    <mat-icon>{{ a.is_active ? 'block' : 'check_circle' }}</mat-icon>
-                  </button>
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    matTooltip="Excluir artigo"
-                    (click)="deleteArticle(a.id, a.title)"
-                  >
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                }
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="articleColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: articleColumns"></tr>
-            <tr class="mat-row" *matNoDataRow>
-              <td class="mat-cell empty-cell" [attr.colspan]="articleColumns.length">
-                Nenhum artigo ainda.
               </td>
             </tr>
           </table>

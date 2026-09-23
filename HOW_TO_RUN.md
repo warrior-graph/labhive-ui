@@ -85,7 +85,7 @@ ng build
 The API base URL is configured in:
 
 - `src/environments/environment.ts` — development
-- `src/environments/environment.prod.ts` — production build
+- `src/environments/environment.prod.ts` — production build; uses the same-origin `/api` namespace
 
 Edit `apiUrl` in either file to point to a different backend:
 
@@ -95,6 +95,15 @@ export const environment = {
   apiUrl: 'http://127.0.0.1:5000',
 };
 ```
+
+
+### Production routing
+
+The production Nginx container exposes Flask only below `/api/` and reserves all
+other paths for Angular. For example, the browser page `/labs/1/attendance`
+falls back to `index.html`, while the API request `/api/labs/1/attendance` is
+forwarded to Flask as `/labs/1/attendance`. This separation is required for page
+refreshes and direct links to work correctly.
 
 ---
 

@@ -22,6 +22,16 @@
   gap: 12px;
   align-items: center;
 }
+.selector-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px;
+  mat-form-field { min-width: 0; }
+}
+.selector-actions {
+  display: inline-flex;
+}
 .quiet-banner {
   display: flex;
   gap: 12px;
@@ -54,6 +64,24 @@
   min-width: 620px;
   aspect-ratio: 10 / 7;
   touch-action: none;
+  &.draw-mode {
+    cursor: crosshair;
+  }
+}
+.draft-space {
+  fill: color-mix(in srgb, var(--mat-sys-primary) 18%, transparent);
+  stroke: var(--mat-sys-primary);
+  stroke-width: 3;
+  stroke-dasharray: 10 6;
+  pointer-events: none;
+}
+.drawing-hint,
+.drawing-size {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
 }
 .floor-background {
   fill: var(--mat-sys-surface-container);
@@ -62,31 +90,28 @@
   cursor: pointer;
   outline: none;
   rect {
+    fill-opacity: 0.38;
     stroke-width: 3;
     transition:
+      fill-opacity 0.15s,
       filter 0.15s,
       stroke-width 0.15s;
-  }
-  text {
-    text-anchor: middle;
-    dominant-baseline: middle;
-    font-size: 16px;
-    font-weight: 600;
-    pointer-events: none;
-    fill: currentColor;
-  }
-  .status-text {
-    font-size: 12px;
-    font-weight: 400;
   }
   &:hover rect,
   &:focus rect,
   &.selected rect {
+    fill-opacity: 0.68;
     stroke-width: 6;
-    filter: brightness(1.08);
+    filter: brightness(1.12) drop-shadow(0 4px 5px rgb(0 0 0 / 22%));
   }
   &.editable {
     cursor: grab;
+  }
+  &.fixed {
+    cursor: not-allowed;
+    rect {
+      stroke-dasharray: 8 5;
+    }
   }
 }
 .space.available {
@@ -94,6 +119,15 @@
   rect {
     fill: var(--sem-success-bg);
     stroke: var(--sem-success-fg);
+  }
+}
+
+.space.preallocated {
+  color: var(--sem-warning-fg);
+  rect {
+    fill: var(--sem-warning-bg);
+    stroke: var(--sem-warning-fg);
+    stroke-dasharray: 7 4;
   }
 }
 .space.reserved {
@@ -117,11 +151,26 @@
     stroke: var(--sem-neutral-fg);
   }
 }
+.map-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 999px;
+  background: var(--mat-sys-surface);
+}
 .legend {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin: 0 0 10px;
+  margin: 0;
   span {
     display: inline-flex;
     gap: 6px;
@@ -135,6 +184,9 @@
   i.available {
     background: var(--sem-success-fg);
   }
+  i.preallocated {
+    background: var(--sem-warning-fg);
+  }
   i.reserved {
     background: var(--sem-error-fg);
   }
@@ -145,11 +197,10 @@
     background: var(--sem-neutral-fg);
   }
 }
-.space-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.space-picker {
   margin-top: 12px;
+  max-width: 460px;
+  mat-form-field { width: 100%; }
 }
 .side-form {
   display: grid;
@@ -228,4 +279,37 @@
   .setup-grid {
     grid-template-columns: 1fr;
   }
+}
+.date-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.side-form hr { width: 100%; margin: 12px 0; border: 0; border-top: 1px solid var(--color-border); }
+@media (max-width: 600px) { .date-pair { grid-template-columns: 1fr; } }
+
+.space-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+@media (max-width: 420px) {
+  .space-actions { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .map-toolbar { align-items: flex-start; flex-direction: column; }
+}
+
+.space-name-field { width: 100%; }
+
+.preallocation-note {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--sem-warning-fg) 40%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--sem-warning-bg) 70%, transparent);
+  color: var(--mat-sys-on-surface);
+  font-size: 13px;
+
+  mat-icon { flex: 0 0 auto; color: var(--sem-warning-fg); }
+  strong { display: block; margin-bottom: 2px; }
 }

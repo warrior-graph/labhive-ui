@@ -14,11 +14,11 @@
       @if (lookupLoading()) {
         <mat-hint>Buscando…</mat-hint>
       } @else if (foundMember()) {
-        <mat-hint style="color: #2e7d32">
+        <mat-hint style="color: var(--sem-success-fg)">
           ✓ {{ foundMember()!.first_name }} {{ foundMember()!.last_name }} — {{ foundMember()!.email }}
         </mat-hint>
       } @else if (lookupError()) {
-        <mat-hint style="color: #b00020">{{ lookupError() }}</mat-hint>
+        <mat-hint style="color: var(--mat-sys-error)">{{ lookupError() }}</mat-hint>
       }
     </mat-form-field>
 
@@ -81,7 +81,7 @@
     margin-bottom: 20px;
   }
   .error-text {
-    color: #b00020;
+    color: var(--mat-sys-error);
     font-size: 14px;
   }
   h2[mat-dialog-title] {

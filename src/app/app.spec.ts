@@ -17,10 +17,10 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render the LabHive brand', async () => {
+  it('should render the public router outlet when signed out', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.brand')?.textContent).toContain('LabHive');
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

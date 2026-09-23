@@ -11,6 +11,10 @@ export interface CreateAnnouncementPayload {
   body?: string;
   audience?: string[];
   is_pinned?: boolean;
+  kind?: 'notice' | 'event';
+  starts_at?: string;
+  ends_at?: string;
+  session_mode?: string;
 }
 
 export interface UpdateAnnouncementPayload {
@@ -19,6 +23,9 @@ export interface UpdateAnnouncementPayload {
   audience?: string[];
   is_pinned?: boolean;
   is_active?: boolean;
+  starts_at?: string;
+  ends_at?: string;
+  session_mode?: string;
 }
 
 @Injectable({ providedIn: 'root' })

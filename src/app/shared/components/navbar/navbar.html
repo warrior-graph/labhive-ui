@@ -1,110 +1,89 @@
-<mat-toolbar color="primary">
-  <a mat-button routerLink="/dashboard" class="brand">
-    <mat-icon>science</mat-icon>
-    <span>LabHive</span>
-  </a>
+@if (!authService.isInitialized()) {
+  <div class="app-loading" role="status"><div class="brand-mark"><mat-icon>hub</mat-icon></div><span>Preparando seu workspace…</span></div>
+} @else if (!authService.isAuthenticated()) {
+  <router-outlet />
+} @else {
+  <div class="app-shell" [class.sidebar-open]="sidebarOpen()">
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+    <header class="topbar">
+      <button mat-icon-button class="menu-toggle" (click)="sidebarOpen.set(!sidebarOpen())" aria-label="Abrir navegação"><mat-icon>menu</mat-icon></button>
+      <a routerLink="/dashboard" class="brand"><span class="brand-mark"><mat-icon>hub</mat-icon></span><span>LabHive</span></a>
+      <span class="topbar-spacer"></span>
+      <button mat-button class="command-trigger" (click)="commandOpen.set(true)" aria-label="Abrir busca rápida"><mat-icon>search</mat-icon><span>Buscar ou ir para…</span><kbd>⌘ K</kbd></button>
+      <button mat-icon-button [matMenuTriggerFor]="notificationMenu" (menuOpened)="loadNotifications()" aria-label="Notificações">
+        <mat-icon [matBadge]="unreadCount()" [matBadgeHidden]="unreadCount() === 0" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+      <button mat-icon-button [matMenuTriggerFor]="themeMenu" aria-label="Aparência"><mat-icon>contrast</mat-icon></button>
+      <button mat-button [matMenuTriggerFor]="userMenu" class="user-trigger"><span class="avatar">{{ authService.currentUser()?.first_name?.charAt(0) }}{{ authService.currentUser()?.last_name?.charAt(0) }}</span><span class="user-name">{{ authService.currentUser()?.first_name }}</span><mat-icon>expand_more</mat-icon></button>
+    </header>
 
-  <span class="spacer"></span>
-
-  <button mat-icon-button (click)="toggleTheme()" [attr.aria-label]="isDark() ? 'Alternar para tema claro' : 'Alternar para tema escuro'">
-    <mat-icon>{{ isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
-  </button>
-
-  @if (authService.isAuthenticated()) {
-    <button
-      mat-icon-button
-      [matMenuTriggerFor]="notifMenu"
-      (menuOpened)="loadNotifications()"
-      aria-label="Notificações"
-      matTooltip="Notificações"
-    >
-      <mat-icon
-        [matBadge]="unreadCount()"
-        [matBadgeHidden]="unreadCount() === 0"
-        matBadgeOverlap="false"
-        matBadgeColor="warn"
-      >notifications</mat-icon>
-    </button>
-    <mat-menu #notifMenu="matMenu" panelClass="notif-panel" xPosition="before">
-      <div class="notif-header">
-        <span class="notif-title">Notificações</span>
-        <button mat-button class="notif-action" (click)="markAllRead()">Marcar todas como lidas</button>
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="lab-switcher" [class.single]="memberships().length <= 1">
+        <span class="eyebrow">Workspace</span>
+        @if (memberships().length > 1) {
+          <mat-select [value]="activeLabId()" (selectionChange)="selectLab($event.value)" aria-label="Laboratório ativo">
+            @for (membership of memberships(); track membership.lab_id) {<mat-option [value]="membership.lab_id">{{ membership.laboratory.name }}</mat-option>}
+          </mat-select>
+        } @else if (activeLab()) {<strong>{{ activeLab()!.laboratory.name }}</strong>} @else {<strong>Sem laboratório</strong>}
       </div>
-      <mat-divider />
-      @if (notifications().length === 0) {
-        <div class="notif-empty">Sem notificações.</div>
-      } @else {
-        @for (n of notifications(); track n.id) {
-          <button
-            mat-menu-item
-            class="notif-item"
-            [class.notif-item-unread]="!n.is_read"
-            (click)="openNotification(n)"
-          >
-            <mat-icon class="notif-icon">{{ notificationIcon(n.type) }}</mat-icon>
-            <span class="notif-text">
-              <span class="notif-message">{{ n.message }}</span>
-              <span class="notif-time">{{ relativeTime(n.created_at) }}</span>
-            </span>
-            @if (!n.is_read) {
-              <span class="notif-dot"></span>
+
+      <nav>
+        <p class="nav-heading">Meu trabalho</p>
+        <a class="nav-item" routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>home</mat-icon><span>Início</span></a>
+        <a class="nav-item" routerLink="/calendar" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>calendar_month</mat-icon><span>Agenda</span></a>
+        <a class="nav-item" routerLink="/activities" [queryParams]="{mine: 'true'}" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>assignment_ind</mat-icon><span>Minhas atividades</span></a>
+        <a class="nav-item" routerLink="/projects" [queryParams]="{mine: 'true'}" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>folder_shared</mat-icon><span>Meus projetos</span></a>
+        <a class="nav-item" routerLink="/announcements" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>campaign</mat-icon><span>Comunicados</span></a>
+
+        @if (activeLab()) {
+          <p class="nav-heading">Laboratório</p>
+          @for (item of labItems; track item.label) {
+            @if (canShowLabItem(item)) {
+              <a class="nav-item" [routerLink]="item.route()" [queryParams]="item.label === 'Projetos' || item.label === 'Atividades' || item.label === 'Inventário' ? {lab_id: activeLabId()} : null" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>{{ item.icon }}</mat-icon><span>{{ item.label }}</span></a>
             }
-          </button>
+          }
         }
-      }
-      <mat-divider />
-      <button mat-menu-item class="notif-item" (click)="loadNotifications()">
-        <mat-icon class="notif-icon">refresh</mat-icon>
-        <span class="notif-text">
-          <span class="notif-message">Ver todas</span>
-          <span class="notif-time">Atualizar lista</span>
-        </span>
-      </button>
-    </mat-menu>
-    <a mat-icon-button routerLink="/calendar" aria-label="Calendário">
-      <mat-icon>calendar_month</mat-icon>
-    </a>
-    @if (authService.currentUser()?.is_professor || authService.currentUser()?.is_super_admin) {
-      <a mat-icon-button routerLink="/admin/pending" aria-label="Aprovações pendentes">
-        <mat-icon>pending_actions</mat-icon>
-      </a>
-    }
-    @if (authService.currentUser()?.is_super_admin) {
-      <a mat-icon-button routerLink="/admin/roles" aria-label="Gerenciar papéis">
-        <mat-icon>manage_accounts</mat-icon>
-      </a>
-    }
-    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menu do usuário">
-      <mat-icon>account_circle</mat-icon>
-    </button>
-    <mat-menu #userMenu>
-      <div class="user-info">
-        {{ authService.currentUser()?.first_name }}
-        {{ authService.currentUser()?.last_name }}
+
+        @if (canAdmin()) {
+          <p class="nav-heading">Administração</p>
+          @if (authService.hasCapability('members.approve')) {<a class="nav-item" routerLink="/admin/pending" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>person_add</mat-icon><span>Aprovações</span></a>}
+          @if (authService.hasGlobalCapability('admin.labs')) {<a class="nav-item" routerLink="/labs" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>domain</mat-icon><span>Laboratórios</span></a>}
+          @if (authService.hasGlobalCapability('admin.roles')) {<a class="nav-item" routerLink="/admin/roles" routerLinkActive="active" (click)="closeSidebar()"><mat-icon>admin_panel_settings</mat-icon><span>Papéis</span></a>}
+        }
+      </nav>
+    </aside>
+    <button class="scrim" (click)="closeSidebar()" aria-label="Fechar navegação"></button>
+    <main id="main-content" class="main-content" tabindex="-1"><router-outlet /></main>
+  </div>
+
+  @if (commandOpen()) {
+    <div class="command-backdrop" (click)="commandOpen.set(false)"></div>
+    <section class="command-palette" role="dialog" aria-modal="true" aria-label="Busca rápida">
+      <div class="command-input"><mat-icon>search</mat-icon><input autofocus [value]="commandQuery()" (input)="updateCommandQuery($event)" placeholder="Buscar páginas e ações" aria-label="Buscar páginas e ações" /><button mat-icon-button (click)="commandOpen.set(false)" aria-label="Fechar"><mat-icon>close</mat-icon></button></div>
+      <div class="command-results">
+        @for (command of commands(); track command.label) {<button (click)="runCommand(command.route)"><mat-icon>{{ command.icon }}</mat-icon><span><strong>{{ command.label }}</strong><small>{{ command.hint }}</small></span><mat-icon>arrow_forward</mat-icon></button>}
+        @if (commands().length === 0) {<p class="notification-empty">Nenhum destino encontrado.</p>}
       </div>
-      <mat-divider />
-      <a mat-menu-item routerLink="/profile">
-        <mat-icon>person</mat-icon>
-        Perfil
-      </a>
-      @if (authService.currentUser()?.is_professor || authService.currentUser()?.is_super_admin) {
-        <a mat-menu-item routerLink="/admin/pending">
-          <mat-icon>pending_actions</mat-icon>
-          Aprovações pendentes
-        </a>
-      }
-      @if (authService.currentUser()?.is_super_admin) {
-        <a mat-menu-item routerLink="/admin/roles">
-          <mat-icon>manage_accounts</mat-icon>
-          Gerenciar papéis
-        </a>
-      }
-      <button mat-menu-item (click)="authService.logout()">
-        <mat-icon>logout</mat-icon>
-        Sair
-      </button>
-    </mat-menu>
-  } @else {
-    <a mat-button routerLink="/login">Entrar</a>
+    </section>
   }
-</mat-toolbar>
+
+  <mat-menu #themeMenu="matMenu">
+    <button mat-menu-item (click)="setTheme('system')"><mat-icon>brightness_auto</mat-icon>Sistema</button>
+    <button mat-menu-item (click)="setTheme('light')"><mat-icon>light_mode</mat-icon>Claro</button>
+    <button mat-menu-item (click)="setTheme('dark')"><mat-icon>dark_mode</mat-icon>Escuro</button>
+  </mat-menu>
+  <mat-menu #userMenu="matMenu">
+    <div class="menu-user"><strong>{{ authService.currentUser()?.first_name }} {{ authService.currentUser()?.last_name }}</strong><span>{{ authService.currentUser()?.email }}</span></div>
+    <mat-divider />
+    <a mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon>Perfil e segurança</a>
+    <button mat-menu-item (click)="authService.logout()"><mat-icon>logout</mat-icon>Sair</button>
+  </mat-menu>
+  <mat-menu #notificationMenu="matMenu" xPosition="before">
+    <div class="notification-header"><strong>Notificações</strong><button mat-button (click)="markAllRead()">Marcar como lidas</button></div>
+    <mat-divider />
+    @if (notifications().length === 0) {<p class="notification-empty">Tudo em dia por aqui.</p>}
+    @for (notification of notifications(); track notification.id) {
+      <button mat-menu-item class="notification-item" (click)="openNotification(notification)"><mat-icon>{{ notificationIcon(notification.type) }}</mat-icon><span><strong>{{ notification.message }}</strong><small>{{ relativeTime(notification.created_at) }}</small></span></button>
+    }
+  </mat-menu>
+}

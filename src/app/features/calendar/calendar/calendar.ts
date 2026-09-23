@@ -29,7 +29,7 @@ export class Calendar implements OnInit {
     active: 'Ativo',
   };
 
-  protected readonly filters: CalendarFilter[] = ['all', 'activity', 'project'];
+  protected readonly filters: CalendarFilter[] = ['all', 'activity', 'project', 'event'];
 
   protected readonly month = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   protected readonly events = signal<CalendarEvent[]>([]);
@@ -130,6 +130,7 @@ export class Calendar implements OnInit {
   protected filterLabel(filter: CalendarFilter): string {
     if (filter === 'activity') return 'Atividades';
     if (filter === 'project') return 'Projetos';
+    if (filter === 'event') return 'Eventos';
     return 'Todos';
   }
 
@@ -160,6 +161,7 @@ export class Calendar implements OnInit {
   }
 
   protected eventLink(e: CalendarEvent): (string | number)[] {
+    if (e.type === 'event') return ['/announcements'];
     if (e.type === 'project') {
       return ['/labs', e.lab_id, 'projects', e.id];
     }

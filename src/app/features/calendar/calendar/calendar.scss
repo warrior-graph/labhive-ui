@@ -178,11 +178,11 @@
 }
 
 .cal-event-activity .cal-event-dot {
-  background: #42a5f5; // atividade = azul
+  background: var(--color-activity); // atividade = azul
 }
 
 .cal-event-project .cal-event-dot {
-  background: #66bb6a; // projeto = verde
+  background: var(--color-project); // projeto = verde
 }
 
 .cal-event-title {
@@ -268,4 +268,4 @@
 .day-item-meta {
   font-size: 12px;
   color: var(--mat-sys-on-surface-variant);
-}
+}.cal-event-event { border-left-color: var(--sem-review-fg); }

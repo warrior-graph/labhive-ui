@@ -35,7 +35,7 @@
 
 .chip-inactive {
   background: rgba(255, 123, 114, 0.15) !important;
-  color: #ff7b72 !important;
+  color: var(--sem-error-fg) !important;
   font-size: 11px !important;
   margin-left: 8px;
   vertical-align: middle;

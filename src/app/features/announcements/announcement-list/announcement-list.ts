@@ -66,17 +66,15 @@ export class AnnouncementList implements OnInit {
     );
   });
 
-  /** Labs em que o usuário pode criar avisos (select do dialog). */
+  protected readonly canCreate = computed(() => this.authService.memberships().length > 0);
+
+  /** Members can create events; managers can also create institutional notices. */
   protected readonly manageableLabs = computed(() => {
     const user = this.authService.currentUser();
     if (!user) return [];
-    if (user.is_super_admin || user.is_professor) return this.allLabs();
-    const managed = new Set(
-      (user.lab_memberships ?? [])
-        .filter(m => m.roles.some(r => MANAGER_ROLES.includes(r as LabRole)))
-        .map(m => m.lab_id),
-    );
-    return this.allLabs().filter(l => managed.has(l.id));
+    if (user.is_super_admin) return this.allLabs();
+    const available = new Set(this.authService.memberships().map(m => m.lab_id));
+    return this.allLabs().filter(l => available.has(l.id));
   });
 
   ngOnInit(): void {
@@ -107,7 +105,7 @@ export class AnnouncementList implements OnInit {
   protected openCreate(): void {
     const ref = this.dialog.open(AnnouncementFormDialog, {
       width: '560px',
-      data: { labs: this.manageableLabs(), announcement: null },
+      data: { labs: this.manageableLabs(), announcement: null, canManage: this.canManage() },
     });
     ref.afterClosed().subscribe(created => {
       if (created) {
@@ -120,7 +118,7 @@ export class AnnouncementList implements OnInit {
   protected openEdit(a: Announcement): void {
     const ref = this.dialog.open(AnnouncementFormDialog, {
       width: '560px',
-      data: { labs: this.manageableLabs(), announcement: a },
+      data: { labs: this.manageableLabs(), announcement: a, canManage: this.canManage() },
     });
     ref.afterClosed().subscribe(updated => {
       if (updated) {

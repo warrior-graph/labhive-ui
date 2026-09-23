@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/auth/auth.guard';
+import { capabilityGuard } from './core/auth/capability.guard';
+import { labContextGuard } from './core/auth/lab-context.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -31,6 +33,7 @@ export const routes: Routes = [
         (m) => m.AnnouncementList,
       ),
   },
+  { path: 'announcements/:announcementId', redirectTo: 'announcements' },
   {
     path: 'activities',
     canActivate: [authGuard],
@@ -56,56 +59,55 @@ export const routes: Routes = [
   },
   {
     path: 'labs/:labId',
-    canActivate: [authGuard],
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'lab.view' },
     loadComponent: () =>
       import('./features/laboratories/lab-detail/lab-detail').then((m) => m.LabDetail),
   },
   {
+    path: 'labs/:labId/attendance',
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'attendance.view' },
+    loadComponent: () =>
+      import('./features/attendance/attendance-dashboard').then((m) => m.AttendanceDashboard),
+  },
+  {
     path: 'labs/:labId/org-chart',
-    canActivate: [authGuard],
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'members.view' },
     loadComponent: () =>
       import('./features/laboratories/org-chart/org-chart').then((m) => m.OrgChart),
   },
   {
     path: 'labs/:labId/spaces',
-    canActivate: [authGuard],
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'spaces.view' },
     loadComponent: () => import('./features/spaces/floor-plan/floor-plan').then((m) => m.FloorPlan),
   },
   {
     path: 'labs/:labId/projects/:projectId',
-    canActivate: [authGuard],
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'projects.view' },
     loadComponent: () =>
       import('./features/projects/project-detail/project-detail').then((m) => m.ProjectDetail),
   },
   {
     path: 'labs/:labId/activities/:activityId',
-    canActivate: [authGuard],
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'activities.view' },
     loadComponent: () =>
       import('./features/activities/activity-detail/activity-detail').then((m) => m.ActivityDetail),
   },
   {
     path: 'labs/:labId/research/:researchId',
-    canActivate: [authGuard],
+    canActivate: [authGuard, labContextGuard, capabilityGuard],
+    data: { capability: 'research.view' },
     loadComponent: () =>
       import('./features/research/research-detail/research-detail').then((m) => m.ResearchDetail),
   },
-  {
-    path: 'labs/:labId/articles',
-    loadComponent: () =>
-      import('./features/articles/articles-public/articles-public').then((m) => m.ArticlesPublic),
-  },
-  {
-    path: 'labs/:labId/articles/new',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/articles/article-form/article-form').then((m) => m.ArticleForm),
-  },
-  {
-    path: 'labs/:labId/articles/:articleId',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/articles/article-detail/article-detail').then((m) => m.ArticleDetail),
-  },
+  { path: 'labs/:labId/articles', redirectTo: 'activities', pathMatch: 'full' },
+  { path: 'labs/:labId/articles/new', redirectTo: 'activities', pathMatch: 'full' },
+  { path: 'labs/:labId/articles/:articleId', redirectTo: 'labs/:labId/activities/:articleId' },
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -114,13 +116,15 @@ export const routes: Routes = [
   },
   {
     path: 'admin/pending',
-    canActivate: [authGuard],
+    canActivate: [authGuard, capabilityGuard],
+    data: { capability: 'members.approve' },
     loadComponent: () =>
       import('./features/admin/pending-members/pending-members').then((m) => m.PendingMembers),
   },
   {
     path: 'admin/roles',
-    canActivate: [authGuard],
+    canActivate: [authGuard, capabilityGuard],
+    data: { globalCapability: 'admin.roles' },
     loadComponent: () => import('./features/admin/roles/roles-admin').then((m) => m.RolesAdmin),
   },
   { path: '**', redirectTo: '/labs' },

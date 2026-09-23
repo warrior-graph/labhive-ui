@@ -4,7 +4,7 @@
       <mat-icon>campaign</mat-icon>
       Avisos
     </h1>
-    @if (canManage()) {
+    @if (canCreate()) {
       <button
         mat-raised-button
         color="primary"
@@ -12,7 +12,7 @@
         [disabled]="labsLoading() || manageableLabs().length === 0"
       >
         <mat-icon>add</mat-icon>
-        Novo aviso
+        Novo evento ou aviso
       </button>
     }
   </div>
@@ -41,6 +41,9 @@
               </span>
               @if (a.body) {
                 <p class="announcement-body">{{ a.body }}</p>
+              }
+              @if (a.kind === 'event' && a.starts_at) {
+                <p class="announcement-event"><mat-icon>event</mat-icon>{{ a.starts_at | date:'short' }} — {{ a.ends_at | date:'short' }} @if (a.session_mode && a.session_mode !== 'normal') { <span> · {{ a.session_mode }}</span> }</p>
               }
               <span class="announcement-meta">
                 {{ a.author_name ?? '—' }}
@@ -90,6 +93,9 @@
               </span>
               @if (a.body) {
                 <p class="announcement-body">{{ a.body }}</p>
+              }
+              @if (a.kind === 'event' && a.starts_at) {
+                <p class="announcement-event"><mat-icon>event</mat-icon>{{ a.starts_at | date:'short' }} — {{ a.ends_at | date:'short' }} @if (a.session_mode && a.session_mode !== 'normal') { <span> · {{ a.session_mode }}</span> }</p>
               }
               <span class="announcement-meta">
                 {{ a.author_name ?? '—' }}
