@@ -383,9 +383,15 @@ export interface FloorSpacesResponse {
   spaces: Space[];
 }
 
+export type ReservationCancelScope = 'this' | 'following' | 'all';
+
 export interface Reservation {
   id: number;
   space_id: number;
+  // Map context returned by the API so agenda/occupancy views need no extra joins.
+  space_name?: string | null;
+  space_type?: SpaceType | null;
+  floor_name?: string | null;
   organizer_id?: number;
   starts_at: string;
   ends_at: string;
@@ -396,6 +402,8 @@ export interface Reservation {
   checked_out_at: string | null;
   is_assignment: boolean;
   organizer_name?: string | null;
+  // Set when the row belongs to a recurring booking group.
+  recurrence_group_id?: string | null;
   check_in_opens_at: string;
   check_in_closes_at: string;
   attendance_status: 'scheduled' | 'present' | 'completed' | 'no_show';
@@ -405,6 +413,29 @@ export interface Reservation {
     assigned_member_id: number;
     assigned_member_name: string;
   }>;
+}
+
+/** Personal agenda: the current member's reservations split in two buckets. */
+export interface MyReservationsResponse {
+  upcoming: Reservation[];
+  past: Reservation[];
+}
+
+export type RecurringReservationConflictReason =
+  | 'unavailable'
+  | 'in_the_past'
+  | 'duration_exceeded';
+
+export interface RecurringReservationConflict {
+  date: string;
+  reason: RecurringReservationConflictReason;
+}
+
+/** Result of a recurring booking: the occurrences created plus the skipped days. */
+export interface RecurringReservationResult {
+  group_id: string;
+  created: Reservation[];
+  conflicts: RecurringReservationConflict[];
 }
 
 export interface RegisterRequest {

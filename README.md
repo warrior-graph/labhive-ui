@@ -1,5 +1,11 @@
 # LabHive UI
 
+> **UI legada.** Esta é a interface Angular antiga, em cutover para a UI React
+> (`labhive-web`). Ela segue recebendo correções — inclusive o pacote de
+> melhorias da reserva de estações (recursos/comodidades com ícones e filtros,
+> card do espaço, reserva rápida, reserva recorrente, busca de colega e painel
+> "Minhas reservas") —, mas o desenvolvimento novo acontece no app React.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.11.
 
 ## Development server

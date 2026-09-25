@@ -1,8 +1,8 @@
 <div class="page-container">
   <div class="page-header">
     <div>
-      <h1>Espaços e reservas</h1>
-      <p>Escolha um horário para ver quais espaços estão disponíveis.</p>
+      <h1>Reserva de estação e espaços</h1>
+      <p>Escolha um horário, filtre por recursos e reserve sua estação.</p>
     </div>
     @if (isManager() && selectedFloor()) {
       <input #planInput hidden type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadFloorPlan($event)" />
@@ -16,6 +16,19 @@
     }
   </div>
 
+  <nav class="tab-bar" aria-label="Seções de reserva">
+    <button mat-button type="button" [class.active]="activeTab() === 'map'" (click)="setTab('map')">
+      <mat-icon>map</mat-icon> Mapa de estações
+    </button>
+    <button mat-button type="button" [class.active]="activeTab() === 'mine'" (click)="setTab('mine')">
+      <mat-icon>event_available</mat-icon> Minhas reservas
+      @if (myReservations().upcoming.length) {
+        <span class="tab-badge">{{ myReservations().upcoming.length }}</span>
+      }
+    </button>
+  </nav>
+
+  @if (activeTab() === 'map') {
   <section class="filters" [formGroup]="availabilityForm">
     <div class="selector-field">
       <mat-form-field appearance="outline">
@@ -76,6 +89,40 @@
     <button mat-raised-button color="primary" (click)="refreshFloor()">Ver disponibilidade</button>
   </section>
 
+  <div class="quick-row" aria-label="Atalhos de data e duração">
+    <span class="quick-label">Dia</span>
+    @for (day of quickDays; track day.label) {
+      <button mat-stroked-button type="button" (click)="applyDay(day.offset)">{{ day.label }}</button>
+    }
+    <span class="quick-label">Duração</span>
+    @for (duration of quickDurations; track duration.label) {
+      <button mat-stroked-button type="button" (click)="applyDuration(duration.start, duration.end)">{{ duration.label }}</button>
+    }
+  </div>
+
+  <section class="colleague-search" aria-label="Buscar colega">
+    <mat-form-field appearance="outline">
+      <mat-label>Encontrar colega</mat-label>
+      <input matInput [value]="colleagueQuery()" (input)="setColleagueQuery($event)" placeholder="Nome do colega" />
+      <mat-icon matSuffix>person_search</mat-icon>
+    </mat-form-field>
+    @if (colleagueQuery().trim().length >= 2) {
+      <div class="colleague-results">
+        @for (membership of colleagueResults(); track membership.member_id) {
+          <button type="button" (click)="selectColleague(membership)">{{ fullName(membership) }}</button>
+        } @empty {
+          <p class="hint">Nenhum membro encontrado.</p>
+        }
+      </div>
+    }
+    @if (colleagueLabel()) {
+      <p class="hint colleague-summary">
+        <mat-icon>person_pin_circle</mat-icon>{{ colleagueSummary() }}
+        <button mat-button type="button" (click)="clearColleague()">Limpar</button>
+      </p>
+    }
+  </section>
+
   @if (liveSessions().length) {
     <div class="quiet-banner" role="status">
       <mat-icon>volume_off</mat-icon>
@@ -111,95 +158,145 @@
             <button mat-icon-button type="button" aria-label="Aumentar zoom" [disabled]="zoom() >= 3" (click)="changeZoom(0.25)"><mat-icon>add</mat-icon></button>
           </div>
         </div>
-        <div class="map-scroll" (wheel)="zoomWithWheel($event)">
-          <svg
-            #floorSvg
-            class="floor-map"
-            [class.draw-mode]="drawMode()"
-            [style.width.%]="zoomPercent()"
-            [attr.viewBox]="
-              '0 0 ' + selectedFloor()!.layout_width + ' ' + selectedFloor()!.layout_height
-            "
-            (pointerdown)="floorPointerDown($event)"
-            (pointermove)="dragMove($event)"
-            (pointerup)="dragEnd()"
-            (pointerleave)="dragEnd()"
-            aria-label="Mapa de espaços do andar"
-          >
-            <rect
-              class="floor-background"
-              x="0"
-              y="0"
-              [attr.width]="selectedFloor()!.layout_width"
-              [attr.height]="selectedFloor()!.layout_height"
-            />
-            @if (floorImageUrl()) {
-              <image [attr.href]="floorImageUrl()" x="0" y="0" [attr.width]="selectedFloor()!.layout_width" [attr.height]="selectedFloor()!.layout_height" preserveAspectRatio="xMidYMid meet" opacity="0.72" />
+
+        <div class="map-filters" aria-label="Filtros do mapa">
+          <div class="filter-group">
+            <span class="filter-label">Tipo</span>
+            @for (option of typeFilterOptions; track option.value) {
+              <button mat-button type="button" class="filter-chip" [class.active]="filterType() === option.value" (click)="setTypeFilter(option.value)">{{ option.label }}</button>
             }
-            @for (space of spaces(); track space.id) {
-              <g
-                [class]="spaceClass(space)"
-                [class.selected]="selectedSpaceId() === space.id"
-                [class.editable]="editing() && !space.is_locked"
-                [class.fixed]="space.is_locked"
-                tabindex="0"
-                role="button"
-                [attr.aria-label]="space.name + ', ' + spaceStatus(space) + (space.is_locked ? ', fixado' : '')"
-                (click)="selectSpace(space)"
-                (keydown.enter)="selectSpace(space)"
-                (pointerdown)="dragStart($event, space)"
-                [attr.transform]="
-                  'rotate(' +
-                  space.layout.rotation +
-                  ' ' +
-                  (space.layout.x + space.layout.width / 2) +
-                  ' ' +
-                  (space.layout.y + space.layout.height / 2) +
-                  ')'
-                "
-              >
-                <title>{{ space.name }} — {{ spaceStatus(space) }} · {{ space.capacity }} pessoa(s)</title>
+          </div>
+          @if (amenityOptions().length) {
+            <div class="filter-group">
+              <span class="filter-label">Recursos</span>
+              @for (option of amenityOptions(); track option.key) {
+                <button mat-button type="button" class="filter-chip amenity" [class.active]="isAmenityFilterActive(option.key)" (click)="toggleAmenityFilter(option.key)">
+                  <mat-icon>{{ option.icon }}</mat-icon>{{ option.label }}<small>{{ option.count }}</small>
+                </button>
+              }
+            </div>
+          }
+          @if (hasFilters()) {
+            <button mat-button type="button" (click)="clearFilters()">Limpar filtros</button>
+          }
+        </div>
+        <p class="hint result-count">{{ visibleSpaces().length }} de {{ spaces().length }} espaço(s) exibido(s).</p>
+
+        <div class="map-scroll" (wheel)="zoomWithWheel($event)">
+          <div class="map-canvas" [style.width.%]="zoomPercent()">
+            <svg
+              #floorSvg
+              class="floor-map"
+              [class.draw-mode]="drawMode()"
+              [attr.viewBox]="
+                '0 0 ' + selectedFloor()!.layout_width + ' ' + selectedFloor()!.layout_height
+              "
+              (pointerdown)="floorPointerDown($event)"
+              (pointermove)="dragMove($event)"
+              (pointerup)="dragEnd()"
+              (pointerleave)="dragEnd()"
+              aria-label="Mapa de espaços do andar"
+            >
+              <rect
+                class="floor-background"
+                x="0"
+                y="0"
+                [attr.width]="selectedFloor()!.layout_width"
+                [attr.height]="selectedFloor()!.layout_height"
+              />
+              @if (floorImageUrl()) {
+                <image [attr.href]="floorImageUrl()" x="0" y="0" [attr.width]="selectedFloor()!.layout_width" [attr.height]="selectedFloor()!.layout_height" preserveAspectRatio="xMidYMid meet" opacity="0.72" />
+              }
+              @for (space of visibleSpaces(); track space.id) {
+                <g
+                  [class]="spaceClass(space)"
+                  [class.editable]="editing() && !space.is_locked"
+                  [class.fixed]="space.is_locked"
+                  tabindex="0"
+                  role="button"
+                  [attr.aria-label]="space.name + ', ' + spaceStatus(space) + (space.is_locked ? ', fixado' : '')"
+                  (click)="selectSpace(space)"
+                  (keydown.enter)="selectSpace(space)"
+                  (pointerenter)="setHovered(space)"
+                  (pointerleave)="setHovered(null)"
+                  (focus)="setHovered(space)"
+                  (blur)="setHovered(null)"
+                  (pointerdown)="dragStart($event, space)"
+                  [attr.transform]="
+                    'rotate(' +
+                    space.layout.rotation +
+                    ' ' +
+                    (space.layout.x + space.layout.width / 2) +
+                    ' ' +
+                    (space.layout.y + space.layout.height / 2) +
+                    ')'
+                  "
+                >
+                  <title>{{ space.name }} — {{ spaceStatus(space) }} · {{ space.capacity }} pessoa(s)</title>
+                  <rect
+                    [attr.x]="space.layout.x"
+                    [attr.y]="space.layout.y"
+                    [attr.width]="space.layout.width"
+                    [attr.height]="space.layout.height"
+                    rx="8"
+                  />
+                  <text
+                    class="space-label"
+                    [attr.x]="space.layout.x + space.layout.width / 2"
+                    [attr.y]="space.layout.y + space.layout.height / 2"
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                  >{{ space.name }}</text>
+                </g>
+              }
+              @if (draftRect(); as draft) {
                 <rect
-                  [attr.x]="space.layout.x"
-                  [attr.y]="space.layout.y"
-                  [attr.width]="space.layout.width"
-                  [attr.height]="space.layout.height"
+                  class="draft-space"
+                  [attr.x]="draft.x"
+                  [attr.y]="draft.y"
+                  [attr.width]="draft.width"
+                  [attr.height]="draft.height"
                   rx="8"
                 />
-                <text
-                  class="space-label"
-                  [attr.x]="space.layout.x + space.layout.width / 2"
-                  [attr.y]="space.layout.y + space.layout.height / 2"
-                  text-anchor="middle"
-                  dominant-baseline="middle"
-                >{{ space.name }}</text>
-              </g>
+              }
+            </svg>
+            @if (hoveredSpace(); as hovered) {
+              <div class="space-popover" [style]="popoverStyle(hovered)" role="tooltip">
+                <header>
+                  <strong>{{ hovered.name }}</strong>
+                  <span class="popover-status">{{ spaceStatus(hovered) }}</span>
+                </header>
+                <p class="meta">{{ spaceTypeLabel(hovered.type) }} · {{ hovered.capacity }} pessoa(s)</p>
+                @if (spaceAmenities(hovered).length) {
+                  <ul class="popover-amenities">
+                    @for (key of spaceAmenities(hovered); track key) {
+                      <li [title]="amenityLabel(key)"><mat-icon>{{ amenityIcon(key) }}</mat-icon>{{ amenityLabel(key) }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="hint">Sem recursos cadastrados.</p>
+                }
+                @if (spaceOccupant(hovered); as occupant) {
+                  <p class="occupant"><mat-icon>person</mat-icon>{{ occupant }}</p>
+                }
+                <p class="hint">Clique para ver detalhes e reservar.</p>
+              </div>
             }
-            @if (draftRect(); as draft) {
-              <rect
-                class="draft-space"
-                [attr.x]="draft.x"
-                [attr.y]="draft.y"
-                [attr.width]="draft.width"
-                [attr.height]="draft.height"
-                rx="8"
-              />
-            }
-          </svg>
+          </div>
         </div>
 
         <div class="space-picker" aria-label="Selecionar espaço">
-          @if (spaces().length) {
+          @if (visibleSpaces().length) {
             <mat-form-field appearance="outline">
               <mat-label>Espaço</mat-label>
               <mat-select [value]="selectedSpaceId()" [disabled]="editing()" (selectionChange)="selectSpaceFromList($event)">
-                @for (space of spaces(); track space.id) {
+                @for (space of visibleSpaces(); track space.id) {
                   <mat-option [value]="space.id">{{ space.name }} · {{ spaceStatus(space) }} · {{ space.capacity }} pessoa(s)</mat-option>
                 }
               </mat-select>
             </mat-form-field>
           } @else {
-            <p>Nenhum espaço neste andar.</p>
+            <p>Nenhum espaço corresponde aos filtros. <button mat-button type="button" (click)="clearFilters()">Limpar filtros</button></p>
           }
         </div>
       </div>
@@ -234,6 +331,14 @@
                   ><mat-label>Capacidade</mat-label
                   ><input matInput type="number" formControlName="capacity" /></mat-form-field
                 >
+                <mat-form-field appearance="outline">
+                  <mat-label>Recursos</mat-label>
+                  <mat-select formControlName="amenities" multiple>
+                    @for (option of amenityCatalog; track option.key) {
+                      <mat-option [value]="option.key">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
                 <mat-checkbox formControlName="requiresApproval">Exige aprovação</mat-checkbox>
                 <button mat-raised-button color="primary" type="submit" [disabled]="!draftRect()">Adicionar ao mapa</button>
                 <p class="hint">Depois de criado, arraste o espaço para reposicioná-lo.</p>
@@ -252,7 +357,20 @@
               } @else {
                 <h3>{{ space.name }}</h3>
               }
-              <p>{{ spaceStatus(space) }} · Capacidade: {{ space.capacity }}</p>
+              <p class="space-meta">{{ spaceTypeLabel(space.type) }} · Capacidade: {{ space.capacity }}</p>
+              <p class="space-status-line">{{ spaceStatus(space) }}</p>
+              @if (spaceOccupant(space); as occupant) {
+                <p class="occupant-line"><mat-icon>person</mat-icon> Ocupado por {{ occupant }}</p>
+              }
+              @if (spaceAmenities(space).length) {
+                <ul class="amenity-list">
+                  @for (key of spaceAmenities(space); track key) {
+                    <li><mat-icon>{{ amenityIcon(key) }}</mat-icon>{{ amenityLabel(key) }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="hint">Nenhum recurso cadastrado para este espaço.</p>
+              }
               @if (space.preallocation; as preallocation) {
                 <div class="preallocation-note" role="note">
                   <mat-icon>event_seat</mat-icon>
@@ -280,13 +398,29 @@
                   </mat-select></mat-form-field
                 >
                 @if (space.available) {
+                  <button mat-stroked-button type="button" (click)="toggleRecurring()">
+                    <mat-icon>{{ recurringOpen() ? 'event_busy' : 'repeat' }}</mat-icon>
+                    {{ recurringOpen() ? 'Não repetir' : 'Repetir em outros dias' }}
+                  </button>
+                  @if (recurringOpen()) {
+                    <div class="recurring-days">
+                      <p class="hint">Marque os dias (mesmo horário). {{ recurringDates().length }} selecionado(s).</p>
+                      <div class="day-chips">
+                        @for (day of recurringDayOptions(); track day.iso) {
+                          <button type="button" class="day-chip" [class.active]="isRecurringDate(day.iso)" (click)="toggleRecurringDate(day.iso)">
+                            <span class="weekday">{{ day.weekday }}</span>{{ day.label }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
                   <button
                     mat-raised-button
                     color="primary"
                     type="submit"
                     [disabled]="saving()"
                   >
-                    Reservar
+                    {{ recurringOpen() && recurringDates().length > 1 ? 'Reservar ' + recurringDates().length + ' dias' : 'Reservar' }}
                   </button>
                 } @else {
                   <button
@@ -306,6 +440,14 @@
               </form>
               @if (isManager()) {
                 <hr />
+                <mat-form-field appearance="outline" class="amenity-editor">
+                  <mat-label>Recursos do espaço</mat-label>
+                  <mat-select multiple [value]="spaceAmenities(space)" (selectionChange)="saveAmenities(space, $event.value)">
+                    @for (option of amenityCatalog; track option.key) {
+                      <mat-option [value]="option.key">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
                 <div class="space-actions">
                   <button mat-stroked-button type="button" [disabled]="saving()" (click)="duplicateSpace(space)">
                     <mat-icon>content_copy</mat-icon>Duplicar região
@@ -340,7 +482,7 @@
         } @else {
           <mat-card
             ><mat-card-content
-              ><p>Selecione um espaço disponível no mapa para reservar.</p></mat-card-content
+              ><p>Selecione uma estação no mapa para reservar. Passe o mouse para ver os recursos.</p></mat-card-content
             ></mat-card
           >
         }
@@ -352,10 +494,13 @@
       @for (reservation of reservations(); track reservation.id) {
         <div class="reservation-row">
           <div>
-            <strong>{{ spaceName(reservation.space_id) }}</strong
-            ><br /><span
+            <strong>{{ reservation.space_name ?? spaceName(reservation.space_id) }}</strong>
+            @if (reservation.organizer_name) {
+              <span class="muted"> · {{ reservation.organizer_name }}</span>
+            }
+            <br /><span
               >{{ reservation.starts_at | date: 'dd/MM/yyyy HH:mm' }} —
-              {{ reservation.ends_at | date: 'dd/MM/yyyy HH:mm' }} · {{ reservation.status }}</span
+              {{ reservation.ends_at | date: 'dd/MM/yyyy HH:mm' }} · {{ reservationStatusLabel(reservation) }}</span
             >
           </div>
           <div class="row-actions">
@@ -461,5 +606,61 @@
         </form>
       </div>
     </details>
+  }
+  } @else {
+    <section class="mine-panel">
+      <div class="mine-header">
+        <h2>Minhas reservas</h2>
+        <button mat-stroked-button type="button" (click)="loadMyReservations()"><mat-icon>refresh</mat-icon>Atualizar</button>
+      </div>
+
+      <h3>Próximas</h3>
+      @for (reservation of myReservations().upcoming; track reservation.id) {
+        <div class="reservation-row">
+          <div>
+            <strong>{{ reservation.space_name ?? spaceName(reservation.space_id) }}</strong>
+            @if (reservation.floor_name) { <span class="muted"> · {{ reservation.floor_name }}</span> }
+            <br />
+            <span>{{ reservation.starts_at | date: 'dd/MM/yyyy HH:mm' }} — {{ reservation.ends_at | date: 'HH:mm' }} · {{ reservationStatusLabel(reservation) }}</span>
+            @if (reservation.purpose) { <br /><small>{{ reservation.purpose }}</small> }
+            @if (reservation.recurrence_group_id) {
+              <br /><small class="recurring-tag"><mat-icon>repeat</mat-icon>Reserva recorrente</small>
+            }
+          </div>
+          <div class="row-actions">
+            @if (canCheckIn(reservation)) {
+              <button mat-raised-button color="primary" (click)="checkIn(reservation)">Fazer check-in</button>
+            }
+            @if (reservation.checked_in_at && !reservation.checked_out_at) {
+              <button mat-button (click)="checkOut(reservation)">Encerrar</button>
+            }
+            @if (canAct(reservation)) {
+              @if (reservation.recurrence_group_id) {
+                <button mat-button color="warn" (click)="cancelMine(reservation, 'all')">Cancelar todas</button>
+              }
+              <button mat-icon-button color="warn" aria-label="Cancelar reserva" (click)="cancelMine(reservation)">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="hint">Nenhuma reserva futura.</p>
+      }
+
+      <h3>Histórico</h3>
+      @for (reservation of myReservations().past; track reservation.id) {
+        <div class="reservation-row past">
+          <div>
+            <strong>{{ reservation.space_name ?? spaceName(reservation.space_id) }}</strong>
+            @if (reservation.floor_name) { <span class="muted"> · {{ reservation.floor_name }}</span> }
+            <br />
+            <span>{{ reservation.starts_at | date: 'dd/MM/yyyy HH:mm' }} — {{ reservation.ends_at | date: 'HH:mm' }} · {{ reservationStatusLabel(reservation) }}</span>
+          </div>
+        </div>
+      } @empty {
+        <p class="hint">Sem histórico ainda.</p>
+      }
+    </section>
   }
 </div>

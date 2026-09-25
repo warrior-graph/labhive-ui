@@ -34,12 +34,20 @@ import {
   LabMembership,
   LabRole,
   MANAGER_ROLES,
+  MyReservationsResponse,
   Reservation,
+  ReservationCancelScope,
   SessionMode,
   Space,
   SpaceType,
   WaitlistEntry,
 } from '../../../core/models';
+import {
+  SPACE_AMENITY_CATALOG,
+  SpaceAmenity,
+  amenityIcon as amenityIconFor,
+  amenityLabel as amenityLabelFor,
+} from '../amenities';
 import { SpaceService } from '../../../core/services/space.service';
 import { MemberService } from '../../../core/services/member.service';
 import { extractApiError } from '../../../core/utils/api-error';
@@ -112,6 +120,95 @@ export class FloorPlan implements OnInit, OnDestroy {
   protected readonly drawMode = signal(false);
   protected readonly draftRect = signal<{ x: number; y: number; width: number; height: number } | null>(null);
 
+  // ── Deskbee-style booking aids ────────────────────────────────────────────
+  protected readonly activeTab = signal<'map' | 'mine'>('map');
+  protected readonly occupancy = signal<Reservation[]>([]);
+  protected readonly myReservations = signal<MyReservationsResponse>({ upcoming: [], past: [] });
+  protected readonly hoveredSpaceId = signal<number | null>(null);
+  protected readonly filterType = signal<SpaceType | 'all'>('all');
+  protected readonly filterAmenities = signal<string[]>([]);
+  protected readonly recurringOpen = signal(false);
+  protected readonly recurringDates = signal<string[]>([]);
+  protected readonly colleagueId = signal<number | null>(null);
+  protected readonly colleagueLabel = signal<string | null>(null);
+  protected readonly colleagueQuery = signal('');
+
+  protected readonly amenityCatalog: SpaceAmenity[] = SPACE_AMENITY_CATALOG;
+  protected readonly typeFilterOptions: { value: SpaceType | 'all'; label: string }[] = [
+    { value: 'all', label: 'Todos' },
+    { value: 'desk', label: 'Mesas' },
+    { value: 'workstation', label: 'Estações' },
+    { value: 'bench', label: 'Bancadas' },
+    { value: 'room', label: 'Salas' },
+    { value: 'shared_area', label: 'Áreas' },
+  ];
+  protected readonly quickDays: { label: string; offset: number }[] = [
+    { label: 'Hoje', offset: 0 },
+    { label: 'Amanhã', offset: 1 },
+  ];
+  protected readonly quickDurations: { label: string; start: string; end: string }[] = [
+    { label: '1 h', start: '09:00', end: '10:00' },
+    { label: '2 h', start: '09:00', end: '11:00' },
+    { label: '4 h', start: '09:00', end: '13:00' },
+    { label: 'Manhã', start: '09:00', end: '12:00' },
+    { label: 'Tarde', start: '13:00', end: '17:00' },
+    { label: 'Dia', start: '09:00', end: '17:00' },
+  ];
+
+  protected readonly hoveredSpace = computed(
+    () => this.spaces().find((space) => space.id === this.hoveredSpaceId()) ?? null,
+  );
+  /** Who holds each seat in the selected window (live check-ins win). */
+  protected readonly occupantBySpaceId = computed(() => {
+    const occupants = new Map<number, string>();
+    for (const item of this.occupancy()) {
+      if (item.organizer_name && !occupants.has(item.space_id)) {
+        occupants.set(item.space_id, item.organizer_name);
+      }
+    }
+    for (const session of this.liveSessions()) {
+      if (session.organizer_name) occupants.set(session.space_id, session.organizer_name);
+    }
+    return occupants;
+  });
+  protected readonly hasFilters = computed(
+    () => this.filterType() !== 'all' || this.filterAmenities().length > 0,
+  );
+  protected readonly visibleSpaces = computed(() =>
+    this.spaces().filter((space) => {
+      if (this.filterType() !== 'all' && space.type !== this.filterType()) return false;
+      const wanted = this.filterAmenities();
+      return wanted.every((key) => (space.amenities ?? []).includes(key));
+    }),
+  );
+  /** Amenities actually present on this floor, with how many seats offer them. */
+  protected readonly amenityOptions = computed(() => {
+    const counts = new Map<string, number>();
+    for (const space of this.spaces()) {
+      for (const key of space.amenities ?? []) counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return this.amenityCatalog
+      .filter((amenity) => counts.has(amenity.key))
+      .map((amenity) => ({ ...amenity, count: counts.get(amenity.key) ?? 0 }));
+  });
+  /** Seats held by the colleague being searched for, in the selected window. */
+  protected readonly highlightedSpaceIds = computed(() => {
+    const label = this.colleagueLabel();
+    if (!label) return new Set<number>();
+    return new Set(
+      this.occupancy()
+        .filter((item) => item.organizer_name === label)
+        .map((item) => item.space_id),
+    );
+  });
+  protected readonly colleagueResults = computed(() => {
+    const query = this.colleagueQuery().trim().toLowerCase();
+    if (query.length < 2) return [];
+    return this.members()
+      .filter((membership) => this.fullName(membership).toLowerCase().includes(query))
+      .slice(0, 6);
+  });
+
   protected readonly selectedSpace = computed(
     () => this.spaces().find((space) => space.id === this.selectedSpaceId()) ?? null,
   );
@@ -166,6 +263,7 @@ export class FloorPlan implements OnInit, OnDestroy {
     width: [120, [Validators.required, Validators.min(20)]],
     height: [80, [Validators.required, Validators.min(20)]],
     requiresApproval: [false],
+    amenities: [[] as string[]],
   });
 
   protected readonly spaceTypes: { value: SpaceType; label: string }[] = [
@@ -191,7 +289,13 @@ export class FloorPlan implements OnInit, OnDestroy {
     this.loadSettings();
     this.loadLocations();
     this.loadWaitlist();
-    if (this.isManager()) this.membersApi.getLabMembers(this.labId).subscribe(items => this.members.set(items));
+    this.loadMyReservations();
+    // Every member needs the roster: managers for pre-allocation, everyone for
+    // the "find a colleague" search.
+    this.membersApi.getLabMembers(this.labId).subscribe({
+      next: (items) => this.members.set(items),
+      error: () => this.members.set([]),
+    });
   }
 
   ngOnDestroy(): void {
@@ -374,6 +478,7 @@ export class FloorPlan implements OnInit, OnDestroy {
         error: (error) => this.showError(error, 'Falha ao carregar o mapa.'),
       });
     this.loadReservations();
+    this.loadOccupancy();
   }
 
   protected selectSpace(space: Space): void {
@@ -391,7 +496,38 @@ export class FloorPlan implements OnInit, OnDestroy {
       return;
     }
     const booking = this.bookingForm.getRawValue();
+    const recurring = this.recurringOpen() ? this.recurringDates() : [];
+    if (this.recurringOpen() && !recurring.length) {
+      this.snackBar.open('Selecione ao menos um dia para repetir a reserva.', 'Fechar', { duration: 3500 });
+      return;
+    }
     this.saving.set(true);
+    if (recurring.length) {
+      this.spacesApi
+        .createRecurringReservation(this.labId, space.id, {
+          starts_at: start.toISOString(),
+          ends_at: end.toISOString(),
+          purpose: booking.purpose,
+          session_mode: booking.sessionMode,
+          recurring_dates: recurring,
+        })
+        .subscribe({
+          next: (result) => {
+            this.saving.set(false);
+            const conflicts = result.conflicts.length;
+            const pending = result.created.some((item) => item.status === 'pending');
+            this.snackBar.open(
+              `${result.created.length} reserva(s) criada(s)${pending ? ' e enviada(s) para aprovação' : ''}.` +
+                (conflicts ? ` ${conflicts} dia(s) sem disponibilidade.` : ''),
+              'Fechar',
+              { duration: conflicts ? 6500 : 3800 },
+            );
+            this.resetAfterBooking();
+          },
+          error: (error) => this.showError(error, 'Não foi possível criar a reserva recorrente.'),
+        });
+      return;
+    }
     this.spacesApi
       .createReservation(this.labId, space.id, {
         starts_at: start.toISOString(),
@@ -402,8 +538,6 @@ export class FloorPlan implements OnInit, OnDestroy {
       .subscribe({
         next: (reservation) => {
           this.saving.set(false);
-          this.bookingForm.reset({ purpose: '', sessionMode: 'normal' });
-          this.selectedSpaceId.set(null);
           this.snackBar.open(
             reservation.status === 'pending'
               ? 'Reserva enviada para aprovação.'
@@ -411,10 +545,19 @@ export class FloorPlan implements OnInit, OnDestroy {
             'Fechar',
             { duration: 3500 },
           );
-          this.refreshFloor();
+          this.resetAfterBooking();
         },
         error: (error) => this.showError(error, 'Não foi possível criar a reserva.'),
       });
+  }
+
+  private resetAfterBooking(): void {
+    this.bookingForm.reset({ purpose: '', sessionMode: 'normal' });
+    this.selectedSpaceId.set(null);
+    this.recurringDates.set([]);
+    this.recurringOpen.set(false);
+    this.refreshFloor();
+    this.loadMyReservations();
   }
 
   protected cancel(reservation: Reservation): void {
@@ -422,6 +565,7 @@ export class FloorPlan implements OnInit, OnDestroy {
       next: () => {
         this.loadReservations();
         this.refreshFloor();
+        this.loadMyReservations();
       },
       error: (error) => this.showError(error, 'Não foi possível cancelar a reserva.'),
     });
@@ -432,6 +576,7 @@ export class FloorPlan implements OnInit, OnDestroy {
       next: (checkedIn) => {
         this.loadReservations();
         this.refreshFloor();
+        this.loadMyReservations();
         const warning = checkedIn.warnings?.find(item => item.code === 'space_preallocated');
         this.snackBar.open(
           warning?.message ?? 'Check-in registrado.',
@@ -448,6 +593,7 @@ export class FloorPlan implements OnInit, OnDestroy {
       next: () => {
         this.loadReservations();
         this.refreshFloor();
+        this.loadMyReservations();
       },
       error: (error) => this.showError(error, 'Não foi possível fazer check-out.'),
     });
@@ -703,6 +849,7 @@ export class FloorPlan implements OnInit, OnDestroy {
         x: draft.x,
         y: draft.y,
         requires_approval: value.requiresApproval,
+        amenities: value.amenities,
       })
       .subscribe({
         next: () => {
@@ -713,6 +860,7 @@ export class FloorPlan implements OnInit, OnDestroy {
             width: 120,
             height: 80,
             requiresApproval: false,
+            amenities: [],
           });
           this.draftRect.set(null);
           this.drawMode.set(false);
@@ -811,18 +959,28 @@ export class FloorPlan implements OnInit, OnDestroy {
   }
 
   protected spaceClass(space: Space): string {
-    if (!space.is_active) return 'space unavailable';
-    if (this.liveSessions().some((item) => item.space_id === space.id)) return 'space live';
-    if (!space.available) return 'space reserved';
-    if (space.preallocation) return 'space preallocated';
-    return 'space available';
+    const classes = ['space'];
+    if (!space.is_active) classes.push('unavailable');
+    else if (this.liveSessions().some((item) => item.space_id === space.id)) classes.push('live');
+    else if (!space.available) classes.push('reserved');
+    else if (space.preallocation) classes.push('preallocated');
+    else classes.push('available');
+    if (this.selectedSpaceId() === space.id) classes.push('selected');
+    if (this.highlightedSpaceIds().has(space.id)) classes.push('highlighted');
+    return classes.join(' ');
   }
 
   protected spaceStatus(space: Space): string {
     const live = this.liveSessions().find((item) => item.space_id === space.id);
-    if (live) return `${this.modeLabel(live.session_mode)} em andamento`;
+    if (live) {
+      const who = this.spaceOccupant(space);
+      return `${this.modeLabel(live.session_mode)} em andamento${who ? ` · ${who}` : ''}`;
+    }
     if (!space.is_active) return 'Indisponível';
-    if (!space.available) return 'Reservado';
+    if (!space.available) {
+      const who = this.spaceOccupant(space);
+      return who ? `Reservado por ${who}` : 'Reservado';
+    }
     if (space.preallocation) return `Pré-alocado para ${space.preallocation.member_name}`;
     return 'Disponível';
   }
@@ -850,6 +1008,223 @@ export class FloorPlan implements OnInit, OnDestroy {
 
   protected canAct(reservation: Reservation): boolean {
     return reservation.status === 'confirmed' || reservation.status === 'pending';
+  }
+
+  // ── Tabs and personal agenda ──────────────────────────────────────────────
+
+  protected setTab(tab: 'map' | 'mine'): void {
+    this.activeTab.set(tab);
+    if (tab === 'mine') this.loadMyReservations();
+  }
+
+  protected loadMyReservations(): void {
+    this.spacesApi.getMyReservations(this.labId).subscribe({
+      next: (response) => this.myReservations.set(response),
+      error: () => this.myReservations.set({ upcoming: [], past: [] }),
+    });
+  }
+
+  protected cancelMine(reservation: Reservation, scope: ReservationCancelScope = 'this'): void {
+    this.spacesApi.cancelReservation(this.labId, reservation.id, scope).subscribe({
+      next: (result) => {
+        const count = result.cancelled_count ?? 1;
+        this.snackBar.open(
+          count > 1 ? `${count} reservas canceladas.` : 'Reserva cancelada.',
+          'Fechar',
+          { duration: 3000 },
+        );
+        this.loadMyReservations();
+        this.loadReservations();
+        this.refreshFloor();
+      },
+      error: (error) => this.showError(error, 'Não foi possível cancelar a reserva.'),
+    });
+  }
+
+  protected reservationStatusLabel(reservation: Reservation): string {
+    const labels: Record<string, string> = {
+      pending: 'Aguardando aprovação',
+      confirmed: 'Confirmada',
+      cancelled: 'Cancelada',
+      rejected: 'Rejeitada',
+      completed: 'Concluída',
+    };
+    return labels[reservation.status] ?? reservation.status;
+  }
+
+  // ── Amenities ─────────────────────────────────────────────────────────────
+
+  protected amenityIcon(key: string): string {
+    return amenityIconFor(key);
+  }
+
+  protected amenityLabel(key: string): string {
+    return amenityLabelFor(key);
+  }
+
+  protected spaceAmenities(space: Space): string[] {
+    return space.amenities ?? [];
+  }
+
+  protected saveAmenities(space: Space, amenities: string[]): void {
+    this.spacesApi.updateSpace(this.labId, space.id, { amenities }).subscribe({
+      next: (updated) => {
+        this.mergeUpdatedSpace(updated);
+        this.snackBar.open('Recursos atualizados.', 'Fechar', { duration: 2200 });
+      },
+      error: (error) => this.showError(error, 'Não foi possível atualizar os recursos.'),
+    });
+  }
+
+  protected spaceTypeLabel(type: SpaceType): string {
+    return this.spaceTypes.find((item) => item.value === type)?.label ?? type;
+  }
+
+  // ── Map filters ───────────────────────────────────────────────────────────
+
+  protected setTypeFilter(value: SpaceType | 'all'): void {
+    this.filterType.set(this.filterType() === value ? 'all' : value);
+  }
+
+  protected toggleAmenityFilter(key: string): void {
+    this.filterAmenities.update((current) =>
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
+    );
+  }
+
+  protected isAmenityFilterActive(key: string): boolean {
+    return this.filterAmenities().includes(key);
+  }
+
+  protected clearFilters(): void {
+    this.filterType.set('all');
+    this.filterAmenities.set([]);
+  }
+
+  // ── Quick date / duration presets ─────────────────────────────────────────
+
+  protected applyDay(offset: number): void {
+    const base = new Date();
+    base.setDate(base.getDate() + offset);
+    const day = this.localDate(base);
+    this.availabilityForm.patchValue({ startDate: day, endDate: day });
+    this.refreshFloor();
+  }
+
+  protected applyDuration(start: string, end: string): void {
+    this.availabilityForm.patchValue({ startTime: start, endTime: end });
+    this.refreshFloor();
+  }
+
+  // ── Recurring booking ─────────────────────────────────────────────────────
+
+  protected toggleRecurring(): void {
+    const open = !this.recurringOpen();
+    this.recurringOpen.set(open);
+    if (open && !this.recurringDates().length) {
+      const iso = toIsoDate(this.availabilityForm.getRawValue().startDate);
+      if (iso) this.recurringDates.set([iso]);
+    }
+  }
+
+  protected recurringDayOptions(): { iso: string; label: string; weekday: string }[] {
+    const start = this.availabilityForm.getRawValue().startDate;
+    const today = this.localDate(new Date());
+    const base = start instanceof Date && start.getTime() >= today.getTime() ? start : today;
+    const options: { iso: string; label: string; weekday: string }[] = [];
+    for (let index = 0; index < 14; index += 1) {
+      const day = new Date(base.getFullYear(), base.getMonth(), base.getDate() + index);
+      const iso = toIsoDate(day);
+      if (!iso) continue;
+      options.push({
+        iso,
+        label: day.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        weekday: day.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+      });
+    }
+    return options;
+  }
+
+  protected toggleRecurringDate(iso: string): void {
+    this.recurringDates.update((current) =>
+      current.includes(iso) ? current.filter((item) => item !== iso) : [...current, iso].sort(),
+    );
+  }
+
+  protected isRecurringDate(iso: string): boolean {
+    return this.recurringDates().includes(iso);
+  }
+
+  // ── Colleague search ("who is where") ─────────────────────────────────────
+
+  protected setColleagueQuery(event: Event): void {
+    this.colleagueQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  protected fullName(membership: LabMembership): string {
+    const member = membership.member;
+    return member
+      ? `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
+      : `Membro ${membership.member_id}`;
+  }
+
+  protected selectColleague(membership: LabMembership): void {
+    this.colleagueId.set(membership.member_id);
+    this.colleagueLabel.set(this.fullName(membership));
+    this.colleagueQuery.set('');
+  }
+
+  protected clearColleague(): void {
+    this.colleagueId.set(null);
+    this.colleagueLabel.set(null);
+    this.colleagueQuery.set('');
+  }
+
+  protected colleagueSummary(): string {
+    const label = this.colleagueLabel();
+    if (!label) return '';
+    const count = this.highlightedSpaceIds().size;
+    return count
+      ? `${label} ocupa ${count} estação(ões) neste horário.`
+      : `${label} não tem reservas neste horário.`;
+  }
+
+  // ── Rich card / map popover ───────────────────────────────────────────────
+
+  protected spaceOccupant(space: Space): string | null {
+    return this.occupantBySpaceId().get(space.id) ?? null;
+  }
+
+  protected setHovered(space: Space | null): void {
+    this.hoveredSpaceId.set(space ? space.id : null);
+  }
+
+  protected popoverStyle(space: Space): Record<string, string> {
+    const floor = this.selectedFloor();
+    if (!floor || floor.layout_width <= 0 || floor.layout_height <= 0) return {};
+    const left = ((space.layout.x + space.layout.width / 2) / floor.layout_width) * 100;
+    const top = (space.layout.y / floor.layout_height) * 100;
+    return {
+      left: `${Math.min(86, Math.max(14, left))}%`,
+      top: `${Math.max(6, top)}%`,
+    };
+  }
+
+  private loadOccupancy(): void {
+    const floor = this.selectedFloor();
+    const values = this.availabilityForm.getRawValue();
+    const start = this.combineDateTime(values.startDate, values.startTime);
+    const end = this.combineDateTime(values.endDate, values.endTime);
+    if (!floor || !start || !end || end <= start) {
+      this.occupancy.set([]);
+      return;
+    }
+    this.spacesApi
+      .getFloorOccupancy(this.labId, floor.id, start.toISOString(), end.toISOString())
+      .subscribe({
+        next: (items) => this.occupancy.set(items),
+        error: () => this.occupancy.set([]),
+      });
   }
 
   private loadFloorImage(floor: Floor): void {

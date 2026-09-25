@@ -6,7 +6,10 @@ import {
   Floor,
   FloorSpacesResponse,
   LabLocation,
+  MyReservationsResponse,
+  RecurringReservationResult,
   Reservation,
+  ReservationCancelScope,
   SessionMode,
   Space,
   SpaceType,
@@ -84,6 +87,7 @@ export class SpaceService {
       width: number;
       height: number;
       requires_approval?: boolean;
+      amenities?: string[];
     },
   ) {
     return this.http.post<Space>(`${this.api}/labs/${labId}/floors/${floorId}/spaces`, data);
@@ -133,6 +137,38 @@ export class SpaceService {
     );
   }
 
+  /** Books the same window across several calendar days (ISO YYYY-MM-DD). */
+  createRecurringReservation(
+    labId: number,
+    spaceId: number,
+    data: {
+      starts_at: string;
+      ends_at: string;
+      purpose?: string;
+      session_mode: SessionMode;
+      recurring_dates: string[];
+    },
+  ) {
+    return this.http.post<RecurringReservationResult>(
+      `${this.api}/labs/${labId}/spaces/${spaceId}/reservations`,
+      data,
+    );
+  }
+
+  /** The signed-in member's own reservations, split into upcoming and past. */
+  getMyReservations(labId: number) {
+    return this.http.get<MyReservationsResponse>(`${this.api}/labs/${labId}/reservations/mine`);
+  }
+
+  /** Non-private reservations on a floor for a window (who is where). */
+  getFloorOccupancy(labId: number, floorId: number, startsAt: string, endsAt: string) {
+    const params = new HttpParams().set('starts_at', startsAt).set('ends_at', endsAt);
+    return this.http.get<Reservation[]>(
+      `${this.api}/labs/${labId}/floors/${floorId}/occupancy`,
+      { params },
+    );
+  }
+
   getReservations(labId: number, startsAt?: string, endsAt?: string) {
     let params = new HttpParams();
     if (startsAt) params = params.set('starts_at', startsAt);
@@ -140,10 +176,14 @@ export class SpaceService {
     return this.http.get<Reservation[]>(`${this.api}/labs/${labId}/reservations`, { params });
   }
 
-  cancelReservation(labId: number, reservationId: number) {
-    return this.http.post<Reservation>(
+  cancelReservation(
+    labId: number,
+    reservationId: number,
+    scope: ReservationCancelScope = 'this',
+  ) {
+    return this.http.post<Reservation & { cancelled_count?: number; cancelled_ids?: number[] }>(
       `${this.api}/labs/${labId}/reservations/${reservationId}/cancel`,
-      {},
+      { scope },
     );
   }
 

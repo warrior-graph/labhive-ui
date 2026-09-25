@@ -71,10 +71,13 @@
   border-radius: 12px;
   background: var(--mat-sys-surface-container-low);
 }
+.map-canvas {
+  position: relative;
+  min-width: 620px;
+}
 .floor-map {
   display: block;
   width: 100%;
-  min-width: 620px;
   aspect-ratio: 10 / 7;
   touch-action: none;
   &.draw-mode {
@@ -343,4 +346,291 @@
     background: var(--sem-warning-bg);
   }
   small { color: var(--mat-sys-on-surface-variant); }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  button {
+    border-radius: 10px 10px 0 0;
+    color: var(--mat-sys-on-surface-variant);
+    &.active {
+      color: var(--mat-sys-primary);
+      background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+      font-weight: 600;
+    }
+  }
+}
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+// ── Quick ranges ──────────────────────────────────────────────────────────────
+.quick-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+
+  button { min-width: 0; }
+}
+.quick-label {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 6px;
+  &:first-child { margin-left: 0; }
+}
+
+// ── Colleague search ──────────────────────────────────────────────────────────
+.colleague-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  mat-form-field { width: 320px; }
+}
+.colleague-results {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  padding: 6px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 10px;
+  background: var(--mat-sys-surface);
+
+  button {
+    text-align: left;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    &:hover { background: var(--mat-sys-surface-container-high); }
+  }
+}
+.colleague-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+// ── Map filters ───────────────────────────────────────────────────────────────
+.map-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.filter-label {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 4px;
+}
+.filter-chip {
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 32px;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
+  small {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--mat-sys-surface-container-high);
+    font-size: 11px;
+  }
+  &.active {
+    border-color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    color: var(--mat-sys-primary);
+    font-weight: 600;
+  }
+}
+.result-count { margin: 0 0 10px; }
+
+// ── Rich space popover ────────────────────────────────────────────────────────
+.space-popover {
+  position: absolute;
+  z-index: 4;
+  width: 240px;
+  padding: 12px 14px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: var(--mat-sys-surface);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 22%);
+  pointer-events: none;
+  transform: translate(-50%, -108%);
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 6px;
+  }
+  .popover-status {
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 12px;
+  }
+  .meta {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+  p { margin: 0 0 6px; }
+}
+.popover-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--mat-sys-on-surface-variant);
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  }
+}
+.space-popover .occupant {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mat-sys-primary);
+  font-weight: 600;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+// ── Space detail enrichments ──────────────────────────────────────────────────
+.space-meta,
+.space-status-line { margin: 0 0 6px; }
+.occupant-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--mat-sys-primary);
+  font-weight: 600;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+.amenity-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--mat-sys-surface-container-high);
+    font-size: 12px;
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  }
+}
+.amenity-editor { width: 100%; }
+
+// ── Recurring day chips ───────────────────────────────────────────────────────
+.recurring-days {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 10px;
+}
+.day-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.day-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 52px;
+  padding: 6px 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 10px;
+  background: var(--mat-sys-surface);
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+
+  .weekday { font-size: 10px; text-transform: uppercase; opacity: 0.75; }
+  &.active {
+    border-color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+    color: var(--mat-sys-primary);
+    font-weight: 600;
+  }
+}
+
+// ── Personal agenda tab ───────────────────────────────────────────────────────
+.mine-panel {
+  margin-top: 8px;
+  h3 { margin: 24px 0 4px; }
+}
+.mine-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  h2 { margin: 0; }
+}
+.reservation-row.past { opacity: 0.72; }
+.muted { color: var(--mat-sys-on-surface-variant); }
+.recurring-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mat-sys-primary);
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+}
+
+.space.highlighted rect {
+  stroke: var(--mat-sys-primary);
+  stroke-width: 7;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--mat-sys-primary) 70%, transparent));
 }
